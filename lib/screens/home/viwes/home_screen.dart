@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:finc/screens/home/viwes/main_screem.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -54,6 +55,7 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
+      body: const MainScreen(),
     );
   }
 }
