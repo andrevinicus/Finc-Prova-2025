@@ -31,7 +31,7 @@ class _MyChartState extends State<MyChart> {
             ],
             transform: const GradientRotation(pi / 40),
           ),
-          width: 20,
+          width: MediaQuery.of(context).size.width * 0.05, // Ajusta dinamicamente
           backDrawRodData: BackgroundBarChartRodData(
             show: true,
             toY: 5,

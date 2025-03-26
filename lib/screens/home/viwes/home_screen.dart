@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:finc/screens/add_expense/views/add_expense.dart';
 import 'package:finc/screens/home/viwes/main_screem.dart';
 import 'package:finc/screens/stats/stats.dart';
 import 'package:flutter/cupertino.dart';
@@ -56,7 +57,14 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute<void>(
+              builder: (BuildContext context) => const AddExpense(),
+            ),
+          );
+        },
         shape: const CircleBorder(),
         child: Container(
           width: 60,
