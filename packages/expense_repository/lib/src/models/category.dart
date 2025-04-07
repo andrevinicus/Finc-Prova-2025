@@ -1,4 +1,4 @@
-import '../entites/entities.dart';
+import '../entities/entities.dart';
 
 class Category {
   String categoryId;
