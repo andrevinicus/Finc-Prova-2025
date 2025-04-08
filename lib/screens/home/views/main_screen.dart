@@ -1,6 +1,6 @@
 
 import 'dart:math';
-
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:expense_repository/expense_repository.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +14,10 @@ class MainScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    final user = FirebaseAuth.instance.currentUser;
+
+
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 10),
@@ -24,29 +28,29 @@ class MainScreen extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.yellow[700]
-                          ),
+                    user?.photoURL != null
+                    ? CircleAvatar(
+                        radius: 25,
+                        backgroundImage: NetworkImage(user!.photoURL!),
+                      )
+                    : Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.yellow[700],
                         ),
-                        Icon(
+                        child: Icon(
                           CupertinoIcons.person_fill,
                           color: Colors.yellow[800],
-                        )
-                      ],
-                    ),
+                        ),
+                      ),
                     const SizedBox(width: 8,),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Welcome!",
+                          "Bem Vindo!",
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
@@ -54,13 +58,13 @@ class MainScreen extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          "John Doe",
+                          (user?.displayName?.split(' ').take(2).join(' ')) ?? 'Usuário',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.onBackground
+                            color: Theme.of(context).colorScheme.onBackground,
                           ),
-                        )
+                        ),
                       ],
                     ),
                   ],
