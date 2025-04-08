@@ -1,14 +1,19 @@
-import 'package:finc/screens/auth/login_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:expense_repository/expense_repository.dart'; // ajuste conforme seu caminho
+import 'package:finc/blocs/auth/auth_bloc.dart';
+import 'package:finc/blocs/auth/auth_event.dart';
 
 class RegisterScreen extends StatelessWidget {
   const RegisterScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    TextEditingController nameController = TextEditingController();
-    TextEditingController emailController = TextEditingController();
-    TextEditingController passwordController = TextEditingController();
+    final nameController = TextEditingController();
+    final emailController = TextEditingController();
+    final passwordController = TextEditingController();
+
+    final FirebaseUserRepo userRepo = FirebaseUserRepo(); // ou injete por bloc/provider
 
     return Scaffold(
       appBar: AppBar(title: const Text('Criar Conta')),
@@ -31,16 +36,25 @@ class RegisterScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
-                // TODO: Implementar lógica de cadastro
+              onPressed: () async {
+                try {
+                  await userRepo.createUser(
+                    name: nameController.text.trim(),
+                    email: emailController.text.trim(),
+                    password: passwordController.text,
+                  );
 
-                // Após cadastro, navega para a tela de login
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                );
+                  // Revalida login após criação
+                  context.read<AuthBloc>().add(AuthCheckRequested());
+                  Navigator.pop(context); // ou navegue para Home se quiser
+
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Erro: ${e.toString()}')),
+                  );
+                }
               },
-              child: const Text('Cadastrar'),
+              child: const Text('Criar Conta'),
             ),
           ],
         ),
