@@ -8,17 +8,54 @@ import 'package:intl/intl.dart';
 
 
 
-class MainScreen extends StatelessWidget {
+class MainScreen extends StatefulWidget {
   final List<Expense> expenses;
   const MainScreen(this.expenses, {super.key});
 
+
+  @override
+  State<MainScreen> createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
-
     final user = FirebaseAuth.instance.currentUser;
 
+    
 
-    return SafeArea(
+  return Scaffold(
+    key: _scaffoldKey,
+    drawer: Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          UserAccountsDrawerHeader(
+            accountName: Text(user?.displayName ?? 'Usuário'),
+            accountEmail: Text(user?.email ?? ''),
+            currentAccountPicture: CircleAvatar(
+              backgroundImage: user?.photoURL != null
+                  ? NetworkImage(user!.photoURL!)
+                  : null,
+              child: user?.photoURL == null
+                  ? Icon(Icons.person)
+                  : null,
+            ),
+          ),
+          ListTile(
+            leading: Icon(Icons.logout),
+            title: Text('Sair'),
+            onTap: () {
+              FirebaseAuth.instance.signOut();
+              Navigator.pop(context);
+            },
+          ),
+        ],
+      ),
+    ),
+    body: SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 10),
         child: Column(
@@ -28,24 +65,28 @@ class MainScreen extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    user?.photoURL != null
-                    ? CircleAvatar(
-                        radius: 25,
-                        backgroundImage: NetworkImage(user!.photoURL!),
-                      )
-                    : Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.yellow[700],
-                        ),
-                        child: Icon(
-                          CupertinoIcons.person_fill,
-                          color: Colors.yellow[800],
-                        ),
-                      ),
-                    const SizedBox(width: 8,),
+                    /// CLICÁVEL: abre o menu lateral
+                    GestureDetector(
+                      onTap: () => _scaffoldKey.currentState?.openDrawer(),
+                      child: user?.photoURL != null
+                          ? CircleAvatar(
+                              radius: 25,
+                              backgroundImage: NetworkImage(user!.photoURL!),
+                            )
+                          : Container(
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.yellow[700],
+                              ),
+                              child: Icon(
+                                CupertinoIcons.person_fill,
+                                color: Colors.yellow[800],
+                              ),
+                            ),
+                    ),
+                    const SizedBox(width: 8),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -54,7 +95,7 @@ class MainScreen extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: Theme.of(context).colorScheme.outline
+                            color: Theme.of(context).colorScheme.outline,
                           ),
                         ),
                         Text(
@@ -69,7 +110,10 @@ class MainScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                IconButton(onPressed: () {}, icon: const Icon(CupertinoIcons.settings))
+                IconButton(
+                  onPressed: () {},
+                  icon: const Icon(CupertinoIcons.settings),
+                ),
               ],
             ),
             const SizedBox(height: 20,),
@@ -237,7 +281,7 @@ class MainScreen extends StatelessWidget {
             const SizedBox(height: 20),
             Expanded(
               child: ListView.builder(
-                itemCount: expenses.length,
+                itemCount: widget.expenses.length,
                 itemBuilder: (context, int i) {
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 16.0),
@@ -260,12 +304,12 @@ class MainScreen extends StatelessWidget {
                                       width: 50,
                                       height: 50,
                                       decoration: BoxDecoration(
-                                        color: Color(expenses[i].category.color),
+                                        color: Color(widget.expenses[i].category.color),
                                         shape: BoxShape.circle
                                       ),
                                     ),
                                     Image.asset(
-                                      'assets/${expenses[i].category.icon}.png',
+                                      'assets/${widget.expenses[i].category.icon}.png',
                                       scale: 2,
                                       color: Colors.white,
                                     )
@@ -273,7 +317,7 @@ class MainScreen extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 12),
                                 Text(
-                                  expenses[i].category.name,
+                                  widget.expenses[i].category.name,
                                   style: TextStyle(
                                     fontSize: 14,
                                     color: Theme.of(context).colorScheme.onBackground,
@@ -286,7 +330,7 @@ class MainScreen extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
                                 Text(
-                                  "\$${expenses[i].amount}.00",
+                                  "\$${widget.expenses[i].amount}.00",
                                   style: TextStyle(
                                     fontSize: 14,
                                     color: Theme.of(context).colorScheme.onBackground,
@@ -294,7 +338,7 @@ class MainScreen extends StatelessWidget {
                                   ),
                                 ),
                                 Text(
-                                  DateFormat('dd/MM/yyyy').format(expenses[i].date),
+                                  DateFormat('dd/MM/yyyy').format(widget.expenses[i].date),
                                   style: TextStyle(
                                     fontSize: 14,
                                     color: Theme.of(context).colorScheme.outline,
@@ -314,6 +358,7 @@ class MainScreen extends StatelessWidget {
           ],
         ),
       ),
-    );
+     )
+   );
   }
 }
