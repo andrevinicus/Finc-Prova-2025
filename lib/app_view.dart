@@ -1,6 +1,7 @@
 import 'package:expense_repository/expense_repository.dart';
 import 'package:finc/blocs/auth/auth_bloc.dart';
 import 'package:finc/blocs/auth/auth_state.dart';
+import 'package:finc/screens/auth/register_screen.dart';
 import 'package:finc/screens/home/blocs/get_expenses_bloc/get_expenses_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -25,6 +26,16 @@ class MyAppView extends StatelessWidget {
           outline: Colors.grey,
         ),
       ),
+      // Rotas nomeadas para evitar erro ao navegar por string
+      routes: {
+        '/home': (context) => BlocProvider(
+              create: (context) =>
+                  GetExpensesBloc(FirebaseExpenseRepo())..add(GetExpenses()),
+              child: const HomeScreen(),
+            ),
+        '/login': (context) => const LoginScreen(),
+        '/register': (context) => const RegisterScreen(),
+      },
       home: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, state) {
           if (state is Authenticated) {

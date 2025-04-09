@@ -5,6 +5,7 @@ import 'package:expense_repository/expense_repository.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:finc/screens/drawer/app_drawer.dart';
 
 
 
@@ -28,33 +29,7 @@ class _MainScreenState extends State<MainScreen> {
 
   return Scaffold(
     key: _scaffoldKey,
-    drawer: Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          UserAccountsDrawerHeader(
-            accountName: Text(user?.displayName ?? 'Usuário'),
-            accountEmail: Text(user?.email ?? ''),
-            currentAccountPicture: CircleAvatar(
-              backgroundImage: user?.photoURL != null
-                  ? NetworkImage(user!.photoURL!)
-                  : null,
-              child: user?.photoURL == null
-                  ? Icon(Icons.person)
-                  : null,
-            ),
-          ),
-          ListTile(
-            leading: Icon(Icons.logout),
-            title: Text('Sair'),
-            onTap: () {
-              FirebaseAuth.instance.signOut();
-              Navigator.pop(context);
-            },
-          ),
-        ],
-      ),
-    ),
+    drawer: AppDrawer(user: user),
     body: SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 10),
@@ -65,7 +40,6 @@ class _MainScreenState extends State<MainScreen> {
               children: [
                 Row(
                   children: [
-                    /// CLICÁVEL: abre o menu lateral
                     GestureDetector(
                       onTap: () => _scaffoldKey.currentState?.openDrawer(),
                       child: user?.photoURL != null

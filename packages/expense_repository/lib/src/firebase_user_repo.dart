@@ -9,6 +9,7 @@ class FirebaseUserRepo {
   Future<void> createUser({
     required String name,
     required String email,
+    required String telefone,
     required String password,
   }) async {
     // Cria o usuário no Firebase Auth
@@ -25,6 +26,7 @@ class FirebaseUserRepo {
         name: name,
         email: email,
         photoUrl: userCredential.user?.photoURL,
+        telefone: telefone,
       );
 
       await _firestore.collection('users').doc(uid).set(user.toMap());

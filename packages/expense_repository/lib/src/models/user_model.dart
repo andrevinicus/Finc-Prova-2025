@@ -6,11 +6,13 @@ class UserModel extends UserEntity {
     required String name,
     required String email,
     String? photoUrl,
+    required String telefone,
   }) : super(
           uid: uid,
           name: name,
           email: email,
           photoUrl: photoUrl,
+          telefone: telefone,
         );
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
@@ -19,6 +21,7 @@ class UserModel extends UserEntity {
       name: map['name'],
       email: map['email'],
       photoUrl: map['photoUrl'],
+      telefone: map['telefone'],
     );
   }
 
@@ -28,6 +31,7 @@ class UserModel extends UserEntity {
       'name': name,
       'email': email,
       'photoUrl': photoUrl,
+      'telefone': telefone,
     };
   }
 
@@ -37,6 +41,7 @@ class UserModel extends UserEntity {
       name: entity.name,
       email: entity.email,
       photoUrl: entity.photoUrl,
+      telefone: entity.telefone,
     );
   }
 

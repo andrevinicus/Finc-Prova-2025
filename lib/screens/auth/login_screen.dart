@@ -13,13 +13,22 @@ class LoginScreen extends StatelessWidget {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
       final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
 
+      if (googleUser == null || googleAuth == null) {
+        // Usuário cancelou o login
+        return;
+      }
+
       final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth?.accessToken,
-        idToken: googleAuth?.idToken,
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
       );
 
       await FirebaseAuth.instance.signInWithCredential(credential);
 
+      // Redireciona para a home após login bem-sucedido
+      Navigator.pushReplacementNamed(context, '/home');
+
+      // Dispara evento no BLoC se estiver usando autenticação reativa
       context.read<AuthBloc>().add(AuthCheckRequested());
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -43,6 +52,7 @@ class LoginScreen extends StatelessWidget {
             TextField(
               controller: emailController,
               decoration: const InputDecoration(labelText: 'Email'),
+              keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 8),
             TextField(
@@ -58,6 +68,9 @@ class LoginScreen extends StatelessWidget {
                     email: emailController.text.trim(),
                     password: passwordController.text,
                   );
+
+                  // Redireciona após login bem-sucedido
+                  Navigator.pushReplacementNamed(context, '/home');
 
                   context.read<AuthBloc>().add(AuthCheckRequested());
                 } catch (e) {
@@ -77,7 +90,7 @@ class LoginScreen extends StatelessWidget {
             const SizedBox(height: 20),
             TextButton(
               onPressed: () {
-                Navigator.pushNamed(context, '/register'); // ou use Navigator.push com a tela de cadastro
+                Navigator.pushNamed(context, '/register');
               },
               child: const Text("Criar conta"),
             ),
