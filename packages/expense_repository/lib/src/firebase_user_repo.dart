@@ -6,6 +6,7 @@ class FirebaseUserRepo {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  /// Cria usuário com e-mail/senha e salva no Firestore
   Future<void> createUser({
     required String name,
     required String email,
@@ -33,6 +34,7 @@ class FirebaseUserRepo {
     }
   }
 
+  /// Busca usuário no Firestore pelo UID
   Future<UserModel?> getUserById(String uid) async {
     final doc = await _firestore.collection('users').doc(uid).get();
     if (doc.exists) {
@@ -41,6 +43,7 @@ class FirebaseUserRepo {
     return null;
   }
 
+  /// Verifica se o usuário Google já está salvo. Se não estiver, salva.
   Future<void> saveGoogleUserIfNeeded(User firebaseUser) async {
     final userDoc = await _firestore.collection('users').doc(firebaseUser.uid).get();
 
@@ -56,4 +59,4 @@ class FirebaseUserRepo {
       await _firestore.collection('users').doc(firebaseUser.uid).set(userModel.toMap());
     }
   }
-}  
+}

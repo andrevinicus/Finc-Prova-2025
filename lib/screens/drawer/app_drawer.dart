@@ -1,31 +1,64 @@
+import 'package:expense_repository/expense_repository.dart';
 import 'package:finc/screens/auth/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-class AppDrawer extends StatelessWidget {
+class AppDrawer extends StatefulWidget {
   final User? user;
 
   const AppDrawer({
     super.key,
-    required this.user,
+    required this.user, 
   });
 
   @override
+  State<AppDrawer> createState() => _AppDrawerState();
+}
+
+class _AppDrawerState extends State<AppDrawer> {
+  String nome = 'Usuário';
+  String? email;
+  String? photoUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    carregarNomeUsuario();
+  }
+
+  Future<void> carregarNomeUsuario() async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      final userModel = await FirebaseUserRepo().getUserById(user.uid);
+
+      setState(() {
+        nome = userModel?.name ?? user.displayName ?? 'Usuário';
+        email = userModel?.email ?? user.email;
+        photoUrl = userModel?.photoUrl ?? user.photoURL;
+      });
+    }
+  }
+
+
+  @override
   Widget build(BuildContext context) {
+    final email = FirebaseAuth.instance.currentUser?.email;
+    
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
           UserAccountsDrawerHeader(
-            accountName: Text(user?.displayName ?? 'Usuário'),
-            accountEmail: Text(user?.email ?? ''),
+            accountName: Text(nome),
+            accountEmail: Text(email ?? ''),
             currentAccountPicture: CircleAvatar(
-              backgroundImage: user?.photoURL != null
-                  ? NetworkImage(user!.photoURL!)
+              backgroundImage: photoUrl != null
+                  ? NetworkImage(photoUrl!)
                   : null,
-              child: user?.photoURL == null
+              child: photoUrl == null
                   ? const Icon(Icons.person)
                   : null,
             ),
@@ -36,14 +69,11 @@ class AppDrawer extends StatelessWidget {
             onTap: () async {
               final googleSignIn = GoogleSignIn();
 
-              // Desconectar do Google também
               await googleSignIn.signOut();
               await FirebaseAuth.instance.signOut();
 
-              // Fecha o Drawer primeiro
               Navigator.of(context).pop();
 
-              // Redireciona para a tela de login removendo tudo da pilha
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(builder: (_) => const LoginScreen()),
                 (route) => false,

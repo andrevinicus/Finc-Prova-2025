@@ -4,7 +4,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:finc/blocs/auth/auth_bloc.dart';
 import 'package:finc/blocs/auth/auth_event.dart';
-import 'package:expense_repository/expense_repository.dart'; // Ajuste conforme o caminho do seu repo
+import 'package:expense_repository/expense_repository.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -15,7 +15,6 @@ class LoginScreen extends StatelessWidget {
       final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
 
       if (googleUser == null || googleAuth == null) {
-        // Usuário cancelou o login
         return;
       }
 
@@ -28,13 +27,11 @@ class LoginScreen extends StatelessWidget {
       final firebaseUser = userCredential.user;
 
       if (firebaseUser != null) {
-        // Salva o usuário no Firestore se ainda não existir
+        
         await FirebaseUserRepo().saveGoogleUserIfNeeded(firebaseUser);
 
-        // Redireciona para a home
         Navigator.pushReplacementNamed(context, '/home');
 
-        // Dispara evento para o AuthBloc
         context.read<AuthBloc>().add(AuthCheckRequested());
       }
     } catch (e) {
