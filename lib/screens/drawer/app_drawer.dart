@@ -10,7 +10,7 @@ class AppDrawer extends StatefulWidget {
 
   const AppDrawer({
     super.key,
-    required this.user, 
+    required this.user,
   });
 
   @override
@@ -42,14 +42,10 @@ class _AppDrawerState extends State<AppDrawer> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
-    final email = FirebaseAuth.instance.currentUser?.email;
-    
     return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
+      child: Column(
         children: [
           UserAccountsDrawerHeader(
             accountName: Text(nome),
@@ -63,6 +59,22 @@ class _AppDrawerState extends State<AppDrawer> {
                   : null,
             ),
           ),
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.settings),
+                  title: const Text('Configurações'),
+                  onTap: () {
+                    // Navegar para a tela de configurações
+                    // Navigator.of(context).pushNamed(AppRoutes.settings);
+                  },
+                ),
+              ],
+            ),
+          ),
+          const Divider(),
           ListTile(
             leading: const Icon(Icons.logout),
             title: const Text('Logout'),

@@ -1,4 +1,4 @@
-import '../entities/entities.dart';
+import 'package:expense_repository/expense_repository.dart';
 
 class Category {
   String categoryId;
@@ -6,6 +6,7 @@ class Category {
   int totalExpenses;
   String icon;
   int color;
+  String? userId; // NOVO
 
   Category({
     required this.categoryId,
@@ -13,6 +14,7 @@ class Category {
     required this.totalExpenses,
     required this.icon,
     required this.color,
+    this.userId, // NOVO
   });
 
   static final empty = Category(
@@ -20,7 +22,8 @@ class Category {
     name: '', 
     totalExpenses: 0, 
     icon: '', 
-    color: 0
+    color: 0,
+    userId: null, // NOVO
   );
 
   CategoryEntity toEntity() {
@@ -30,6 +33,7 @@ class Category {
       totalExpenses: totalExpenses,
       icon: icon,
       color: color,
+      userId: userId, // NOVO
     );
   }
 
@@ -40,6 +44,7 @@ class Category {
       totalExpenses: entity.totalExpenses,
       icon: entity.icon,
       color: entity.color,
+      userId: entity.userId, // NOVO
     );
   }
 }
