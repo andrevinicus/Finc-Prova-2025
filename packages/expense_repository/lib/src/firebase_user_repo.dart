@@ -40,4 +40,20 @@ class FirebaseUserRepo {
     }
     return null;
   }
-}
+
+  Future<void> saveGoogleUserIfNeeded(User firebaseUser) async {
+    final userDoc = await _firestore.collection('users').doc(firebaseUser.uid).get();
+
+    if (!userDoc.exists) {
+      final userModel = UserModel(
+        uid: firebaseUser.uid,
+        name: firebaseUser.displayName ?? '',
+        email: firebaseUser.email ?? '',
+        photoUrl: firebaseUser.photoURL,
+        telefone: '', // pode ser preenchido depois
+      );
+
+      await _firestore.collection('users').doc(firebaseUser.uid).set(userModel.toMap());
+    }
+  }
+}  

@@ -23,13 +23,16 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
+    final userGoogle = FirebaseAuth.instance.currentUser;
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+
+
 
     
 
   return Scaffold(
     key: _scaffoldKey,
-    drawer: AppDrawer(user: user),
+    drawer: AppDrawer(user: userGoogle),
     body: SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 10),
@@ -42,10 +45,10 @@ class _MainScreenState extends State<MainScreen> {
                   children: [
                     GestureDetector(
                       onTap: () => _scaffoldKey.currentState?.openDrawer(),
-                      child: user?.photoURL != null
+                      child: userGoogle?.photoURL != null
                           ? CircleAvatar(
                               radius: 25,
-                              backgroundImage: NetworkImage(user!.photoURL!),
+                              backgroundImage: NetworkImage(userGoogle!.photoURL!),
                             )
                           : Container(
                               width: 50,
@@ -72,14 +75,26 @@ class _MainScreenState extends State<MainScreen> {
                             color: Theme.of(context).colorScheme.outline,
                           ),
                         ),
-                        Text(
-                          (user?.displayName?.split(' ').take(2).join(' ')) ?? 'Usuário',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.onBackground,
-                          ),
-                        ),
+                        FutureBuilder<UserModel?>(
+                          future: FirebaseUserRepo().getUserById(uid ?? ''),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return const CircularProgressIndicator();
+                            } else if (snapshot.hasData && snapshot.data != null) {
+                              final user = snapshot.data!;
+                              return Text(
+                                user.name.split(' ').take(2).join(' '),
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.onBackground,
+                                ),
+                              );
+                            } else {
+                              return const Text("Usuário");
+                            }
+                          },
+                        )
                       ],
                     ),
                   ],

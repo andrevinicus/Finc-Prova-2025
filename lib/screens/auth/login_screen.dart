@@ -4,6 +4,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:finc/blocs/auth/auth_bloc.dart';
 import 'package:finc/blocs/auth/auth_event.dart';
+import 'package:expense_repository/expense_repository.dart'; // Ajuste conforme o caminho do seu repo
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -23,13 +24,19 @@ class LoginScreen extends StatelessWidget {
         idToken: googleAuth.idToken,
       );
 
-      await FirebaseAuth.instance.signInWithCredential(credential);
+      final userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+      final firebaseUser = userCredential.user;
 
-      // Redireciona para a home após login bem-sucedido
-      Navigator.pushReplacementNamed(context, '/home');
+      if (firebaseUser != null) {
+        // Salva o usuário no Firestore se ainda não existir
+        await FirebaseUserRepo().saveGoogleUserIfNeeded(firebaseUser);
 
-      // Dispara evento no BLoC se estiver usando autenticação reativa
-      context.read<AuthBloc>().add(AuthCheckRequested());
+        // Redireciona para a home
+        Navigator.pushReplacementNamed(context, '/home');
+
+        // Dispara evento para o AuthBloc
+        context.read<AuthBloc>().add(AuthCheckRequested());
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Erro ao fazer login com Google: ${e.toString()}")),
