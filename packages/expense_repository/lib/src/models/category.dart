@@ -47,4 +47,22 @@ class Category {
       userId: entity.userId,
     );
   }
+  Category copyWith({
+  String? categoryId,
+  String? name,
+  int? totalExpenses,
+  String? icon,
+  int? color,
+  String? userId,
+}) {
+  return Category(
+    categoryId: categoryId ?? this.categoryId,
+    name: name ?? this.name,
+    totalExpenses: totalExpenses ?? this.totalExpenses,
+    icon: icon ?? this.icon,
+    color: color ?? this.color,
+    userId: userId ?? this.userId,
+  );
+}
+
 }

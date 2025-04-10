@@ -1,6 +1,7 @@
 import 'package:expense_repository/expense_repository.dart';
 import 'package:finc/blocs/auth/auth_bloc.dart';
 import 'package:finc/blocs/auth/auth_state.dart';
+import 'package:finc/screens/add_expense/blocs/get_categories_bloc/get_categories_bloc.dart';
 import 'package:finc/screens/auth/register_screen.dart';
 import 'package:finc/screens/home/blocs/get_expenses_bloc/get_expenses_bloc.dart';
 import 'package:flutter/material.dart';
@@ -29,9 +30,18 @@ class MyAppView extends StatelessWidget {
       // Rotas nomeadas para evitar erro ao navegar por string
       routes: {
         '/home': (context) {
-          final userId = ModalRoute.of(context)!.settings.arguments as String;
-          return BlocProvider(
-            create: (context) => GetExpensesBloc(FirebaseExpenseRepo())..add(GetExpenses(userId)),
+          final userId = ModalRoute.of(context)?.settings.arguments as String?;
+          return MultiBlocProvider(
+            providers: [
+              BlocProvider(
+                create: (_) => GetExpensesBloc(FirebaseExpenseRepo())
+                  ..add(GetExpenses(userId!)),
+              ),
+              BlocProvider(
+                create: (_) => GetCategoriesBloc(FirebaseExpenseRepo())
+                  ..add(GetCategories(userId!)),
+              ),
+            ],
             child: const HomeScreen(),
           );
         },

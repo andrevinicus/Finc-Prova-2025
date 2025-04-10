@@ -5,6 +5,7 @@ import 'package:finc/screens/add_expense/blocs/get_categories_bloc/get_categorie
 import 'package:finc/screens/add_expense/views/add_expense.dart';
 import 'package:finc/screens/home/blocs/get_expenses_bloc/get_expenses_bloc.dart';
 import 'package:finc/screens/home/views/main_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -54,7 +55,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           create: (context) => CreateCategoryBloc(FirebaseExpenseRepo()),
                         ),
                         BlocProvider(
-                          create: (context) => GetCategoriesBloc(FirebaseExpenseRepo())..add(GetCategories()),
+                          create: (context) {
+                            final userId = FirebaseAuth.instance.currentUser?.uid;
+                            return GetCategoriesBloc(FirebaseExpenseRepo())..add(GetCategories(userId!));
+                          },
                         ),
                         BlocProvider(
                           create: (context) => CreateExpenseBloc(FirebaseExpenseRepo()),
