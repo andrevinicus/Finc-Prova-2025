@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:finc/blocs/auth/auth_bloc.dart';
-import 'package:finc/blocs/auth/auth_event.dart';
 import 'package:expense_repository/expense_repository.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -26,12 +23,37 @@ class LoginScreen extends StatelessWidget {
 
       if (firebaseUser != null) {
         await FirebaseUserRepo().saveGoogleUserIfNeeded(firebaseUser);
-        context.read<AuthBloc>().add(AuthCheckRequested());
-        Navigator.pushReplacementNamed(context, '/home');
+
+        Navigator.pushReplacementNamed(
+          context,
+          '/home',
+          arguments: firebaseUser.uid,
+        );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Erro ao fazer login com Google: ${e.toString()}")),
+      );
+    }
+  }
+
+  Future<void> _signInWithEmail(BuildContext context, String email, String password) async {
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email.trim(),
+        password: password,
+      );
+
+      final user = FirebaseAuth.instance.currentUser;
+
+      Navigator.pushReplacementNamed(
+        context,
+        '/home',
+        arguments: user?.uid,
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao fazer login: ${e.toString()}')),
       );
     }
   }
@@ -49,12 +71,12 @@ class LoginScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(20), // ajuste o valor como quiser
+                borderRadius: BorderRadius.circular(20),
                 child: Image.asset(
                   'assets/telainicial.png',
                   height: 150,
                   width: 150,
-                  fit: BoxFit.cover, // ajuda a preencher a área com a imagem
+                  fit: BoxFit.cover,
                 ),
               ),
               const SizedBox(height: 16),
@@ -91,20 +113,11 @@ class LoginScreen extends StatelessWidget {
               const SizedBox(height: 24),
 
               ElevatedButton(
-                onPressed: () async {
-                  try {
-                    await FirebaseAuth.instance.signInWithEmailAndPassword(
-                      email: emailController.text.trim(),
-                      password: passwordController.text,
-                    );
-                    context.read<AuthBloc>().add(AuthCheckRequested());
-                    Navigator.pushReplacementNamed(context, '/home');
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Erro ao fazer login: ${e.toString()}')),
-                    );
-                  }
-                },
+                onPressed: () => _signInWithEmail(
+                  context,
+                  emailController.text,
+                  passwordController.text,
+                ),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
