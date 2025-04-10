@@ -2,6 +2,7 @@ import 'package:expense_repository/expense_repository.dart';
 import 'package:finc/screens/add_expense/blocs/create_expense_bloc/create_expense_bloc.dart';
 import 'package:finc/screens/add_expense/blocs/get_categories_bloc/get_categories_bloc.dart';
 import 'package:finc/screens/add_expense/views/category_creation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -23,13 +24,20 @@ class _AddExpenseState extends State<AddExpense> {
   late Expense expense;
   bool isLoading = false;
 
-  @override
-  void initState() {
-    dateController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
-    expense = Expense.empty;
-    expense.expenseId = const Uuid().v1();
-    super.initState();
-  }
+
+@override
+void initState() {
+  super.initState();
+
+  dateController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
+
+  final currentUser = FirebaseAuth.instance.currentUser;
+
+  expense = Expense.empty.copyWith(
+    expenseId: const Uuid().v1(),
+    userId: currentUser?.uid,
+  );
+}
 
   @override
   Widget build(BuildContext context) {

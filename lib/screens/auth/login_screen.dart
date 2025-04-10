@@ -30,7 +30,11 @@ class LoginScreen extends StatelessWidget {
         
         await FirebaseUserRepo().saveGoogleUserIfNeeded(firebaseUser);
 
-        Navigator.pushReplacementNamed(context, '/home');
+        Navigator.pushReplacementNamed(
+          context,
+          '/home',
+          arguments: FirebaseAuth.instance.currentUser?.uid,
+        );
 
         context.read<AuthBloc>().add(AuthCheckRequested());
       }
@@ -73,8 +77,12 @@ class LoginScreen extends StatelessWidget {
                     password: passwordController.text,
                   );
 
-                  // Redireciona após login bem-sucedido
-                  Navigator.pushReplacementNamed(context, '/home');
+            
+                  Navigator.pushReplacementNamed(
+                    context,
+                    '/home',
+                    arguments: FirebaseAuth.instance.currentUser?.uid,
+                  );
 
                   context.read<AuthBloc>().add(AuthCheckRequested());
                 } catch (e) {

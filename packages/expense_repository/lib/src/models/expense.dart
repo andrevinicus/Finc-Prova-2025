@@ -23,6 +23,22 @@ class Expense {
     userId: '',
   );
 
+  Expense copyWith({
+    String? expenseId,
+    Category? category,
+    DateTime? date,
+    int? amount,
+    String? userId,
+  }) {
+    return Expense(
+      expenseId: expenseId ?? this.expenseId,
+      category: category ?? this.category,
+      date: date ?? this.date,
+      amount: amount ?? this.amount,
+      userId: userId ?? this.userId,
+    );
+  }
+
   ExpenseEntity toEntity() {
     return ExpenseEntity(
       expenseId: expenseId,

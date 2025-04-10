@@ -33,7 +33,7 @@ class Category {
       totalExpenses: totalExpenses,
       icon: icon,
       color: color,
-      userId: userId, // NOVO
+      userId: userId,
     );
   }
 
@@ -44,7 +44,7 @@ class Category {
       totalExpenses: entity.totalExpenses,
       icon: entity.icon,
       color: entity.color,
-      userId: entity.userId, // NOVO
+      userId: entity.userId,
     );
   }
 }

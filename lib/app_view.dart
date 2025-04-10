@@ -28,11 +28,13 @@ class MyAppView extends StatelessWidget {
       ),
       // Rotas nomeadas para evitar erro ao navegar por string
       routes: {
-        '/home': (context) => BlocProvider(
-              create: (context) =>
-                  GetExpensesBloc(FirebaseExpenseRepo())..add(GetExpenses()),
-              child: const HomeScreen(),
-            ),
+        '/home': (context) {
+          final userId = ModalRoute.of(context)!.settings.arguments as String;
+          return BlocProvider(
+            create: (context) => GetExpensesBloc(FirebaseExpenseRepo())..add(GetExpenses(userId)),
+            child: const HomeScreen(),
+          );
+        },
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
       },
@@ -41,7 +43,7 @@ class MyAppView extends StatelessWidget {
           if (state is Authenticated) {
             return BlocProvider(
               create: (context) =>
-                  GetExpensesBloc(FirebaseExpenseRepo())..add(GetExpenses()),
+                  GetExpensesBloc(FirebaseExpenseRepo())..add(GetExpenses(state.user.uid)),
               child: const HomeScreen(),
             );
           } else if (state is Unauthenticated) {

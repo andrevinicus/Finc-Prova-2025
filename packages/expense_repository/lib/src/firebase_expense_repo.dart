@@ -4,41 +4,44 @@ import 'package:expense_repository/expense_repository.dart';
 
 class FirebaseExpenseRepo implements ExpenseRepository {
   final categoryCollection = FirebaseFirestore.instance.collection('categories');
-	final expenseCollection = FirebaseFirestore.instance.collection('expenses');
-
+  final expenseCollection = FirebaseFirestore.instance.collection('expenses');
 
   @override
   Future<void> createCategory(Category category) async {
     try {
       await categoryCollection
-        .doc(category.categoryId)
-        .set(category.toEntity().toDocument());
+          .doc(category.categoryId)
+          .set(category.toEntity().toDocument());
     } catch (e) {
       log(e.toString());
       rethrow;
     }
   }
 
-  @override
-  Future<List<Category>> getCategory() async {
-    try {
-      return await categoryCollection
-        .get()
-        .then((value) => value.docs.map((e) => 
-          Category.fromEntity(CategoryEntity.fromDocument(e.data()))
-        ).toList());
-    } catch (e) {
-      log(e.toString());
-      rethrow;
-    }
+ @override
+Future<List<Category>> getCategory(String userId) async {
+  try {
+    final snapshot = await categoryCollection
+        .where('userId', isEqualTo: userId)
+        .get();
+
+    return snapshot.docs.map((e) {
+      return Category.fromEntity(
+        CategoryEntity.fromDocument(e.data()),
+      );
+    }).toList();
+  } catch (e) {
+    log(e.toString());
+    rethrow;
   }
+}
 
   @override
   Future<void> createExpense(Expense expense) async {
     try {
       await expenseCollection
-        .doc(expense.expenseId)
-        .set(expense.toEntity().toDocument());
+          .doc(expense.expenseId)
+          .set(expense.toEntity().toDocument());
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -46,17 +49,20 @@ class FirebaseExpenseRepo implements ExpenseRepository {
   }
 
   @override
-  Future<List<Expense>> getExpenses() async {
+  Future<List<Expense>> getExpenses(String userId) async {
     try {
-      return await expenseCollection
-        .get()
-        .then((value) => value.docs.map((e) => 
-          Expense.fromEntity(ExpenseEntity.fromDocument(e.data()))
-        ).toList());
+      final snapshot = await expenseCollection
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      return snapshot.docs.map((e) {
+        return Expense.fromEntity(
+          ExpenseEntity.fromDocument(e.data()),
+        );
+      }).toList();
     } catch (e) {
       log(e.toString());
       rethrow;
     }
   }
-
 }

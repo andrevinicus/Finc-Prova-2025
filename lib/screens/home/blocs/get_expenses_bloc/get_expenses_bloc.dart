@@ -9,10 +9,10 @@ class GetExpensesBloc extends Bloc<GetExpensesEvent, GetExpensesState> {
   ExpenseRepository expenseRepository;
 
   GetExpensesBloc(this.expenseRepository) : super(GetExpensesInitial()) {
-    on<GetExpenses>((event, emit) async {
+   on<GetExpenses>((event, emit) async {
       emit(GetExpensesLoading());
       try {
-        List<Expense> expenses = await expenseRepository.getExpenses();
+        List<Expense> expenses = await expenseRepository.getExpenses(event.userId);
         emit(GetExpensesSuccess(expenses));
       } catch (e) {
         emit(GetExpensesFailure());
