@@ -14,9 +14,7 @@ class LoginScreen extends StatelessWidget {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
       final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
 
-      if (googleUser == null || googleAuth == null) {
-        return;
-      }
+      if (googleUser == null || googleAuth == null) return;
 
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
@@ -27,16 +25,9 @@ class LoginScreen extends StatelessWidget {
       final firebaseUser = userCredential.user;
 
       if (firebaseUser != null) {
-        
         await FirebaseUserRepo().saveGoogleUserIfNeeded(firebaseUser);
-
-        Navigator.pushReplacementNamed(
-          context,
-          '/home',
-          arguments: FirebaseAuth.instance.currentUser?.uid,
-        );
-
         context.read<AuthBloc>().add(AuthCheckRequested());
+        Navigator.pushReplacementNamed(context, '/home');
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -51,62 +42,111 @@ class LoginScreen extends StatelessWidget {
     final passwordController = TextEditingController();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TextField(
-              controller: emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
-              keyboardType: TextInputType.emailAddress,
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(labelText: 'Senha'),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                try {
-                  await FirebaseAuth.instance.signInWithEmailAndPassword(
-                    email: emailController.text.trim(),
-                    password: passwordController.text,
-                  );
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(20), // ajuste o valor como quiser
+                child: Image.asset(
+                  'assets/telainicial.png',
+                  height: 150,
+                  width: 150,
+                  fit: BoxFit.cover, // ajuda a preencher a área com a imagem
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Bem-vindo ao Finc',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Gerencie suas finanças com facilidade',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+              ),
+              const SizedBox(height: 32),
 
-            
-                  Navigator.pushReplacementNamed(
-                    context,
-                    '/home',
-                    arguments: FirebaseAuth.instance.currentUser?.uid,
-                  );
+              TextField(
+                controller: emailController,
+                decoration: InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: const Icon(Icons.email),
+                ),
+                keyboardType: TextInputType.emailAddress,
+              ),
+              const SizedBox(height: 14),
+              TextField(
+                controller: passwordController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: 'Senha',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: const Icon(Icons.lock),
+                ),
+              ),
+              const SizedBox(height: 24),
 
-                  context.read<AuthBloc>().add(AuthCheckRequested());
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Erro ao fazer login: ${e.toString()}')),
-                  );
-                }
-              },
-              child: const Text('Entrar'),
-            ),
-            const SizedBox(height: 10),
-            ElevatedButton.icon(
-              icon: const Icon(Icons.login),
-              label: const Text('Entrar com Google'),
-              onPressed: () => _signInWithGoogle(context),
-            ),
-            const SizedBox(height: 20),
-            TextButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/register');
-              },
-              child: const Text("Criar conta"),
-            ),
-          ],
+              ElevatedButton(
+                onPressed: () async {
+                  try {
+                    await FirebaseAuth.instance.signInWithEmailAndPassword(
+                      email: emailController.text.trim(),
+                      password: passwordController.text,
+                    );
+                    context.read<AuthBloc>().add(AuthCheckRequested());
+                    Navigator.pushReplacementNamed(context, '/home');
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Erro ao fazer login: ${e.toString()}')),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const SizedBox(width: 210, child: Center(child: Text('Entrar'))),
+              ),
+              const SizedBox(height: 12),
+
+              SizedBox(
+                width: 250,
+                child: ElevatedButton(
+                  onPressed: () => _signInWithGoogle(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black87,
+                    elevation: 2,
+                    side: const BorderSide(color: Colors.grey),
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        'assets/google.png',
+                        height: 24,
+                      ),
+                      const SizedBox(width: 12),
+                      const Text('Entrar com Google'),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              TextButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/register');
+                },
+                child: const Text("Não tem uma conta? Crie aqui"),
+              ),
+            ],
+          ),
         ),
       ),
     );
