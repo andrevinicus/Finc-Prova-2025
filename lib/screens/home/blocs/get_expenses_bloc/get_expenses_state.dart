@@ -18,4 +18,5 @@ final class GetExpensesSuccess extends GetExpensesState {
 
   @override
   List<Object> get props => [expenses];
+  
 }

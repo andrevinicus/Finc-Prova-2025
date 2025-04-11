@@ -165,7 +165,7 @@ class _MainScreenState extends State<MainScreen> {
                               ),
                               child: const Center(
                                 child: Icon(
-                                  CupertinoIcons.arrow_down,
+                                  CupertinoIcons.arrow_up,
                                   size: 12,
                                   color: Colors.greenAccent,
                                 )

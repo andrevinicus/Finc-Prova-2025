@@ -6,13 +6,14 @@ part 'get_expenses_event.dart';
 part 'get_expenses_state.dart';
 
 class GetExpensesBloc extends Bloc<GetExpensesEvent, GetExpensesState> {
-  ExpenseRepository expenseRepository;
+  final ExpenseRepository expenseRepository;
 
   GetExpensesBloc(this.expenseRepository) : super(GetExpensesInitial()) {
-   on<GetExpenses>((event, emit) async {
+    on<GetExpenses>((event, emit) async {
       emit(GetExpensesLoading());
       try {
-        List<Expense> expenses = await expenseRepository.getExpenses(event.userId);
+        final entities = await expenseRepository.getExpenses(event.userId);
+        final expenses = entities.map((e) => Expense.fromEntity(e)).toList();
         emit(GetExpensesSuccess(expenses));
       } catch (e) {
         emit(GetExpensesFailure());

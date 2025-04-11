@@ -34,8 +34,9 @@ void initState() {
   final currentUser = FirebaseAuth.instance.currentUser;
 
   expense = Expense.empty.copyWith(
-    expenseId: const Uuid().v1(),
+    id: const Uuid().v1(),
     userId: currentUser?.uid,
+    
   );
 }
 
@@ -144,7 +145,9 @@ void initState() {
                                 child: ListTile(
                                   onTap: () {
                                     setState(() {
-                                      expense.category = state.categories[i];
+                                      expense = expense.copyWith(
+                                        category: state.categories[i],
+                                      );
                                       categoryController.text = expense.category.name;
                                     });
                                   },
@@ -175,7 +178,7 @@ void initState() {
                             setState(() {
                               dateController.text = DateFormat('dd/MM/yyyy').format(newDate);
                               // selectDate = newDate;
-                              expense.date = newDate;
+                              expense = expense.copyWith(date: newDate);
                             });
                           }
                         },
@@ -202,9 +205,10 @@ void initState() {
                           : TextButton(
                               onPressed: () {
                                 setState(() {
-                                  expense.amount = int.parse(expenseController.text);
+                                  expense = expense.copyWith(
+                                      amount: double.tryParse(expenseController.text) ?? 0,
+                                    );
                                 });
-
                                 context.read<CreateExpenseBloc>().add(CreateExpense(expense));
                               },
                               style: TextButton.styleFrom(backgroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),

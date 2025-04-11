@@ -1,16 +1,11 @@
-import 'dart:math';
-import 'package:expense_repository/expense_repository.dart';
-import 'package:finc/screens/add_expense/blocs/create_categorybloc/create_category_bloc.dart';
-import 'package:finc/screens/add_expense/blocs/get_categories_bloc/get_categories_bloc.dart';
-import 'package:finc/screens/add_expense/views/add_expense.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:finc/screens/home/blocs/get_expenses_bloc/get_expenses_bloc.dart';
 import 'package:finc/screens/home/views/main_screen.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:finc/screens/stats/stats.dart';
+import 'package:finc/screens/transactions/widgets/transaction_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../add_expense/blocs/create_expense_bloc/create_expense_bloc.dart';
-import '../../stats/stats.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,88 +16,98 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int index = 0;
-  late Color selectedItem = Colors.blue;
-  Color unselectedItem = Colors.grey;
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<GetExpensesBloc, GetExpensesState>(
       builder: (context, state) {
-        if(state is GetExpensesSuccess) {
+        if (state is GetExpensesSuccess) {
+          // Telas controladas pelo menu
+          final pages = [
+            MainScreen(state.expenses),
+            const StatScreen(),
+            TransactionScreen(transactions: state.expenses),
+          ];
+
           return Scaffold(
+            body: IndexedStack(
+              index: index,
+              children: pages,
+            ),
+            floatingActionButton: SpeedDial(
+              icon: Icons.add,
+              activeIcon: Icons.close,
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Colors.white,
+              overlayOpacity: 0.3,
+              spacing: 10,
+              spaceBetweenChildren: 10,
+              children: [
+                SpeedDialChild(
+                  child: const Icon(Icons.arrow_upward),
+                  label: 'Receita',
+                  backgroundColor: Theme.of(context).colorScheme.secondary,
+                  onTap: () {
+                    // ação para adicionar receita
+                    print('Adicionar Receita');
+                  },
+                ),
+                SpeedDialChild(
+                  child: const Icon(Icons.arrow_downward),
+                  label: 'Despesa',
+                  backgroundColor: Theme.of(context).colorScheme.tertiary,
+                  onTap: () {
+                    // ação para adicionar despesa
+                    print('Adicionar Despesa');
+                  },
+                ),
+              SpeedDialChild(
+                child: const Icon(Icons.compare_arrows),
+                label: 'Transferência',
+                backgroundColor: Colors.deepPurple,
+                onTap: () {
+                  // ação para transferência
+                  print('Adicionar Transferência');
+                },
+              ),
+            ],
+          ),
+
             bottomNavigationBar: ClipRRect(
               borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
               child: BottomNavigationBar(
-                  onTap: (value) {
-                    setState(() {
-                      index = value;
-                    });
-                  },
-                  showSelectedLabels: false,
-                  showUnselectedLabels: false,
-                  elevation: 3,
-                  items: [BottomNavigationBarItem(icon: Icon(CupertinoIcons.home, color: index == 0 ? selectedItem : unselectedItem), label: 'Home'), BottomNavigationBarItem(icon: Icon(CupertinoIcons.graph_square_fill, color: index == 1 ? selectedItem : unselectedItem), label: 'Stats')]),
-            ),
-            floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-            floatingActionButton: FloatingActionButton(
-              onPressed: () async {
-                Expense? newExpense = await Navigator.push(
-                  context,
-                  MaterialPageRoute<Expense>(
-                    builder: (BuildContext context) => MultiBlocProvider(
-                      providers: [
-                        BlocProvider(
-                          create: (context) => CreateCategoryBloc(FirebaseExpenseRepo()),
-                        ),
-                        BlocProvider(
-                          create: (context) {
-                            final userId = FirebaseAuth.instance.currentUser?.uid;
-                            return GetCategoriesBloc(FirebaseExpenseRepo())..add(GetCategories(userId!));
-                          },
-                        ),
-                        BlocProvider(
-                          create: (context) => CreateExpenseBloc(FirebaseExpenseRepo()),
-                        ),
-                      ],
-                      child: const AddExpense(),
-                    ),
-                  ),
-                );
-
-                if(newExpense != null) {
+                currentIndex: index,
+                onTap: (value) {
                   setState(() {
-                    state.expenses.insert(0, newExpense);
+                    index = value;
                   });
-                }
-              },
-              shape: const CircleBorder(),
-              child: Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      colors: [
-                        Theme.of(context).colorScheme.tertiary,
-                        Theme.of(context).colorScheme.secondary,
-                        Theme.of(context).colorScheme.primary,
-                      ],
-                      transform: const GradientRotation(pi / 4),
-                    )),
-                child: const Icon(CupertinoIcons.add),
+                },
+                showSelectedLabels: false,
+                showUnselectedLabels: false,
+                elevation: 3,
+                items: const [
+                  BottomNavigationBarItem(
+                    icon: Icon(CupertinoIcons.home),
+                    label: 'Home',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(CupertinoIcons.graph_square_fill),
+                    label: 'Stats',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(CupertinoIcons.list_bullet),
+                    label: 'Transações',
+                  ),
+                ],
               ),
             ),
-            body: index == 0 
-              ? MainScreen(state.expenses) 
-              : const StatScreen());
+          );
         } else {
           return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
+            body: Center(child: CircularProgressIndicator()),
           );
         }
-      }
+      },
     );
   }
 }

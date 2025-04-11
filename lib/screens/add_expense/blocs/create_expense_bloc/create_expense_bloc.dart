@@ -6,13 +6,14 @@ part 'create_expense_event.dart';
 part 'create_expense_state.dart';
 
 class CreateExpenseBloc extends Bloc<CreateExpenseEvent, CreateExpenseState> {
-  ExpenseRepository expenseRepository;
+  final ExpenseRepository expenseRepository;
 
   CreateExpenseBloc(this.expenseRepository) : super(CreateExpenseInitial()) {
     on<CreateExpense>((event, emit) async {
       emit(CreateExpenseLoading());
       try {
-        await expenseRepository.createExpense(event.expense);
+        // Converte Expense para ExpenseEntity antes de enviar ao repositório
+        await expenseRepository.createExpense(event.expense.toEntity());
         emit(CreateExpenseSuccess());
       } catch (e) {
         emit(CreateExpenseFailure());
