@@ -36,9 +36,9 @@ class _TransactionScreenState extends State<TransactionScreen> with SingleTicker
         title: const Text("Transações"),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.white,
+          indicatorColor: Theme.of(context).colorScheme.secondary,
           indicatorWeight: 3,
-          labelColor: Colors.white,
+          labelColor: Theme.of(context).colorScheme.onBackground,
           unselectedLabelColor: Colors.grey,
           tabs: const [
             Tab(text: "Despesas"),
@@ -62,39 +62,67 @@ class _TransactionScreenState extends State<TransactionScreen> with SingleTicker
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Image.asset('assets/empty.png', height: 150), // opcional
+            Image.asset('assets/empty.png', height: 150),
             const SizedBox(height: 20),
-            const Text(
-              'Ops! Você não possui transações registradas.',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            Text(
+              'Nenhuma transação encontrada',
+              style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 10),
-            const Text('Para criar um novo item, clique no botão (+)'),
+            Text(
+              'Clique no botão "+" para adicionar',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
           ],
         ),
       );
     }
 
-    return ListView.builder(
+    return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: transactions.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final tx = transactions[index];
-        return Card(
-          elevation: 2,
-          margin: const EdgeInsets.only(bottom: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        final isExpense = tx.isExpense;
+        final amountPrefix = isExpense ? "- " : "+ ";
+        final amountColor = isExpense
+            ? Theme.of(context).colorScheme.tertiary
+            : Theme.of(context).colorScheme.secondary;
+
+        return Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 4,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
           child: ListTile(
-            leading: Icon(Icons.category, color: Theme.of(context).colorScheme.primary),
-            title: Text(tx.category.name),
-            subtitle: Text(DateFormat('dd/MM/yyyy').format(tx.date)),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            leading: CircleAvatar(
+              radius: 24,
+              backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              child: Icon(Icons.category, color: Theme.of(context).colorScheme.primary),
+            ),
+            title: Text(
+              tx.category.name,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            subtitle: Text(
+              DateFormat('dd MMM yyyy').format(tx.date),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
             trailing: Text(
-              '${tx.isExpense ? '-' : '+'} R\$ ${tx.amount.toStringAsFixed(2)}',
+              '$amountPrefix\$ ${tx.amount.toStringAsFixed(2)}',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: tx.isExpense
-                    ? Theme.of(context).colorScheme.tertiary // vermelho
-                    : Theme.of(context).colorScheme.secondary, // verde
+                fontSize: 16,
+                color: amountColor,
               ),
             ),
           ),

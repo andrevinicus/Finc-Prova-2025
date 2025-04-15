@@ -14,7 +14,7 @@ class StatScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Transactions',
+              'Graficos Despesas Receitas',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold

@@ -4,14 +4,14 @@ sealed class CreateExpenseEvent extends Equatable {
   const CreateExpenseEvent();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
-class CreateExpense extends CreateExpenseEvent{
+final class CreateExpenseSubmitted extends CreateExpenseEvent {
   final Expense expense;
 
-  const CreateExpense(this.expense);
+  const CreateExpenseSubmitted(this.expense);
 
   @override
-  List<Object> get props => [expense];
+  List<Object?> get props => [expense];
 }

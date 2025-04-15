@@ -1,4 +1,5 @@
-import 'package:finc/screens/add_expense/views/add_expense.dart';
+import 'package:finc/screens/add_expense/blocs/create_expense_bloc/create_expense_bloc.dart';
+import 'package:finc/screens/add_expense/views/add_expense_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:finc/routes/app_routes.dart';
 import 'package:finc/screens/auth/login_screen.dart';
@@ -43,9 +44,16 @@ class AppRouter {
       case AppRoutes.addExpense:
       final userId = settings.arguments as String;
       return MaterialPageRoute(
-        builder: (_) => BlocProvider(
-          create: (_) => GetCategoriesBloc(FirebaseExpenseRepo())..add(GetCategories(userId)),
-          child: AddExpense(), // <-- Substitua se o nome for diferente
+        builder: (_) => MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (_) => GetCategoriesBloc(FirebaseExpenseRepo())..add(GetCategories(userId)),
+            ),
+            BlocProvider(
+              create: (_) => CreateExpenseBloc(FirebaseExpenseRepo()),
+            ),
+          ],
+          child: AddExpenseScreen(userId: userId),
         ),
       );
       default:

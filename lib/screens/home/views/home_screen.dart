@@ -1,3 +1,4 @@
+import 'package:finc/routes/app_routes.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:finc/screens/home/blocs/get_expenses_bloc/get_expenses_bloc.dart';
 import 'package:finc/screens/home/views/main_screen.dart';
@@ -14,15 +15,29 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
+
+
 class _HomeScreenState extends State<HomeScreen> {
   int index = 0;
+  late String userId;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is String) {
+      userId = args;
+    } else {
+      // Pode exibir um erro ou redirecionar se o argumento for inválido
+      userId = '';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<GetExpensesBloc, GetExpensesState>(
       builder: (context, state) {
         if (state is GetExpensesSuccess) {
-          // Telas controladas pelo menu
           final pages = [
             MainScreen(state.expenses),
             const StatScreen(),
@@ -57,22 +72,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   label: 'Despesa',
                   backgroundColor: Theme.of(context).colorScheme.tertiary,
                   onTap: () {
-                    // ação para adicionar despesa
-                    print('Adicionar Despesa');
+                    Navigator.pushNamed(context, AppRoutes.addExpense, arguments: userId);
                   },
                 ),
-              SpeedDialChild(
-                child: const Icon(Icons.compare_arrows),
-                label: 'Transferência',
-                backgroundColor: Colors.deepPurple,
-                onTap: () {
-                  // ação para transferência
-                  print('Adicionar Transferência');
-                },
-              ),
-            ],
-          ),
-
+                SpeedDialChild(
+                  child: const Icon(Icons.compare_arrows),
+                  label: 'Transferência',
+                  backgroundColor: Colors.deepPurple,
+                  onTap: () {
+                    print('Adicionar Transferência');
+                  },
+                ),
+              ],
+            ),
             bottomNavigationBar: ClipRRect(
               borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
               child: BottomNavigationBar(

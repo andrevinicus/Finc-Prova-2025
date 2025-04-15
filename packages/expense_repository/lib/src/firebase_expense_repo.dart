@@ -10,11 +10,11 @@ class FirebaseExpenseRepo implements ExpenseRepository {
   Future<void> createCategory(Category category) async {
     try {
       await categoryCollection
-          .doc(category.categoryId)
+          .doc(category.categoryId) // Verifique se a categoria já tem um ID ou deixe o Firestore gerar
           .set(category.toEntity().toDocument());
     } catch (e) {
       log('Erro ao criar categoria: $e');
-      rethrow;
+      throw Exception('Erro ao criar categoria');
     }
   }
 
@@ -25,6 +25,10 @@ class FirebaseExpenseRepo implements ExpenseRepository {
           .where('userId', isEqualTo: userId)
           .get();
 
+      if (snapshot.docs.isEmpty) {
+        return []; // Caso não encontre categorias
+      }
+
       return snapshot.docs.map((doc) {
         return Category.fromEntity(
           CategoryEntity.fromDocument(doc.data()),
@@ -32,19 +36,19 @@ class FirebaseExpenseRepo implements ExpenseRepository {
       }).toList();
     } catch (e) {
       log('Erro ao buscar categorias: $e');
-      rethrow;
+      throw Exception('Erro ao buscar categorias');
     }
   }
 
   @override
   Future<void> createExpense(ExpenseEntity expense) async {
     try {
-      await expenseCollection
-          .doc(expense.expenseId)
-          .set(expense.toDocument());
+      // Gera o ID automaticamente para a despesa
+      final expenseDocRef = expenseCollection.doc(); // Firestore gera o ID
+      await expenseDocRef.set(expense.toDocument());
     } catch (e) {
       log('Erro ao criar despesa: $e');
-      rethrow;
+      throw Exception('Erro ao criar despesa');
     }
   }
 
@@ -55,12 +59,16 @@ class FirebaseExpenseRepo implements ExpenseRepository {
           .where('userId', isEqualTo: userId)
           .get();
 
+      if (snapshot.docs.isEmpty) {
+        return []; // Caso não encontre despesas
+      }
+
       return snapshot.docs.map((doc) {
         return ExpenseEntity.fromDocument(doc.data());
       }).toList();
     } catch (e) {
       log('Erro ao buscar despesas: $e');
-      rethrow;
+      throw Exception('Erro ao buscar despesas');
     }
   }
 }
