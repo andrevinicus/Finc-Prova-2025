@@ -1,5 +1,6 @@
 import 'package:finc/screens/add_expense/blocs/create_expense_bloc/create_expense_bloc.dart';
 import 'package:finc/screens/add_expense/views/add_expense_screen.dart';
+import 'package:finc/screens/transactions/transaction_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:finc/routes/app_routes.dart';
 import 'package:finc/screens/auth/login_screen.dart';
@@ -7,7 +8,6 @@ import 'package:finc/screens/auth/register_screen.dart';
 import 'package:finc/screens/home/views/home_screen.dart';
 import 'package:expense_repository/expense_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:finc/screens/transactions/widgets/transaction_screen.dart';
 import 'package:finc/screens/home/blocs/get_expenses_bloc/get_expenses_bloc.dart';
 import 'package:finc/screens/add_expense/blocs/get_categories_bloc/get_categories_bloc.dart';
 

@@ -1,4 +1,5 @@
 
+import 'package:finc/screens/add_expense/views/teclado_numerico.dart';
 import 'package:finc/screens/category/modal/created_category_modal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -39,20 +40,39 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           child: Column(
             children: [
               // Valor
-              TextFormField(
-                controller: _amountController,
-                decoration: const InputDecoration(
-                  labelText: 'Valor (R\$)',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.attach_money),
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) return 'Informe o valor';
-                  if (double.tryParse(value) == null) return 'Valor inválido';
-                  return null;
-                },
+              // Visor centralizado para o valor
+              GestureDetector(
+              onTap: () async {
+                final result = await showModalBottomSheet<String>(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (context) => FractionallySizedBox(
+                    child: TecladoNumerico(
+                      valorInicial: _amountController.text.isEmpty
+                          ? '0'
+                          : _amountController.text.replaceAll('.', ','),
+                    ),
+                  ),
+                );
+
+                if (result != null && double.tryParse(result.replaceAll(',', '.')) != null) {
+                  _amountController.text = result.replaceAll(',', '.');
+                  setState(() {});
+                }
+              },
+              child: Column(
+                children: [
+                  const SizedBox(height: 24),
+                  Text(
+                    'R\$ ${_amountController.text.isEmpty ? '0,00' : _amountController.text}',
+                    style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                  ),
+                  const Divider(thickness: 2),
+                  const SizedBox(height: 24),
+                ],
               ),
+            ),
               const SizedBox(height: 16),
               // Categoria
               BlocBuilder<GetCategoriesBloc, GetCategoriesState>(

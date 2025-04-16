@@ -1,9 +1,9 @@
 import 'package:finc/routes/app_routes.dart';
+import 'package:finc/screens/transactions/transaction_screen.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:finc/screens/home/blocs/get_expenses_bloc/get_expenses_bloc.dart';
 import 'package:finc/screens/home/views/main_screen.dart';
 import 'package:finc/screens/stats/stats.dart';
-import 'package:finc/screens/transactions/widgets/transaction_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
