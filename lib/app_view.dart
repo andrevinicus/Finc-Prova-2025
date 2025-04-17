@@ -1,17 +1,32 @@
 import 'package:expense_repository/expense_repository.dart';
 import 'package:finc/blocs/auth/auth_bloc.dart';
 import 'package:finc/blocs/auth/auth_state.dart';
+import 'package:finc/screens/add_expense/blocs/create_categorybloc/create_category_bloc.dart';
 import 'package:finc/screens/add_expense/blocs/get_categories_bloc/get_categories_bloc.dart';
 import 'package:finc/screens/home/blocs/get_expenses_bloc/get_expenses_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'screens/home/views/home_screen.dart';
 import 'screens/auth/login_screen.dart';
-import 'routes/app_router.dart'; // Importante
-import 'routes/app_routes.dart'; // Contém as rotas nomeadas
+import 'routes/app_router.dart';
+import 'routes/app_routes.dart';
+
+
+void main() {
+  final expenseRepository = FirebaseExpenseRepo();
+
+  runApp(
+    RepositoryProvider<ExpenseRepository>.value(
+      value: expenseRepository,
+      child: MyAppView(expenseRepository: expenseRepository),
+    ),
+  );
+}
 
 class MyAppView extends StatelessWidget {
-  const MyAppView({super.key});
+  final ExpenseRepository expenseRepository;
+
+  const MyAppView({super.key, required this.expenseRepository});
 
   @override
   Widget build(BuildContext context) {
@@ -29,19 +44,24 @@ class MyAppView extends StatelessWidget {
         ),
       ),
       initialRoute: AppRoutes.splash,
-      onGenerateRoute: AppRouter.onGenerateRoute, // 👈 ESSENCIAL
+      onGenerateRoute: AppRouter.onGenerateRoute,
       home: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, state) {
           if (state is Authenticated) {
             return MultiBlocProvider(
               providers: [
                 BlocProvider(
-                  create: (_) => GetExpensesBloc(FirebaseExpenseRepo())
+                  create: (_) => GetExpensesBloc(expenseRepository)
                     ..add(GetExpenses(state.user.uid)),
                 ),
                 BlocProvider(
-                  create: (_) => GetCategoriesBloc(FirebaseExpenseRepo())
+                  create: (_) => GetCategoriesBloc(expenseRepository)
                     ..add(GetCategories(state.user.uid)),
+                ),
+                BlocProvider(
+                  create: (_) => CreateCategoryBloc(
+                    expenseRepository: expenseRepository,
+                  ),
                 ),
               ],
               child: const HomeScreen(),

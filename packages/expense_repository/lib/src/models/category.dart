@@ -6,7 +6,8 @@ class Category {
   int totalExpenses;
   String icon;
   int color;
-  String? userId; // NOVO
+  String? userId;
+  String type; // NOVO: tipo da categoria ('expense', 'income', etc.)
 
   Category({
     required this.categoryId,
@@ -14,7 +15,8 @@ class Category {
     required this.totalExpenses,
     required this.icon,
     required this.color,
-    this.userId, // NOVO
+    this.userId,
+    required this.type, // NOVO
   });
 
   static final empty = Category(
@@ -23,7 +25,8 @@ class Category {
     totalExpenses: 0, 
     icon: '', 
     color: 0,
-    userId: null, // NOVO
+    userId: null,
+    type: 'despesa', // NOVO
   );
 
   CategoryEntity toEntity() {
@@ -34,6 +37,7 @@ class Category {
       icon: icon,
       color: color,
       userId: userId,
+      type: type, // NOVO
     );
   }
 
@@ -45,24 +49,27 @@ class Category {
       icon: entity.icon,
       color: entity.color,
       userId: entity.userId,
+      type: entity.type, // NOVO
     );
   }
-  Category copyWith({
-  String? categoryId,
-  String? name,
-  int? totalExpenses,
-  String? icon,
-  int? color,
-  String? userId,
-}) {
-  return Category(
-    categoryId: categoryId ?? this.categoryId,
-    name: name ?? this.name,
-    totalExpenses: totalExpenses ?? this.totalExpenses,
-    icon: icon ?? this.icon,
-    color: color ?? this.color,
-    userId: userId ?? this.userId,
-  );
-}
 
+  Category copyWith({
+    String? categoryId,
+    String? name,
+    int? totalExpenses,
+    String? icon,
+    int? color,
+    String? userId,
+    String? type, // NOVO
+  }) {
+    return Category(
+      categoryId: categoryId ?? this.categoryId,
+      name: name ?? this.name,
+      totalExpenses: totalExpenses ?? this.totalExpenses,
+      icon: icon ?? this.icon,
+      color: color ?? this.color,
+      userId: userId ?? this.userId,
+      type: type ?? this.type, // NOVO
+    );
+  }
 }

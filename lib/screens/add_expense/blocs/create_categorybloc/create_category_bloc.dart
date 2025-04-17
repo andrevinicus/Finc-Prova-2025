@@ -9,16 +9,20 @@ part 'create_category_state.dart';
 class CreateCategoryBloc extends Bloc<CreateCategoryEvent, CreateCategoryState> {
   final ExpenseRepository expenseRepository;
 
-  CreateCategoryBloc(this.expenseRepository) : super(CreateCategoryInitial()) {
+  // Construtor com parâmetro nomeado
+  CreateCategoryBloc({required this.expenseRepository}) : super(CreateCategoryInitial()) {
     on<CreateCategory>((event, emit) async {
       emit(CreateCategoryLoading());
       try {
         final userId = FirebaseAuth.instance.currentUser?.uid;
         if (userId == null) throw Exception("Usuário não autenticado");
 
-        final categoryWithUser = event.category.copyWith(userId: userId);
-        await expenseRepository.createCategory(categoryWithUser);
+        final categoryWithUser = event.category.copyWith(
+          userId: userId,
+          type: 'expense', // Definido como padrão
+        );
 
+        await expenseRepository.createCategory(categoryWithUser);
         emit(CreateCategorySuccess());
       } catch (e) {
         emit(CreateCategoryFailure());

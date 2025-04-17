@@ -1,3 +1,4 @@
+import 'package:finc/screens/add_expense/blocs/create_categorybloc/create_category_bloc.dart';
 import 'package:finc/screens/add_expense/views/teclado_numerico.dart';
 import 'package:finc/screens/category/modal/created_category_modal.dart';
 import 'package:flutter/material.dart';
@@ -199,11 +200,20 @@ Widget build(BuildContext context) {
                                                   context: context,
                                                   isScrollControlled: true,
                                                   backgroundColor: const Color(0xFF2C2C2C),
-                                                  builder: (BuildContext context) {
-                                                    return Container(
-                                                      padding: const EdgeInsets.all(16),
-                                                      height: MediaQuery.of(context).size.height * 0.55,
-                                                      child: AddCategoryModal(),
+                                                  builder: (BuildContext modalContext) {
+                                                    return BlocProvider(
+                                                      create: (_) => CreateCategoryBloc(
+                                                        expenseRepository: context.read<ExpenseRepository>(),
+                                                      ),
+                                                      child: Container(
+                                                        padding: const EdgeInsets.all(16),
+                                                        height: MediaQuery.of(modalContext).size.height * 0.55,
+                                                        child: AddCategoryModal(
+                                                          onCategoryCreated: () {
+                                                            context.read<GetCategoriesBloc>().add(GetCategories(widget.userId));
+                                                          },
+                                                        ),
+                                                      ),
                                                     );
                                                   },
                                                 );

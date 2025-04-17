@@ -4,7 +4,8 @@ class CategoryEntity {
   final int totalExpenses;
   final String icon;
   final int color;
-  final String? userId; // NOVO
+  final String? userId;
+  final String type; // NOVO
 
   CategoryEntity({
     required this.categoryId,
@@ -12,7 +13,8 @@ class CategoryEntity {
     required this.totalExpenses,
     required this.icon,
     required this.color,
-    this.userId, // NOVO
+    this.userId,
+    required this.type, // NOVO
   });
 
   Map<String, Object?> toDocument() {
@@ -22,7 +24,8 @@ class CategoryEntity {
       'totalExpenses': totalExpenses,
       'icon': icon,
       'color': color,
-      'userId': userId, // NOVO
+      'userId': userId,
+      'type': type, // NOVO
     };
   }
 
@@ -33,7 +36,8 @@ class CategoryEntity {
       totalExpenses: doc['totalExpenses'],
       icon: doc['icon'],
       color: doc['color'],
-      userId: doc['userId'], // NOVO
+      userId: doc['userId'],
+      type: doc['type'] ?? 'despesa', // NOVO: fallback de segurança
     );
   }
 }

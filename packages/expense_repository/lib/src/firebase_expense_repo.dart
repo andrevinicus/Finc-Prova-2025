@@ -10,7 +10,7 @@ class FirebaseExpenseRepo implements ExpenseRepository {
   Future<void> createCategory(Category category) async {
     try {
       await categoryCollection
-          .doc(category.categoryId) // Verifique se a categoria já tem um ID ou deixe o Firestore gerar
+          .doc(category.categoryId)
           .set(category.toEntity().toDocument());
     } catch (e) {
       log('Erro ao criar categoria: $e');
@@ -25,9 +25,7 @@ class FirebaseExpenseRepo implements ExpenseRepository {
           .where('userId', isEqualTo: userId)
           .get();
 
-      if (snapshot.docs.isEmpty) {
-        return []; // Caso não encontre categorias
-      }
+      if (snapshot.docs.isEmpty) return [];
 
       return snapshot.docs.map((doc) {
         return Category.fromEntity(
@@ -43,8 +41,7 @@ class FirebaseExpenseRepo implements ExpenseRepository {
   @override
   Future<void> createExpense(ExpenseEntity expense) async {
     try {
-      // Gera o ID automaticamente para a despesa
-      final expenseDocRef = expenseCollection.doc(); // Firestore gera o ID
+      final expenseDocRef = expenseCollection.doc();
       await expenseDocRef.set(expense.toDocument());
     } catch (e) {
       log('Erro ao criar despesa: $e');
@@ -59,9 +56,7 @@ class FirebaseExpenseRepo implements ExpenseRepository {
           .where('userId', isEqualTo: userId)
           .get();
 
-      if (snapshot.docs.isEmpty) {
-        return []; // Caso não encontre despesas
-      }
+      if (snapshot.docs.isEmpty) return [];
 
       return snapshot.docs.map((doc) {
         return ExpenseEntity.fromDocument(doc.data());
