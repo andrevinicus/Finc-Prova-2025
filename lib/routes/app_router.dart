@@ -9,7 +9,7 @@ import 'package:finc/screens/home/views/home_screen.dart';
 import 'package:expense_repository/expense_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:finc/screens/home/blocs/get_expenses_bloc/get_expenses_bloc.dart';
-import 'package:finc/screens/add_expense/blocs/get_categories_bloc/get_categories_bloc.dart';
+import 'package:finc/screens/category/blocs/get_categories_bloc/get_categories_bloc.dart';
 
 class AppRouter {
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {

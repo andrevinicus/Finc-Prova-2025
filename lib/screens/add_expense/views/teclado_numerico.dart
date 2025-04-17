@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:math_expressions/math_expressions.dart';
+
 
 class TecladoNumerico extends StatefulWidget {
   final String valorInicial;
@@ -52,22 +54,38 @@ class _TecladoNumericoState extends State<TecladoNumerico> {
     });
   }
 
-  Widget _buildBotao(String texto, VoidCallback onPressed, {Color? color}) {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color ?? Colors.grey[200],
-        foregroundColor: Colors.black87,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-          padding: const EdgeInsets.symmetric(vertical: 3), // reduz o botão
-          textStyle: const TextStyle(
-            fontSize: 22, // mantém o tamanho do número
+  void calcular() {
+    try {
+      String expressao = valorDigitado.replaceAll(',', '.').replaceAll('×', '*').replaceAll('÷', '/');
+      Parser p = Parser();
+      Expression exp = p.parse(expressao);
+      ContextModel cm = ContextModel();
+      double resultado = exp.evaluate(EvaluationType.REAL, cm);
+
+      setState(() {
+        valorDigitado = resultado.toStringAsFixed(2).replaceAll('.', ',');
+      });
+    } catch (e) {
+      setState(() {
+        valorDigitado = 'Erro';
+      });
+    }
+  }
+
+  Widget _buildNumeroSolto(String texto, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.translucent,
+      child: Center(
+        child: Text(
+          texto,
+          style: const TextStyle(
+            fontSize: 32,
+            color: Colors.white,
             fontWeight: FontWeight.w500,
           ),
+        ),
       ),
-      onPressed: onPressed,
-      child: Text(texto),
     );
   }
 
@@ -81,15 +99,11 @@ class _TecladoNumericoState extends State<TecladoNumerico> {
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: const BoxDecoration(
-            color: Colors.white,
+            color: Color(0xFF1E1E1E),
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-            boxShadow: [
-              BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, -4)),
-            ],
           ),
           child: Column(
             children: [
-              // Visor
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Row(
@@ -100,45 +114,50 @@ class _TecladoNumericoState extends State<TecladoNumerico> {
                       child: Text(
                         valorDigitado,
                         textAlign: TextAlign.right,
-                        style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.white),
                       ),
                     ),
                     IconButton(
                       onPressed: apagar,
-                      icon: const Icon(Icons.backspace_outlined),
+                      icon: const Icon(Icons.backspace_outlined, color: Colors.white),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 8),
-              // Teclado numérico
               Expanded(
                 child: GridView.count(
                   controller: scrollController,
-                  crossAxisCount: 3,
-                  childAspectRatio: 2, // mais largo e mais compacto
-                  mainAxisSpacing: 5,
-                  crossAxisSpacing: 5,
+                  crossAxisCount: 4,
+                  childAspectRatio: 1.4,
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 8,
                   physics: const NeverScrollableScrollPhysics(),
                   padding: EdgeInsets.zero,
                   children: [
-                    ...['7', '8', '9', '4', '5', '6', '1', '2', '3']
-                        .map((e) => _buildBotao(e, () => adicionarDigito(e))),
-                    _buildBotao(',', adicionarVirgula),
-                    _buildBotao('0', () => adicionarDigito('0')),
-                    _buildBotao('Limpar', limpar, color: Colors.red[100]),
+                    ...['7', '8', '9', '÷', '4', '5', '6', '×', '1', '2', '3', '-', ',', '0', '=', '+']
+                        .map((e) => _buildNumeroSolto(e, () {
+                              if (e == ',') {
+                                adicionarVirgula();
+                              } else if (e == '=') {
+                                calcular();
+                              } else {
+                                adicionarDigito(e);
+                              }
+                            })),
+                    _buildNumeroSolto('Limpar', limpar),
                   ],
                 ),
               ),
               const SizedBox(height: 12),
-              // Ações
               Row(
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.grey[700],
-                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        foregroundColor: Colors.grey[300],
+                        side: const BorderSide(color: Colors.grey),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -154,7 +173,7 @@ class _TecladoNumericoState extends State<TecladoNumerico> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green[400],
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),

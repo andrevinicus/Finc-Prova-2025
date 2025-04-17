@@ -1,4 +1,4 @@
-import 'package:finc/screens/add_expense/blocs/create_categorybloc/create_category_bloc.dart';
+import 'package:finc/screens/category/blocs/create_categorybloc/create_category_bloc.dart';
 import 'package:finc/screens/add_expense/views/teclado_numerico.dart';
 import 'package:finc/screens/category/modal/created_category_modal.dart';
 import 'package:flutter/material.dart';
@@ -6,7 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:expense_repository/expense_repository.dart';
 import '../blocs/create_expense_bloc/create_expense_bloc.dart';
-import '../blocs/get_categories_bloc/get_categories_bloc.dart';
+import '../../category/blocs/get_categories_bloc/get_categories_bloc.dart';
 
 class AddExpenseScreen extends StatefulWidget {
   final String userId;
@@ -47,7 +47,7 @@ Widget build(BuildContext context) {
             final result = await showModalBottomSheet<String>(
               context: context,
               isScrollControlled: true,
-              backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+              backgroundColor: Colors.transparent, 
               builder: (context) => FractionallySizedBox(
                 child: TecladoNumerico(
                   valorInicial: _amountController.text.isEmpty

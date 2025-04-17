@@ -28,6 +28,7 @@ dependencies:
   firebase_auth: ^4.17.4
   flutter_multi_formatter: ^2.7.0
   flutter_speed_dial: ^7.0.0
+  math_expressions: ^2.1.0
     
 dev_dependencies:
   flutter_test:

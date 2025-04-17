@@ -1,8 +1,8 @@
 import 'package:expense_repository/expense_repository.dart';
 import 'package:finc/blocs/auth/auth_bloc.dart';
 import 'package:finc/blocs/auth/auth_state.dart';
-import 'package:finc/screens/add_expense/blocs/create_categorybloc/create_category_bloc.dart';
-import 'package:finc/screens/add_expense/blocs/get_categories_bloc/get_categories_bloc.dart';
+import 'package:finc/screens/category/blocs/create_categorybloc/create_category_bloc.dart';
+import 'package:finc/screens/category/blocs/get_categories_bloc/get_categories_bloc.dart';
 import 'package:finc/screens/home/blocs/get_expenses_bloc/get_expenses_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

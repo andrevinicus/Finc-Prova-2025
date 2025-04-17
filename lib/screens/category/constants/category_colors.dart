@@ -38,5 +38,7 @@ const List<int> defaultCategoryColors = [
   0xFFFFCDD2, // rosa bebê
   0xFFD7CCC8, // nude
   0xFFFFF9C4, // creme
-  0xFFCE93D8, // lavanda média
+  0xFFCE93D8,
+  0xFF6D4C41, // marrom escuro
+  0xFF1E88E5, // azul vibrante // lavanda média
 ];
