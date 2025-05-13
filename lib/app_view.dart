@@ -45,36 +45,29 @@ class MyAppView extends StatelessWidget {
       ),
       initialRoute: AppRoutes.splash,
       onGenerateRoute: AppRouter.onGenerateRoute,
-      home: BlocBuilder<AuthBloc, AuthState>(
-        builder: (context, state) {
-          if (state is Authenticated) {
-            return MultiBlocProvider(
-              providers: [
-                BlocProvider(
-                  create: (_) => GetExpensesBloc(expenseRepository)
-                    ..add(GetExpenses(state.user.uid)),
-                ),
-                BlocProvider(
-                  create: (_) => GetCategoriesBloc(expenseRepository)
-                    ..add(GetCategories(state.user.uid)),
-                ),
-                BlocProvider(
-                  create: (_) => CreateCategoryBloc(
-                    expenseRepository: expenseRepository,
-                  ),
-                ),
-              ],
-              child: const HomeScreen(),
-            );
-          } else if (state is Unauthenticated) {
-            return const LoginScreen();
-          } else {
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
-          }
-        },
-      ),
+      home: BlocBuilder<AuthBloc, AuthState>(builder: (context, state) {
+        if (state is Authenticated) {
+          // Inicialização dos blocos
+          final getExpensesBloc = GetExpensesBloc(expenseRepository)..add(GetExpenses(state.user.uid));
+          final getCategoriesBloc = GetCategoriesBloc(expenseRepository)..add(GetCategories(state.user.uid));
+          final createCategoryBloc = CreateCategoryBloc(expenseRepository: expenseRepository);
+
+          return MultiBlocProvider(
+            providers: [
+              BlocProvider.value(value: getExpensesBloc),
+              BlocProvider.value(value: getCategoriesBloc),
+              BlocProvider.value(value: createCategoryBloc),
+            ],
+            child: const HomeScreen(),
+          );
+        } else if (state is Unauthenticated) {
+          return const LoginScreen();
+        } else {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+      }),
     );
   }
 }

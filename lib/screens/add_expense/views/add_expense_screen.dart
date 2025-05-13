@@ -21,7 +21,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final _amountController = TextEditingController();
   Category? _selectedCategory;
   DateTime _selectedDate = DateTime.now();
-  String _filterQuery = '';
+  
   
   @override
   void initState() {

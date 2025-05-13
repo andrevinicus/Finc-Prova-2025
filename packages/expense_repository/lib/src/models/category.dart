@@ -16,14 +16,14 @@ class Category {
     required this.icon,
     required this.color,
     this.userId,
-    required this.type, 
+    required this.type,
   });
 
   static final empty = Category(
-    categoryId: '', 
-    name: '', 
-    totalExpenses: 0, 
-    icon: '', 
+    categoryId: '',
+    name: '',
+    totalExpenses: 0,
+    icon: '',
     color: 0,
     userId: null,
     type: 'expense',
@@ -37,7 +37,7 @@ class Category {
       icon: icon,
       color: color,
       userId: userId,
-      type: type, 
+      type: type,
     );
   }
 
@@ -49,7 +49,7 @@ class Category {
       icon: entity.icon,
       color: entity.color,
       userId: entity.userId,
-      type: entity.type, 
+      type: entity.type,
     );
   }
 
@@ -60,7 +60,7 @@ class Category {
     String? icon,
     int? color,
     String? userId,
-    String? type, // Novo tipo
+    String? type,
   }) {
     return Category(
       categoryId: categoryId ?? this.categoryId,
@@ -69,7 +69,12 @@ class Category {
       icon: icon ?? this.icon,
       color: color ?? this.color,
       userId: userId ?? this.userId,
-      type: type ?? this.type, // Novo tipo
+      type: type ?? this.type,
     );
+  }
+
+  @override
+  String toString() {
+    return 'Category(categoryId: $categoryId, name: $name, totalExpenses: $totalExpenses, icon: $icon, color: $color, userId: $userId, type: $type)';
   }
 }
