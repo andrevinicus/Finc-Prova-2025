@@ -23,6 +23,7 @@ class _AddCategoryModalState extends State<AddCategoryModal> {
   String _icon = defaultCategoryIcons.first; 
   int _color = defaultCategoryColors.first;  
   int _totalExpenses = 0;
+  String _type = 'income'; // ou 'income'
 
   void _showColorPickerModal(BuildContext context) {
     showModalBottomSheet(
@@ -63,7 +64,6 @@ class _AddCategoryModalState extends State<AddCategoryModal> {
       },
     );
   }
-
   @override
   Widget build(BuildContext context) {
     return BlocListener<CreateCategoryBloc, CreateCategoryState>(
@@ -89,6 +89,67 @@ class _AddCategoryModalState extends State<AddCategoryModal> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _type = 'expense'; // Define como 'expense' ao selecionar 'Despesa'
+                                      print('Tipo selecionado: $_type');
+                                    });
+                                  },
+                                  child: Container(
+                                    height: 50,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: _type == 'expense' ? Colors.red : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      'Despesa',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: _type == 'expense' ? Colors.white : Colors.white60,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _type = 'income'; // Define como 'income' ao selecionar 'Receita'
+                                      print('Tipo selecionado: $_type');
+                                    });
+                                  },
+                                  child: Container(
+                                    height: 50,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: _type == 'income' ? Colors.green : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      'Receita',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: _type == 'income' ? Colors.white : Colors.white60,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                       TextFormField(
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
@@ -134,19 +195,20 @@ class _AddCategoryModalState extends State<AddCategoryModal> {
                       Wrap(
                         spacing: 10,
                         children: defaultCategoryIcons.map((iconName) {
+                          final isSelected = _icon == iconName;
                           return GestureDetector(
                             onTap: () => setState(() => _icon = iconName),
                             child: Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                border: _icon == iconName
-                                    ? Border.all(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .primary,
-                                        width: 2,
-                                      )
-                                    : null,
+                                color: isSelected ? Colors.white10 : Colors.transparent,
+                                border: Border.all(
+                                  color: isSelected
+                                      ? Theme.of(context).colorScheme.primary
+                                      : Colors.transparent,
+                                  width: 2,
+                                ),
+                                borderRadius: BorderRadius.circular(12), // Borda arredondada
                               ),
                               child: Image.asset(
                                 'assets/$iconName.png',
@@ -166,51 +228,50 @@ class _AddCategoryModalState extends State<AddCategoryModal> {
                             style: TextStyle(color: Colors.white),
                           ),
                           const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              ...[
-                                _color,
-                                ...defaultCategoryColors
-                                    .where((color) => color != _color)
-                              ].take(5).map((colorValue) {
-                                final isSelected = _color == colorValue;
-                                return GestureDetector(
-                                  onTap: () {
-                                    setState(() => _color = colorValue);
-                                  },
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: [
+                                ...[
+                                  _color,
+                                  ...defaultCategoryColors.where((color) => color != _color)
+                                ].take(5).map((colorValue) {
+                                  final isSelected = _color == colorValue;
+                                  return GestureDetector(
+                                    onTap: () {
+                                      setState(() => _color = colorValue);
+                                    },
+                                    child: Container(
+                                      margin: const EdgeInsets.only(right: 10),
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: isSelected
+                                            ? Border.all(color: Colors.white, width: 2)
+                                            : null,
+                                      ),
+                                      child: CircleAvatar(
+                                        backgroundColor: Color(colorValue),
+                                        radius: 22,
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                                GestureDetector(
+                                  onTap: () => _showColorPickerModal(context),
                                   child: Container(
-                                    margin: const EdgeInsets.only(right: 10),
+                                    margin: const EdgeInsets.only(right: 14),
+                                    width: 43,
+                                    height: 43,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      border: isSelected
-                                          ? Border.all(
-                                              color: Colors.white, width: 2)
-                                          : null,
+                                      color: Colors.white10,
+                                      border: Border.all(color: Colors.white38),
                                     ),
-                                    child: CircleAvatar(
-                                      backgroundColor: Color(colorValue),
-                                      radius: 22,
-                                    ),
+                                    child: const Icon(Icons.add, color: Colors.white),
                                   ),
-                                );
-                              }).toList(),
-                              GestureDetector(
-                                onTap: () => _showColorPickerModal(context),
-                                child: Container(
-                                  margin: const EdgeInsets.only(right: 14),
-                                  width: 43,
-                                  height: 43,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.white10,
-                                    border:
-                                        Border.all(color: Colors.white38),
-                                  ),
-                                  child: const Icon(Icons.add,
-                                      color: Colors.white),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -233,7 +294,7 @@ class _AddCategoryModalState extends State<AddCategoryModal> {
                               totalExpenses: _totalExpenses,
                               icon: _icon,
                               color: _color,
-                              type: 'expense',
+                              type: _type,
                             );
                             context
                                 .read<CreateCategoryBloc>()

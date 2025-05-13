@@ -1,6 +1,5 @@
-import 'package:finc/screens/category/blocs/create_categorybloc/create_category_bloc.dart';
 import 'package:finc/screens/add_expense/views/teclado_numerico.dart';
-import 'package:finc/screens/category/modal/created_category_modal.dart';
+import 'package:finc/screens/category/modal%20category/option_category.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -22,7 +21,8 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final _amountController = TextEditingController();
   Category? _selectedCategory;
   DateTime _selectedDate = DateTime.now();
-
+  String _filterQuery = '';
+  
   @override
   void initState() {
     super.initState();
@@ -91,7 +91,6 @@ Widget build(BuildContext context) {
             ),
           ),
         ),
-
         // Parte inferior com formulário
         Expanded(
           child: Container(
@@ -167,62 +166,7 @@ Widget build(BuildContext context) {
                                     isScrollControlled: true,
                                     backgroundColor: const Color(0xFF2C2C2C),
                                     builder: (BuildContext context) {
-                                      return Container(
-                                        padding: const EdgeInsets.all(16),
-                                        height:
-                                            MediaQuery.of(context).size.height *
-                                                0.4,
-                                        child: ListView(
-                                          children: [
-                                            const Divider(color: Colors.white24),
-                                            ListTile(
-                                              leading: const Icon(Icons.search, color: Colors.white),
-                                              title: const Text('Pesquisar Categorias', style: TextStyle(color: Colors.white)),
-                                              onTap: () {
-                                                Navigator.pop(context);
-                                              },
-                                            ),
-                                            const Divider(color: Colors.white24),
-                                            ListTile(
-                                              leading: const Icon(Icons.manage_accounts, color: Colors.white),
-                                              title: const Text('Gerenciar Categorias', style: TextStyle(color: Colors.white)),
-                                              onTap: () {
-                                                Navigator.pop(context);
-                                              },
-                                            ),
-                                            const Divider(color: Colors.white24),
-                                            ListTile(
-                                              leading: const Icon(Icons.add, color: Colors.white),
-                                              title: const Text('Criar Categoria', style: TextStyle(color: Colors.white)),
-                                              onTap: () {
-                                                Navigator.pop(context);
-                                                showModalBottomSheet(
-                                                  context: context,
-                                                  isScrollControlled: true,
-                                                  backgroundColor: const Color(0xFF2C2C2C),
-                                                  builder: (BuildContext modalContext) {
-                                                    return BlocProvider(
-                                                      create: (_) => CreateCategoryBloc(
-                                                        expenseRepository: context.read<ExpenseRepository>(),
-                                                      ),
-                                                      child: Container(
-                                                        padding: const EdgeInsets.all(16),
-                                                        height: MediaQuery.of(modalContext).size.height * 0.55,
-                                                        child: AddCategoryModal(
-                                                          onCategoryCreated: () {
-                                                            context.read<GetCategoriesBloc>().add(GetCategories(widget.userId));
-                                                          },
-                                                        ),
-                                                      ),
-                                                    );
-                                                  },
-                                                );
-                                              },
-                                            ),
-                                            const Divider(color: Colors.white24),
-                                          ],
-                                        ),
-                                      );
+                                      return CategoryOptionsModal(userId: widget.userId); 
                                     },
                                   );
                                 },
@@ -304,17 +248,19 @@ Widget build(BuildContext context) {
                               ? null
                               : () {
                                   if (_formKey.currentState!.validate()) {
+                                    // Garantir que a categoria selecionada tenha um 'type' válido
+                                    final type = _selectedCategory?.type ?? 'expense'; // Pega o 'type' da categoria, ou 'expense' como fallback
+
                                     final expense = Expense(
                                       id: '',
                                       userId: widget.userId,
                                       amount: double.parse(_amountController.text),
                                       category: _selectedCategory!,
                                       date: _selectedDate,
-                                      type: 'despesa',
+                                      type: type, // Passa o type da categoria
                                     );
-                                    context.read<CreateExpenseBloc>().add(
-                                          CreateExpenseSubmitted(expense),
-                                        );
+
+                                    context.read<CreateExpenseBloc>().add(CreateExpenseSubmitted(expense));
                                   }
                                 },
                         );

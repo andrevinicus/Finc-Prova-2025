@@ -7,7 +7,7 @@ class Category {
   String icon;
   int color;
   String? userId;
-  String type; // NOVO: tipo da categoria ('expense', 'income', etc.)
+  String type;
 
   Category({
     required this.categoryId,
@@ -16,7 +16,7 @@ class Category {
     required this.icon,
     required this.color,
     this.userId,
-    required this.type, // NOVO
+    required this.type, 
   });
 
   static final empty = Category(
@@ -26,7 +26,7 @@ class Category {
     icon: '', 
     color: 0,
     userId: null,
-    type: 'despesa', // NOVO
+    type: 'expense',
   );
 
   CategoryEntity toEntity() {
@@ -37,7 +37,7 @@ class Category {
       icon: icon,
       color: color,
       userId: userId,
-      type: type, // NOVO
+      type: type, 
     );
   }
 
@@ -49,7 +49,7 @@ class Category {
       icon: entity.icon,
       color: entity.color,
       userId: entity.userId,
-      type: entity.type, // NOVO
+      type: entity.type, 
     );
   }
 
@@ -60,7 +60,7 @@ class Category {
     String? icon,
     int? color,
     String? userId,
-    String? type, // NOVO
+    String? type, // Novo tipo
   }) {
     return Category(
       categoryId: categoryId ?? this.categoryId,
@@ -69,7 +69,7 @@ class Category {
       icon: icon ?? this.icon,
       color: color ?? this.color,
       userId: userId ?? this.userId,
-      type: type ?? this.type, // NOVO
+      type: type ?? this.type, // Novo tipo
     );
   }
 }

@@ -17,9 +17,10 @@ class CreateCategoryBloc extends Bloc<CreateCategoryEvent, CreateCategoryState> 
         final userId = FirebaseAuth.instance.currentUser?.uid;
         if (userId == null) throw Exception("Usuário não autenticado");
 
+        // Aqui você garante que o tipo seja 'expense' ou 'income', se não for informado
         final categoryWithUser = event.category.copyWith(
           userId: userId,
-          type: 'expense', // Definido como padrão
+          type: event.category.type.isEmpty ? 'expense' : event.category.type, // Valor padrão para type
         );
 
         await expenseRepository.createCategory(categoryWithUser);

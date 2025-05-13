@@ -37,7 +37,7 @@ class CategoryEntity {
       icon: doc['icon'],
       color: doc['color'],
       userId: doc['userId'],
-      type: doc['type'] ?? 'despesa', // NOVO: fallback de segurança
+      type: doc['type'] ?? 'expense', // NOVO: fallback de segurança
     );
   }
 }
