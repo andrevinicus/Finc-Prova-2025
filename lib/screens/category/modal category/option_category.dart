@@ -46,7 +46,7 @@ class _CategoryOptionsModalState extends State<CategoryOptionsModal> {
           heightFactor: 0.6, // Ajuste a altura conforme necessário
           child: ListView(
             children: [
-              const Divider(color: Color.fromARGB(253, 255, 255, 255)),
+              const Divider(color: Color.fromARGB(139, 255, 251, 251)),
               // Opção: Pesquisar Categorias
               Padding(
                 padding: const EdgeInsets.symmetric(
@@ -99,59 +99,63 @@ class _CategoryOptionsModalState extends State<CategoryOptionsModal> {
                         Color categoryColor = Color(
                           defaultCategoryColors[
                             category.color % defaultCategoryColors.length]); // Usando o índice para pegar a cor correspondente
-                        return ListTile(
-                          leading: Stack(
-                            clipBehavior: Clip.none,
-                            children: [
-                              Positioned(
-                                bottom: -7.5, // Coloca a bolinha na parte inferior do ícone
-                                right: -7.5, // Alinha a bolinha à direita do ícone
-                                child: Container(
-                                  width: 40,  // Tamanho da bolinha (ajustável)
-                                  height: 40,
+                            return ListTile(
+                              leading: Stack(
+                                clipBehavior: Clip.none,
+                                alignment: Alignment.center,
+                                children: [
+                                  Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      color: categoryColor,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  // ignore: unnecessary_null_comparison
+                                  category.icon != null
+                                      ? Image.asset(
+                                          'assets/${category.icon}.png',
+                                          width: 25,
+                                          height: 25,
+                                          color: Colors.white,
+                                        )
+                                      : const Icon(
+                                          Icons.category,
+                                          color: Colors.white,
+                                          size: 25,
+                                        ),
+                                ],
+                              ),
+                              title: Text(
+                                category.name,
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                              trailing: selectedCategory == category
+                              ? Icon(
+                                  Icons.check_circle,
+                                  color: Colors.greenAccent,
+                                  size: 15,
+                                )
+                              : Container(
+                                  width: 15,
+                                  height: 15,
                                   decoration: BoxDecoration(
-                                    color: categoryColor,  // A cor da bolinha
                                     shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: const Color.fromARGB(255, 238, 238, 238),
+                                      width: 0.8, // 👈 espessura da linha (menor = mais fino)
+                                    ),
                                   ),
                                 ),
-                              ),
-                              // Ícone de categoria (ficando por baixo da bolinha)
-                              category.icon != null
-                                  ? Image.asset(
-                                      'assets/${category.icon}.png',
-                                      width: 25,
-                                      height: 25,
-                                      color: Colors.white,  // Ícone branco
-                                    )
-                                  : const Icon(
-                                      Icons.category,
-                                      color: Colors.white,
-                                      size: 25,
-                                    ),
-                            ],
-                          ),
-                          title: Text(
-                            category.name,
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                          trailing: Radio<Category>(
-                            value: category,
-                            groupValue: selectedCategory,
-                            activeColor: Colors.white,
-                            onChanged: (Category? value) {
-                              setState(() {
-                                selectedCategory = value;
-                              });
-                              Navigator.pop(context, value);
-                            },
-                          ),
-                          onTap: () {
-                            setState(() {
-                              selectedCategory = category;
-                            });
-                            Navigator.pop(context, category);
-                          },
-                        );
+                              onTap: () {
+                                setState(() {
+                                  selectedCategory = category;
+                                });
+                                Navigator.pop(context, category);
+                              },
+                            );
+
                       }).toList(),
                     );
                   } else if (state is GetCategoriesFailure) {
