@@ -1,4 +1,5 @@
 import 'package:finc/screens/category/blocs/create_categorybloc/create_category_bloc.dart';
+import 'package:finc/screens/category/constants/category_colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,10 +7,18 @@ import 'package:expense_repository/expense_repository.dart'; // Importando repos
 import 'package:finc/screens/category/blocs/get_categories_bloc/get_categories_bloc.dart';
 import 'package:finc/screens/category/modal%20category/created_category_modal.dart';
 
-class CategoryOptionsModal extends StatelessWidget {
+class CategoryOptionsModal extends StatefulWidget {
   final String userId;
 
-  const CategoryOptionsModal({Key? key, required this.userId}) : super(key: key);
+  const CategoryOptionsModal({Key? key, required this.userId})
+    : super(key: key);
+
+  @override
+  _CategoryOptionsModalState createState() => _CategoryOptionsModalState();
+}
+
+class _CategoryOptionsModalState extends State<CategoryOptionsModal> {
+  Category? selectedCategory;
 
   @override
   Widget build(BuildContext context) {
@@ -27,20 +36,25 @@ class CategoryOptionsModal extends StatelessWidget {
 
     // Envolva o widget com BlocProvider aqui
     return BlocProvider<GetCategoriesBloc>(
-      create: (_) => GetCategoriesBloc(
-        context.read<ExpenseRepository>(), // Passando o ExpenseRepository
-      )..add(GetCategories(currentUserId)),
+      create:
+          (_) => GetCategoriesBloc(
+            context.read<ExpenseRepository>(), // Passando o ExpenseRepository
+          )..add(GetCategories(currentUserId)),
       child: Container(
         padding: const EdgeInsets.all(16),
         child: FractionallySizedBox(
           heightFactor: 0.6, // Ajuste a altura conforme necessário
           child: ListView(
             children: [
-              const Divider(color: Colors.white24),
+              const Divider(color: Color.fromARGB(253, 255, 255, 255)),
               // Opção: Pesquisar Categorias
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 child: TextField(
+                  cursorColor: Colors.white,
                   decoration: InputDecoration(
                     prefixIcon: const Icon(Icons.search, color: Colors.white),
                     hintText: 'Pesquisar categorias...',
@@ -68,7 +82,7 @@ class CategoryOptionsModal extends StatelessWidget {
                       child: Center(child: CircularProgressIndicator()),
                     );
                   } else if (state is GetCategoriesSuccess) {
-                    final categories = state.categories.take(3).toList();
+                    final categories = state.categories.take(4).toList();
                     if (categories.isEmpty) {
                       return const Padding(
                         padding: EdgeInsets.all(16),
@@ -78,32 +92,63 @@ class CategoryOptionsModal extends StatelessWidget {
                         ),
                       );
                     }
-
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: categories.map((category) {
+                        // Obtendo uma cor da lista de cores
+                        Color categoryColor = Color(
+                          defaultCategoryColors[
+                            category.color % defaultCategoryColors.length]); // Usando o índice para pegar a cor correspondente
                         return ListTile(
-                          // ignore: unnecessary_null_comparison
-                          leading: category.icon != null
-                              ? Image.asset(
-                                  'assets/${category.icon}.png', 
-                                  width: 30,
-                                  height: 30,
-                                  color: Colors.white,
-                                )
-                              : const Icon(
-                                  Icons.category,
-                                  color: Colors.white,
+                          leading: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Positioned(
+                                bottom: -7.5, // Coloca a bolinha na parte inferior do ícone
+                                right: -7.5, // Alinha a bolinha à direita do ícone
+                                child: Container(
+                                  width: 40,  // Tamanho da bolinha (ajustável)
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: categoryColor,  // A cor da bolinha
+                                    shape: BoxShape.circle,
+                                  ),
                                 ),
+                              ),
+                              // Ícone de categoria (ficando por baixo da bolinha)
+                              category.icon != null
+                                  ? Image.asset(
+                                      'assets/${category.icon}.png',
+                                      width: 25,
+                                      height: 25,
+                                      color: Colors.white,  // Ícone branco
+                                    )
+                                  : const Icon(
+                                      Icons.category,
+                                      color: Colors.white,
+                                      size: 25,
+                                    ),
+                            ],
+                          ),
                           title: Text(
                             category.name,
                             style: const TextStyle(color: Colors.white),
                           ),
-                          subtitle: Text(
-                            'Tipo: ${category.type}',
-                            style: const TextStyle(color: Colors.white70),
+                          trailing: Radio<Category>(
+                            value: category,
+                            groupValue: selectedCategory,
+                            activeColor: Colors.white,
+                            onChanged: (Category? value) {
+                              setState(() {
+                                selectedCategory = value;
+                              });
+                              Navigator.pop(context, value);
+                            },
                           ),
                           onTap: () {
+                            setState(() {
+                              selectedCategory = category;
+                            });
                             Navigator.pop(context, category);
                           },
                         );
@@ -118,13 +163,10 @@ class CategoryOptionsModal extends StatelessWidget {
                       ),
                     );
                   }
-
                   return const SizedBox.shrink(); // Estado inicial
                 },
               ),
-
               const Divider(color: Colors.white24),
-
               // Opção: Gerenciar Categorias
               ListTile(
                 leading: const Icon(Icons.manage_accounts, color: Colors.white),
@@ -137,13 +179,14 @@ class CategoryOptionsModal extends StatelessWidget {
                   // Implementar lógica de gerenciamento de categorias
                 },
               ),
-
               const Divider(color: Colors.white24),
-
               // Opção: Criar Categoria
               ListTile(
                 leading: const Icon(Icons.add, color: Colors.white),
-                title: const Text('Criar Categoria', style: TextStyle(color: Colors.white)),
+                title: const Text(
+                  'Criar Categoria',
+                  style: TextStyle(color: Colors.white),
+                ),
                 onTap: () {
                   Navigator.pop(context); // Fecha o modal atual
                   showModalBottomSheet(
@@ -152,18 +195,25 @@ class CategoryOptionsModal extends StatelessWidget {
                     backgroundColor: const Color(0xFF2C2C2C),
                     builder: (BuildContext modalContext) {
                       return BlocProvider(
-                        create: (_) => CreateCategoryBloc(
-                          expenseRepository: context.read<ExpenseRepository>(),
-                        ),
+                        create:
+                            (_) => CreateCategoryBloc(
+                              expenseRepository:
+                                  context.read<ExpenseRepository>(),
+                            ),
                         child: Container(
                           padding: const EdgeInsets.all(17),
-                          height: MediaQuery.of(modalContext).size.height * 0.60, // Dinamicamente ajustando o tamanho
+                          height:
+                              MediaQuery.of(modalContext).size.height *
+                              0.60, // Dinamicamente ajustando o tamanho
                           child: AddCategoryModal(
                             onCategoryCreated: () {
                               // Atualiza as categorias após criar uma nova categoria
-                              final userId = FirebaseAuth.instance.currentUser?.uid;
+                              final userId =
+                                  FirebaseAuth.instance.currentUser?.uid;
                               if (userId != null) {
-                                BlocProvider.of<GetCategoriesBloc>(modalContext).add(GetCategories(userId));
+                                BlocProvider.of<GetCategoriesBloc>(
+                                  modalContext,
+                                ).add(GetCategories(userId));
                               }
                             },
                           ),
