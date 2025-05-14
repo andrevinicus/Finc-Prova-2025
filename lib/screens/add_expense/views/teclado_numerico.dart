@@ -171,7 +171,7 @@ class _TecladoNumericoState extends State<TecladoNumerico> {
                   Expanded(
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green[400],
+                        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(

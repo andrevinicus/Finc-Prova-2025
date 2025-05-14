@@ -41,6 +41,7 @@ class MyAppView extends StatelessWidget {
           secondary: const Color.fromARGB(255, 36, 59, 46),
           tertiary: const Color.fromARGB(255, 138, 107, 73),
           outline: const Color(0xFFB0B0B0),
+          primaryContainer: const Color.fromARGB(255, 36, 112, 224),
         ),
       ),
       initialRoute: AppRoutes.splash,

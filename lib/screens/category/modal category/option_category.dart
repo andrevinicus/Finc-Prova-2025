@@ -37,18 +37,26 @@ class CategoryOptionsModal extends StatelessWidget {
           child: ListView(
             children: [
               const Divider(color: Colors.white24),
-
               // Opção: Pesquisar Categorias
-              ListTile(
-                leading: const Icon(Icons.search, color: Colors.white),
-                title: const Text(
-                  'Pesquisar Categorias',
-                  style: TextStyle(color: Colors.white),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: TextField(
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.search, color: Colors.white),
+                    hintText: 'Pesquisar categorias...',
+                    hintStyle: const TextStyle(color: Colors.white60),
+                    filled: true,
+                    fillColor: Colors.grey[800],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  style: const TextStyle(color: Colors.white),
+                  onChanged: (value) {
+                    // Filtrar categorias aqui conforme o texto digitado
+                  },
                 ),
-                onTap: () {
-                  Navigator.pop(context); // Fechar o modal
-                  // Aqui você pode implementar a busca, se necessário
-                },
               ),
 
               // 🔽 Lista de últimas 3 categorias criadas
@@ -78,7 +86,7 @@ class CategoryOptionsModal extends StatelessWidget {
                           // ignore: unnecessary_null_comparison
                           leading: category.icon != null
                               ? Image.asset(
-                                  'assets/${category.icon}.png', // Ajuste o caminho conforme necessário
+                                  'assets/${category.icon}.png', 
                                   width: 30,
                                   height: 30,
                                   color: Colors.white,
@@ -148,8 +156,8 @@ class CategoryOptionsModal extends StatelessWidget {
                           expenseRepository: context.read<ExpenseRepository>(),
                         ),
                         child: Container(
-                          padding: const EdgeInsets.all(16),
-                          height: MediaQuery.of(modalContext).size.height * 0.65, // Dinamicamente ajustando o tamanho
+                          padding: const EdgeInsets.all(17),
+                          height: MediaQuery.of(modalContext).size.height * 0.60, // Dinamicamente ajustando o tamanho
                           child: AddCategoryModal(
                             onCategoryCreated: () {
                               // Atualiza as categorias após criar uma nova categoria

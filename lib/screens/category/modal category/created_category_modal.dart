@@ -85,7 +85,7 @@ class _AddCategoryModalState extends State<AddCategoryModal> {
                 key: _formKey,
                 child: SingleChildScrollView(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                      const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -103,24 +103,27 @@ class _AddCategoryModalState extends State<AddCategoryModal> {
                                       print('Tipo selecionado: $_type');
                                     });
                                   },
-                                  child: Container(
-                                    height: 50,
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                      color: _type == 'expense' ? Colors.red : Colors.transparent,
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Text(
-                                      'Despesa',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: _type == 'expense' ? Colors.white : Colors.white60,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(top: 1),
+                                    child: Container(
+                                      height: 40,
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: _type == 'expense' ? Colors.red : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        'Despesa',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: _type == 'expense' ? Colors.white : Colors.white60,
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 16),
+                              const SizedBox(width: 12),
                               Expanded(
                                 child: GestureDetector(
                                   onTap: () {
@@ -130,7 +133,7 @@ class _AddCategoryModalState extends State<AddCategoryModal> {
                                     });
                                   },
                                   child: Container(
-                                    height: 50,
+                                    height: 40,
                                     alignment: Alignment.center,
                                     decoration: BoxDecoration(
                                       color: _type == 'income' ? Colors.green : Colors.transparent,
@@ -158,7 +161,7 @@ class _AddCategoryModalState extends State<AddCategoryModal> {
                           prefixIcon: Icon(Icons.description,
                               color: Colors.grey[300]),
                           filled: true,
-                          fillColor: Colors.white10,
+                          fillColor: const Color.fromARGB(26, 255, 255, 255),
                           contentPadding: const EdgeInsets.symmetric(
                               vertical: 18, horizontal: 16),
                           enabledBorder: OutlineInputBorder(
@@ -205,15 +208,16 @@ class _AddCategoryModalState extends State<AddCategoryModal> {
                                 border: Border.all(
                                   color: isSelected
                                       ? Theme.of(context).colorScheme.primary
-                                      : Colors.transparent,
+                                      : const Color.fromARGB(0, 0, 0, 0),
                                   width: 2,
                                 ),
                                 borderRadius: BorderRadius.circular(12), // Borda arredondada
                               ),
                               child: Image.asset(
                                 'assets/$iconName.png',
-                                width: 40,
-                                height: 40,
+                                width: 20,
+                                height: 20,
+                                color:Colors.white,                           
                               ),
                             ),
                           );
@@ -279,7 +283,7 @@ class _AddCategoryModalState extends State<AddCategoryModal> {
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
-                              Theme.of(context).colorScheme.primary,
+                              Theme.of(context).colorScheme.primaryContainer,
                           foregroundColor: Colors.white,
                           minimumSize: const Size.fromHeight(50),
                         ),
