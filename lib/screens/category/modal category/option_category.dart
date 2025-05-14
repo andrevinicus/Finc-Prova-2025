@@ -46,7 +46,7 @@ class _CategoryOptionsModalState extends State<CategoryOptionsModal> {
           heightFactor: 0.6, // Ajuste a altura conforme necessário
           child: ListView(
             children: [
-              const Divider(color: Color.fromARGB(139, 255, 251, 251)),
+              
               // Opção: Pesquisar Categorias
               Padding(
                 padding: const EdgeInsets.symmetric(
@@ -93,71 +93,87 @@ class _CategoryOptionsModalState extends State<CategoryOptionsModal> {
                       );
                     }
                     return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: categories.map((category) {
-                        // Obtendo uma cor da lista de cores
-                        Color categoryColor = Color(
-                          defaultCategoryColors[
-                            category.color % defaultCategoryColors.length]); // Usando o índice para pegar a cor correspondente
-                            return ListTile(
-                              leading: Stack(
-                                clipBehavior: Clip.none,
-                                alignment: Alignment.center,
-                                children: [
-                                  Container(
-                                    width: 40,
-                                    height: 40,
-                                    decoration: BoxDecoration(
-                                      color: categoryColor,
-                                      shape: BoxShape.circle,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: List.generate(categories.length, (index) {
+                      final category = categories[index];
+                      Color categoryColor = Color(
+                        defaultCategoryColors[category.color % defaultCategoryColors.length]
+                      );
+
+                      return Container(
+                        margin: const EdgeInsets.symmetric(vertical: 2),
+                        child: Column(
+                          children: [
+                            ListTile(
+                              leading: Transform.translate(
+                                offset: const Offset(0, -2),
+                                child: Stack(
+                                  clipBehavior: Clip.none,
+                                  alignment: Alignment.center,
+                                  children: [
+                                    Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: categoryColor,
+                                        shape: BoxShape.circle,
+                                      ),
                                     ),
-                                  ),
-                                  // ignore: unnecessary_null_comparison
-                                  category.icon != null
-                                      ? Image.asset(
-                                          'assets/${category.icon}.png',
-                                          width: 25,
-                                          height: 25,
-                                          color: Colors.white,
-                                        )
-                                      : const Icon(
-                                          Icons.category,
-                                          color: Colors.white,
-                                          size: 25,
-                                        ),
-                                ],
+                                    category.icon != null
+                                        ? Image.asset(
+                                            'assets/${category.icon}.png',
+                                            width: 20,
+                                            height: 20,
+                                            color: Colors.white,
+                                          )
+                                        : const Icon(
+                                            Icons.category,
+                                            color: Colors.white,
+                                            size: 10,
+                                          ),
+                                  ],
+                                ),
                               ),
                               title: Text(
                                 category.name,
                                 style: const TextStyle(color: Colors.white),
                               ),
                               trailing: selectedCategory == category
-                              ? Icon(
-                                  Icons.check_circle,
-                                  color: Colors.greenAccent,
-                                  size: 15,
-                                )
-                              : Container(
-                                  width: 15,
-                                  height: 15,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: const Color.fromARGB(255, 238, 238, 238),
-                                      width: 0.8, // 👈 espessura da linha (menor = mais fino)
+                                  ? Icon(
+                                      Icons.check_circle,
+                                      color: Colors.greenAccent,
+                                      size: 15,
+                                    )
+                                  : Container(
+                                      width: 15,
+                                      height: 15,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: const Color.fromARGB(255, 238, 238, 238),
+                                          width: 0.8,
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                ),
                               onTap: () {
                                 setState(() {
                                   selectedCategory = category;
                                 });
                                 Navigator.pop(context, category);
                               },
-                            );
+                            ),
+                            if (index != categories.length - 1)
+                              Container(
+                                height: 0.6,
+                                color: Colors.white24,
+                                margin: EdgeInsets.only(top: 1),
+                              ),
+                          ],
+                        ),
+                      );
+                    }),
+                  );
 
-                      }).toList(),
-                    );
                   } else if (state is GetCategoriesFailure) {
                     return const Padding(
                       padding: EdgeInsets.all(16),
@@ -170,9 +186,10 @@ class _CategoryOptionsModalState extends State<CategoryOptionsModal> {
                   return const SizedBox.shrink(); // Estado inicial
                 },
               ),
-              const Divider(color: Colors.white24),
+              const Divider(color: Colors.white24, height: 0.3,), // Mantive a espessura como estava
               // Opção: Gerenciar Categorias
               ListTile(
+                contentPadding: const EdgeInsets.symmetric(vertical: 1, horizontal: 12), // Reduzindo o padding vertical
                 leading: const Icon(Icons.manage_accounts, color: Colors.white),
                 title: const Text(
                   'Gerenciar Categorias',
@@ -183,9 +200,10 @@ class _CategoryOptionsModalState extends State<CategoryOptionsModal> {
                   // Implementar lógica de gerenciamento de categorias
                 },
               ),
-              const Divider(color: Colors.white24),
+              const Divider(color: Colors.white24, height: 0.8,), // Nova linha com espessura reduzida
               // Opção: Criar Categoria
               ListTile(
+                contentPadding: const EdgeInsets.symmetric(vertical: 1, horizontal: 12),
                 leading: const Icon(Icons.add, color: Colors.white),
                 title: const Text(
                   'Criar Categoria',
@@ -228,7 +246,7 @@ class _CategoryOptionsModalState extends State<CategoryOptionsModal> {
                 },
               ),
 
-              const Divider(color: Colors.white24),
+              const Divider(color: Colors.white24, height: 0.8,),
             ],
           ),
         ),
