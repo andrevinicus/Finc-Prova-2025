@@ -240,8 +240,7 @@ class _CategoryOptionsModalState extends State<CategoryOptionsModal> {
                             ),
                         child: Container(
                           padding: const EdgeInsets.all(17),
-                          height: MediaQuery.of(modalContext).size.height * 0.60,
-
+                          height: MediaQuery.of(modalContext).size.height * 0.55,
                           child: AddCategoryModal(
                             userId: FirebaseAuth.instance.currentUser!.uid, // <- Passando o userId aqui
                             onCategoryCreated: () {
