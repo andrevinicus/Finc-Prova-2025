@@ -10,7 +10,14 @@ import 'package:finc/screens/category/blocs/create_categorybloc/create_category_
 class AddCategoryModal extends StatefulWidget {
   final VoidCallback? onCategoryCreated;
 
-  const AddCategoryModal({super.key, this.onCategoryCreated});
+  
+  final String userId; // <-- Adicionado
+
+  const AddCategoryModal({
+    super.key,
+    required this.userId,
+    this.onCategoryCreated,
+  });
 
   @override
   State<AddCategoryModal> createState() => _AddCategoryModalState();
@@ -83,9 +90,10 @@ class _AddCategoryModalState extends State<AddCategoryModal> {
             body: Center(
               child: Form(
                 key: _formKey,
-                child: SingleChildScrollView(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+                child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+                    width: MediaQuery.of(context).size.width, // pega largura total da tela
+                    height: MediaQuery.of(context).size.height * 0.9, // 90% da altura da tela      
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -282,8 +290,7 @@ class _AddCategoryModalState extends State<AddCategoryModal> {
                       const SizedBox(height: 24),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              Theme.of(context).colorScheme.primaryContainer,
+                          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
                           foregroundColor: Colors.white,
                           minimumSize: const Size.fromHeight(50),
                         ),
@@ -291,18 +298,15 @@ class _AddCategoryModalState extends State<AddCategoryModal> {
                           if (_formKey.currentState!.validate()) {
                             _formKey.currentState!.save();
                             final newCategory = Category(
-                              categoryId: DateTime.now()
-                                  .millisecondsSinceEpoch
-                                  .toString(),
+                              categoryId: DateTime.now().millisecondsSinceEpoch.toString(),
                               name: _name,
                               totalExpenses: _totalExpenses,
                               icon: _icon,
                               color: _color,
                               type: _type,
+                              createdAt: DateTime.now(),  // Adicionando a data de criação
                             );
-                            context
-                                .read<CreateCategoryBloc>()
-                                .add(CreateCategory(newCategory));
+                            context.read<CreateCategoryBloc>().add(CreateCategory(newCategory));
                           }
                         },
                         child: const Text('Criar Categoria'),

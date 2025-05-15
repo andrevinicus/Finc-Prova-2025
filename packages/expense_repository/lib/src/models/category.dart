@@ -8,6 +8,7 @@ class Category {
   int color;
   String? userId;
   String type;
+  DateTime createdAt; // Novo campo para data de criação
 
   Category({
     required this.categoryId,
@@ -17,6 +18,7 @@ class Category {
     required this.color,
     this.userId,
     required this.type,
+    required this.createdAt, // Novo campo no construtor
   });
 
   static final empty = Category(
@@ -27,6 +29,7 @@ class Category {
     color: 0,
     userId: null,
     type: 'expense',
+    createdAt: DateTime.now(), // Definindo data de criação como a data atual
   );
 
   CategoryEntity toEntity() {
@@ -38,6 +41,7 @@ class Category {
       color: color,
       userId: userId,
       type: type,
+      createdAt: createdAt.toIso8601String(), // Convertendo a data para string
     );
   }
 
@@ -50,6 +54,7 @@ class Category {
       color: entity.color,
       userId: entity.userId,
       type: entity.type,
+      createdAt: DateTime.parse(entity.createdAt), // Convertendo de volta para DateTime
     );
   }
 
@@ -61,6 +66,7 @@ class Category {
     int? color,
     String? userId,
     String? type,
+    DateTime? createdAt, // Permitir modificação da data de criação
   }) {
     return Category(
       categoryId: categoryId ?? this.categoryId,
@@ -70,11 +76,12 @@ class Category {
       color: color ?? this.color,
       userId: userId ?? this.userId,
       type: type ?? this.type,
+      createdAt: createdAt ?? this.createdAt, // Se não passar, mantém a original
     );
   }
 
   @override
   String toString() {
-    return 'Category(categoryId: $categoryId, name: $name, totalExpenses: $totalExpenses, icon: $icon, color: $color, userId: $userId, type: $type)';
+    return 'Category(categoryId: $categoryId, name: $name, totalExpenses: $totalExpenses, icon: $icon, color: $color, userId: $userId, type: $type, createdAt: $createdAt)';
   }
 }

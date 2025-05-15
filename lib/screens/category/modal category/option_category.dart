@@ -19,6 +19,7 @@ class CategoryOptionsModal extends StatefulWidget {
 
 class _CategoryOptionsModalState extends State<CategoryOptionsModal> {
   Category? selectedCategory;
+  String searchQuery = '';
 
   @override
   Widget build(BuildContext context) {
@@ -50,63 +51,79 @@ class _CategoryOptionsModalState extends State<CategoryOptionsModal> {
               // Opção: Pesquisar Categorias
               Padding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
+                  horizontal: 15,
+                  vertical: 1,
                 ),
-                child: TextField(
-                  cursorColor: Colors.white,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.search, color: Colors.white),
-                    hintText: 'Pesquisar categorias...',
-                    hintStyle: const TextStyle(color: Colors.white60),
-                    filled: true,
-                    fillColor: Colors.grey[800],
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
+                child: Theme(
+                  data: Theme.of(context).copyWith(
+                  textSelectionTheme: const TextSelectionThemeData(
+                    cursorColor: Colors.white,            // Cor do cursor (linha piscando)
+                    selectionColor: Colors.white24,       // Cor do fundo da seleção
+                    selectionHandleColor: Color.fromARGB(255, 36, 112, 224),   // Cor dos pingos (handles)
                   ),
-                  style: const TextStyle(color: Colors.white),
-                  onChanged: (value) {
-                    // Filtrar categorias aqui conforme o texto digitado
-                  },
+                ),
+                  child: TextField(
+                    cursorColor: Colors.white,
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.search, color: Colors.white),
+                      hintText: 'Pesquisar categorias...',
+                      hintStyle: const TextStyle(color: Colors.white60),
+                      filled: true,
+                      fillColor: Colors.grey[800],
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    style: const TextStyle(color: Colors.white),
+                    onChanged: (value) {
+                      setState(() {
+                        searchQuery = value.toLowerCase();
+                      });
+                    },
+                  ),
                 ),
               ),
-
-              // 🔽 Lista de últimas 3 categorias criadas
               BlocBuilder<GetCategoriesBloc, GetCategoriesState>(
-                builder: (context, state) {
-                  if (state is GetCategoriesLoading) {
+              builder: (context, state) {
+                if (state is GetCategoriesLoading) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                } else if (state is GetCategoriesSuccess) {
+                  // Filtra as categorias pelo nome e tipo 'expense', além de ordenar por data de criação.
+                  final categories = state.categories
+                  .where((category) =>
+                      category.name.toLowerCase().contains(searchQuery) &&
+                      category.type == 'expense')
+                  .toList()
+                ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+              final limitedCategories = categories.take(5).toList();
+
+                  if (categories.isEmpty) {
                     return const Padding(
                       padding: EdgeInsets.all(16),
-                      child: Center(child: CircularProgressIndicator()),
+                      child: Text(
+                        'Nenhuma categoria encontrada.',
+                        style: TextStyle(color: Colors.white70),
+                      ),
                     );
-                  } else if (state is GetCategoriesSuccess) {
-                    final categories = state.categories.take(4).toList();
-                    if (categories.isEmpty) {
-                      return const Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Text(
-                          'Nenhuma categoria encontrada.',
-                          style: TextStyle(color: Colors.white70),
-                        ),
-                      );
-                    }
-                    return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: List.generate(categories.length, (index) {
-                      final category = categories[index];
-                      Color categoryColor = Color(
-                        defaultCategoryColors[category.color % defaultCategoryColors.length]
-                      );
+                  }
 
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: List.generate(limitedCategories.length, (index) {
+                      final category = limitedCategories[index];
+                      Color categoryColor = Color(category.color);
                       return Container(
                         margin: const EdgeInsets.symmetric(vertical: 2),
                         child: Column(
                           children: [
                             ListTile(
                               leading: Transform.translate(
-                                offset: const Offset(0, -2),
+                                offset: const Offset(0, 0),
                                 child: Stack(
                                   clipBehavior: Clip.none,
                                   alignment: Alignment.center,
@@ -119,6 +136,7 @@ class _CategoryOptionsModalState extends State<CategoryOptionsModal> {
                                         shape: BoxShape.circle,
                                       ),
                                     ),
+                                    // ignore: unnecessary_null_comparison
                                     category.icon != null
                                         ? Image.asset(
                                             'assets/${category.icon}.png',
@@ -139,11 +157,8 @@ class _CategoryOptionsModalState extends State<CategoryOptionsModal> {
                                 style: const TextStyle(color: Colors.white),
                               ),
                               trailing: selectedCategory == category
-                                  ? Icon(
-                                      Icons.check_circle,
-                                      color: Colors.greenAccent,
-                                      size: 15,
-                                    )
+                                  ? const Icon(Icons.check_circle,
+                                      color: Colors.greenAccent, size: 15)
                                   : Container(
                                       width: 15,
                                       height: 15,
@@ -162,31 +177,32 @@ class _CategoryOptionsModalState extends State<CategoryOptionsModal> {
                                 Navigator.pop(context, category);
                               },
                             ),
-                            if (index != categories.length - 1)
+                            if (index != limitedCategories.length - 1)
                               Container(
                                 height: 0.6,
                                 color: Colors.white24,
-                                margin: EdgeInsets.only(top: 1),
+                                margin: const EdgeInsets.only(top: 1),
                               ),
                           ],
                         ),
                       );
                     }),
                   );
+                } else if (state is GetCategoriesFailure) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Text(
+                      'Erro ao carregar categorias',
+                      style: TextStyle(color: Colors.redAccent),
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
 
-                  } else if (state is GetCategoriesFailure) {
-                    return const Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Text(
-                        'Erro ao carregar categorias',
-                        style: TextStyle(color: Colors.redAccent),
-                      ),
-                    );
-                  }
-                  return const SizedBox.shrink(); // Estado inicial
-                },
-              ),
-              const Divider(color: Colors.white24, height: 0.3,), // Mantive a espessura como estava
+
+              const Divider(color: Colors.white24, height: 0.2,), // Mantive a espessura como estava
               // Opção: Gerenciar Categorias
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(vertical: 1, horizontal: 12), // Reduzindo o padding vertical
@@ -200,7 +216,7 @@ class _CategoryOptionsModalState extends State<CategoryOptionsModal> {
                   // Implementar lógica de gerenciamento de categorias
                 },
               ),
-              const Divider(color: Colors.white24, height: 0.8,), // Nova linha com espessura reduzida
+              const Divider(color: Colors.white24, height: 0.7,), // Nova linha com espessura reduzida
               // Opção: Criar Categoria
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(vertical: 1, horizontal: 12),
@@ -224,14 +240,12 @@ class _CategoryOptionsModalState extends State<CategoryOptionsModal> {
                             ),
                         child: Container(
                           padding: const EdgeInsets.all(17),
-                          height:
-                              MediaQuery.of(modalContext).size.height *
-                              0.60, // Dinamicamente ajustando o tamanho
+                          height: MediaQuery.of(modalContext).size.height * 0.60,
+
                           child: AddCategoryModal(
+                            userId: FirebaseAuth.instance.currentUser!.uid, // <- Passando o userId aqui
                             onCategoryCreated: () {
-                              // Atualiza as categorias após criar uma nova categoria
-                              final userId =
-                                  FirebaseAuth.instance.currentUser?.uid;
+                              final userId = FirebaseAuth.instance.currentUser?.uid;
                               if (userId != null) {
                                 BlocProvider.of<GetCategoriesBloc>(
                                   modalContext,
@@ -246,7 +260,7 @@ class _CategoryOptionsModalState extends State<CategoryOptionsModal> {
                 },
               ),
 
-              const Divider(color: Colors.white24, height: 0.8,),
+              const Divider(color: Colors.white24, height: 0.6,),
             ],
           ),
         ),
