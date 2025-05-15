@@ -115,9 +115,12 @@ Widget build(BuildContext context) {
                           const Icon(Icons.calendar_today, color: Colors.white54),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: Text(
-                              DateFormat('dd/MM/yyyy').format(_selectedDate),
-                              style: const TextStyle(color: Colors.white),
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 20), // ajuste conforme desejar
+                              child: Text(
+                                DateFormat('dd/MM/yyyy').format(_selectedDate),
+                                style: const TextStyle(color: Colors.white70),
+                              ),
                             ),
                           ),
                           TextButton(
@@ -146,19 +149,53 @@ Widget build(BuildContext context) {
                         ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(top: 1, right: 0),                     
+                      padding: const EdgeInsets.only(top: 1, right: 1),
                       child: BlocBuilder<GetCategoriesBloc, GetCategoriesState>(
                         builder: (context, state) {
                           if (state is GetCategoriesSuccess) {
                             return Column(
                               children: [
-                                ListTile(
-                                  leading: const Icon(Icons.flag, color: Colors.white54,),
-                                  title: Text(
-                                    _selectedCategory?.name ?? 'Opções de Categoria',
-                                    style: const TextStyle(color: Colors.white),
+                                ListTile(                          
+                                  leading: const Icon(Icons.flag, color: Colors.white54, size: 24),
+                                  title: _selectedCategory != null
+                                ? Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: Color(_selectedCategory!.color),
+                                        width: 1.5,
+                                      ),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    constraints: const BoxConstraints(
+                                      maxWidth: 40, // <-- diminua esse valor para reduzir o comprimento (largura)
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Image.asset(
+                                          'assets/${_selectedCategory!.icon}.png',
+                                          width: 20,
+                                          height: 20,
+                                          color: Color(_selectedCategory!.color),
+                                          fit: BoxFit.contain,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Flexible(
+                                          child: Text(
+                                            _selectedCategory!.name,
+                                            style: const TextStyle(color: Colors.white70),
+                                            overflow: TextOverflow.ellipsis, // para cortar texto longo
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : const Text(
+                                    'Opções de Categoria',
+                                    style: TextStyle(color: Colors.white70),
                                   ),
-                                  trailing: const Icon(Icons.arrow_forward_ios,size: 14, color: Colors.white54),
+                                  trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.white54),
                                   onTap: () async {
                                     final resultado = await showModalBottomSheet<Category>(
                                       context: context,
@@ -181,11 +218,16 @@ Widget build(BuildContext context) {
                           } else if (state is GetCategoriesLoading) {
                             return const CircularProgressIndicator();
                           } else {
-                            return const Text("Erro ao carregar categorias.", style: TextStyle(color: Colors.white));
+                            return const Text(
+                              "Erro ao carregar categorias.",
+                              style: TextStyle(color: Colors.white),
+                            );
                           }
                         },
                       ),
                     ),
+
+
                     Container(
                       margin: const EdgeInsets.symmetric(horizontal: 10),
                       child: const Divider(
