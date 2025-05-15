@@ -107,112 +107,89 @@ Widget build(BuildContext context) {
                 key: _formKey,
                 child: Column(
                   children: [
-                    // Categoria
-                    BlocBuilder<GetCategoriesBloc, GetCategoriesState>(
-                      builder: (context, state) {
-                        if (state is GetCategoriesSuccess) {
-                          return Column(
-                            children: [
-                              DropdownButtonFormField<Category>(
-                                dropdownColor: const Color(0xFF2C2C2C),
-                                style: const TextStyle(color: Colors.white),
-                                decoration: const InputDecoration(
-                                  labelText: 'Categoria',
-                                  labelStyle: TextStyle(color: Colors.white70),
-                                  border: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                      width: 2.0,
-                                      color: Colors.white30,
-                                    ),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                      width: 2.0,
-                                      color: Colors.white30,
-                                    ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                      width: 2.5,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                                borderRadius: BorderRadius.circular(8),
-                                value: _selectedCategory,
-                                items: state.categories.map((category) {
-                                  return DropdownMenuItem<Category>(
-                                    value: category,
-                                    child: Text(category.name),
-                                  );
-                                }).toList(),
-                                onChanged: (value) =>
-                                    setState(() => _selectedCategory = value),
-                                validator: (value) => value == null
-                                    ? 'Selecione uma categoria'
-                                    : null,
-                              ),
-                              const SizedBox(height: 16),
-
-                              ListTile(
-                                title: const Text(
-                                  'Opções de Categoria',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                                trailing: const Icon(Icons.arrow_drop_down, color: Colors.white),
-                                onTap: () {
-                                  showModalBottomSheet(
-                                    context: context,
-                                    isScrollControlled: true,
-                                    backgroundColor: const Color(0xFF2C2C2C),
-                                    builder: (BuildContext context) {
-                                      return CategoryOptionsModal(userId: widget.userId); 
-                                    },
-                                  );
-                                },
-                              ),
-                            ],
-                          );
-                        } else if (state is GetCategoriesLoading) {
-                          return const CircularProgressIndicator();
-                        } else {
-                          return const Text("Erro ao carregar categorias.", style: TextStyle(color: Colors.white));
-                        }
-                      },
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Data
-                    Row(
-                      children: [
-                        const Icon(Icons.calendar_today, color: Colors.white70),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            DateFormat('dd/MM/yyyy').format(_selectedDate),
-                            style: const TextStyle(color: Colors.white),
+                    SizedBox(height: 16),
+                    Padding(
+                      padding:  const EdgeInsets.only(left: 15),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.calendar_today, color: Colors.white54),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              DateFormat('dd/MM/yyyy').format(_selectedDate),
+                              style: const TextStyle(color: Colors.white),
+                            ),
                           ),
-                        ),
-                        TextButton(
-                          child: const Text("Alterar", style: TextStyle(color: Colors.white)),
-                          onPressed: () async {
-                            final date = await showDatePicker(
-                              context: context,
-                              initialDate: _selectedDate,
-                              firstDate: DateTime(2000),
-                              lastDate: DateTime.now(),
-                            );
-                            if (date != null) {
-                              setState(() => _selectedDate = date);
-                            }
-                          },
-                        ),
-                      ],
+                          TextButton(
+                            child: const Text("Alterar", style: TextStyle(color: Colors.white54)),
+                            onPressed: () async {
+                              final date = await showDatePicker(
+                                context: context,
+                                initialDate: _selectedDate,
+                                firstDate: DateTime(2000),
+                                lastDate: DateTime.now(),
+                              );
+                              if (date != null) {
+                                setState(() => _selectedDate = date);
+                              }
+                            },
+                          ),
+                        ],
+                      ),
                     ),
-
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 10),
+                      child: const Divider(
+                        color: Colors.white24, 
+                        height: 10, 
+                        thickness: 1.5,
+                        ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 1, right: 0),                     
+                      child: BlocBuilder<GetCategoriesBloc, GetCategoriesState>(
+                        builder: (context, state) {
+                          if (state is GetCategoriesSuccess) {
+                            return Column(
+                              children: [
+                                ListTile(
+                                  leading: const Icon(Icons.flag, color: Colors.white54,),
+                                  title: const Text(
+                                    'Opções de Categoria',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  trailing: const Icon(Icons.arrow_forward_ios,size: 14, color: Colors.white54),
+                                  onTap: () {
+                                    showModalBottomSheet(
+                                      context: context,
+                                      isScrollControlled: true,
+                                      backgroundColor: const Color(0xFF2C2C2C),
+                                      builder: (BuildContext context) {
+                                        return CategoryOptionsModal(userId: widget.userId); 
+                                      },
+                                    );
+                                  },
+                                ),
+                              ],
+                            );
+                          } else if (state is GetCategoriesLoading) {
+                            return const CircularProgressIndicator();
+                          } else {
+                            return const Text("Erro ao carregar categorias.", style: TextStyle(color: Colors.white));
+                          }
+                        },
+                      ),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 10),
+                      child: const Divider(
+                        color: Colors.white24, 
+                        height: 10, 
+                        thickness: 1.5,
+                        ),
+                    ),
+                    const SizedBox(height: 10),
                     const Spacer(),
-
                     // Botão salvar
                     BlocConsumer<CreateExpenseBloc, CreateExpenseState>(
                       listener: (context, state) {

@@ -356,6 +356,7 @@ class _MainScreenState extends State<MainScreen> {
           );
         },
         backgroundColor: Theme.of(context).colorScheme.primary,
+        shape: const CircleBorder(),
         child: const Icon(Icons.add),
       ),
     );

@@ -1,5 +1,4 @@
 import 'package:finc/screens/category/blocs/create_categorybloc/create_category_bloc.dart';
-import 'package:finc/screens/category/constants/category_colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

@@ -27,6 +27,7 @@ class _AddCategoryModalState extends State<AddCategoryModal> {
   String _name = '';
   String _icon = defaultCategoryIcons.first;
   int _color = defaultCategoryColors.first;
+  // ignore: unused_field
   int _totalExpenses = 0;
   String _type = 'income'; // Pode ser 'income' ou 'expense'
 
