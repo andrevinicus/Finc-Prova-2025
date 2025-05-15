@@ -154,20 +154,26 @@ Widget build(BuildContext context) {
                               children: [
                                 ListTile(
                                   leading: const Icon(Icons.flag, color: Colors.white54,),
-                                  title: const Text(
-                                    'Opções de Categoria',
-                                    style: TextStyle(color: Colors.white),
+                                  title: Text(
+                                    _selectedCategory?.name ?? 'Opções de Categoria',
+                                    style: const TextStyle(color: Colors.white),
                                   ),
                                   trailing: const Icon(Icons.arrow_forward_ios,size: 14, color: Colors.white54),
-                                  onTap: () {
-                                    showModalBottomSheet(
+                                  onTap: () async {
+                                    final resultado = await showModalBottomSheet<Category>(
                                       context: context,
                                       isScrollControlled: true,
                                       backgroundColor: const Color(0xFF2C2C2C),
                                       builder: (BuildContext context) {
-                                        return CategoryOptionsModal(userId: widget.userId); 
+                                        return CategoryOptionsModal(userId: widget.userId);
                                       },
                                     );
+
+                                    if (resultado != null) {
+                                      setState(() {
+                                        _selectedCategory = resultado;
+                                      });
+                                    }
                                   },
                                 ),
                               ],
