@@ -24,7 +24,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     final userGoogle = FirebaseAuth.instance.currentUser;
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = FirebaseAuth.instance.currentUser!.uid;
 
     return Scaffold(
       key: _scaffoldKey,
@@ -73,7 +73,7 @@ class _MainScreenState extends State<MainScreen> {
                             ),
                           ),
                           FutureBuilder<UserModel?>(
-                            future: FirebaseUserRepo().getUserById(uid ?? ''),
+                            future: FirebaseUserRepo().getUserById(uid),
                             builder: (context, snapshot) {
                               if (snapshot.connectionState ==
                                   ConnectionState.waiting) {

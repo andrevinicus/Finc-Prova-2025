@@ -1,0 +1,41 @@
+import 'package:flutter/material.dart';
+
+class SaveExpenseButton extends StatelessWidget {
+  final bool isLoading;
+  final VoidCallback? onPressed;
+
+  const SaveExpenseButton({
+    super.key,
+    this.isLoading = false,
+    this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 56,
+      height: 56,
+      child: Tooltip(
+        message: 'Salvar despesa',
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            shape: const CircleBorder(),
+            backgroundColor: Colors.blue,
+            padding: EdgeInsets.zero,
+          ),
+          onPressed: isLoading ? null : onPressed,
+          child: isLoading
+              ? const CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                )
+              : const Icon(
+                  Icons.check,
+                  color: Colors.white,
+                  size: 28,
+                ),
+        ),
+      ),
+    );
+  }
+}

@@ -8,6 +8,7 @@ class Expense {
   final DateTime date;
   final String userId;
   final String type; // 'despesa' ou 'receita'
+  final String description; // ✅ Adicionado
 
   Expense({
     required this.id,
@@ -16,6 +17,7 @@ class Expense {
     required this.date,
     required this.userId,
     required this.type,
+    required this.description, // ✅ Adicionado
   });
 
   /// Getter para uma instância "vazia"
@@ -26,6 +28,7 @@ class Expense {
         amount: 0,
         userId: '',
         type: 'despesa',
+        description: '',
       );
 
   /// Permite criar uma nova instância com modificações
@@ -36,6 +39,7 @@ class Expense {
     DateTime? date,
     String? userId,
     String? type,
+    String? description,
   }) {
     return Expense(
       id: id ?? this.id,
@@ -44,6 +48,7 @@ class Expense {
       date: date ?? this.date,
       userId: userId ?? this.userId,
       type: type ?? this.type,
+      description: description ?? this.description,
     );
   }
 
@@ -58,6 +63,7 @@ class Expense {
       date: (map['date'] as Timestamp).toDate(),
       userId: map['userId'] ?? '',
       type: map['type'] ?? 'despesa',
+      description: map['description'] ?? '',
     );
   }
 
@@ -69,6 +75,7 @@ class Expense {
       'date': date,
       'userId': userId,
       'type': type,
+      'description': description,
     };
   }
 
@@ -81,6 +88,7 @@ class Expense {
       date: entity.date,
       userId: entity.userId,
       type: entity.type,
+      description: entity.description,
     );
   }
 
@@ -93,6 +101,7 @@ class Expense {
       amount: amount.toInt(),
       userId: userId,
       type: type,
+      description: description,
     );
   }
 

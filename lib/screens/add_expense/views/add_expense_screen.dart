@@ -1,11 +1,14 @@
+import 'package:finc/screens/add_expense/blocs/create_expense_bloc/create_expense_bloc.dart';
 import 'package:finc/screens/add_expense/views/teclado_numerico.dart';
 import 'package:finc/screens/category/modal%20category/option_category.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:expense_repository/expense_repository.dart';
-import '../blocs/create_expense_bloc/create_expense_bloc.dart';
 import '../../category/blocs/get_categories_bloc/get_categories_bloc.dart';
+import 'package:uuid/uuid.dart';
+
 
 class AddExpenseScreen extends StatefulWidget {
   final String userId;
@@ -16,22 +19,34 @@ class AddExpenseScreen extends StatefulWidget {
   State<AddExpenseScreen> createState() => _AddExpenseScreenState();
 }
 
+
 class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
+  final _descricaoController = TextEditingController();
+  late final String userId;
+  
   Category? _selectedCategory;
   DateTime _selectedDate = DateTime.now();
   
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _descricaoController.dispose();
+    super.dispose();
+  }
   
   @override
   void initState() {
     super.initState();
-    context.read<GetCategoriesBloc>().add(GetCategories(widget.userId));
+    userId = FirebaseAuth.instance.currentUser!.uid;
+    context.read<GetCategoriesBloc>().add(GetCategories(userId));
   }
 
 @override
 Widget build(BuildContext context) {
   return Scaffold(
+    resizeToAvoidBottomInset: false,
     backgroundColor: const Color.fromARGB(255, 20, 20, 20),
     appBar: AppBar(
       title: const Text("Nova Despesa"),
@@ -207,7 +222,7 @@ Widget build(BuildContext context) {
                                           isScrollControlled: true,
                                           backgroundColor: const Color(0xFF2C2C2C),
                                           builder: (BuildContext context) {
-                                            return CategoryOptionsModal(userId: widget.userId);
+                                            return CategoryOptionsModal(userId: userId);
                                           },
                                         );
                                       if (resultado != null) {
@@ -238,61 +253,36 @@ Widget build(BuildContext context) {
                           thickness: 1.5,
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      const Spacer(),
-                      // Botão salvar
-                      BlocConsumer<CreateExpenseBloc, CreateExpenseState>(
-                        listener: (context, state) {
-                          if (state is CreateExpenseSuccess) {
-                            Navigator.pop(context);
-                          } else if (state is CreateExpenseFailure) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Erro ao salvar: ${state.message}'),
-                              ),
-                            );
-                          }
-                        },
-                        builder: (context, state) {
-                          final isLoading = state is CreateExpenseLoading;
-                          return ElevatedButton.icon(
-                            icon: isLoading
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : const Icon(Icons.save),
-                            label: Text(isLoading ? "Salvando..." : "Salvar Despesa"),
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: const Size.fromHeight(50),
-                              backgroundColor: Theme.of(context).colorScheme.primary,
+                     Padding(
+                        padding: const EdgeInsets.only(top: 0, right: 8),
+                        child: TextFormField(
+                          controller: _descricaoController,
+                          style: const TextStyle(color: Colors.white),
+                          textCapitalization: TextCapitalization.sentences,
+                          decoration: InputDecoration(
+                            labelText: 'Descrição',
+                            labelStyle: TextStyle(color: Colors.white54),
+                            prefixIcon: Padding(
+                              padding: const EdgeInsets.only(left: 18, right: 22),
+                              child: Icon(Icons.description, color: Colors.white54),
                             ),
-                            onPressed: isLoading
-                                ? null
-                                : () {
-                                    if (_formKey.currentState!.validate()) {
-                                      // Garantir que a categoria selecionada tenha um 'type' válido
-                                      final type = _selectedCategory?.type ?? 'expense'; // Pega o 'type' da categoria, ou 'expense' como fallback
-
-                                      final expense = Expense(
-                                        id: '',
-                                        userId: widget.userId,
-                                        amount: double.parse(_amountController.text),
-                                        category: _selectedCategory!,
-                                        date: _selectedDate,
-                                        type: type, // Passa o type da categoria
-                                      );
-
-                                      context.read<CreateExpenseBloc>().add(CreateExpenseSubmitted(expense));
-                                    }
-                                  },
-                          );
-                        },
+                            contentPadding: const EdgeInsets.only(left: 60, top: 0, bottom: 20), // empurra texto mais à direita
+                            border: InputBorder.none,
+                          ),
+                          validator: (value) =>
+                              value == null || value.isEmpty ? 'Campo obrigatório' : null,
+                        ),
                       ),
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 10),
+                        child: const Divider(
+                          color: Colors.white24, 
+                          height: 10, 
+                          thickness: 1.5,
+                        ),
+                      ),
+
+
                     ],
                   ),
                 ),
@@ -301,6 +291,64 @@ Widget build(BuildContext context) {
           ),
         ],
       ),
+     // Remova todo o bottomNavigationBar do Scaffold
+        floatingActionButton: BlocConsumer<CreateExpenseBloc, CreateExpenseState>(
+        listener: (context, state) {
+          if (state is CreateExpenseSuccess) {
+            Navigator.pop(context);
+          } else if (state is CreateExpenseFailure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Erro ao salvar: ${state.message}')),
+            );
+          }
+        },
+        builder: (context, state) {
+          final isLoading = state is CreateExpenseLoading;
+
+          return FloatingActionButton(
+            onPressed: isLoading
+                ? null
+                : () {
+                    if (_amountController.text.isEmpty ||
+                        double.tryParse(_amountController.text) == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Informe um valor válido.')),
+                      );
+                      return;
+                    }
+                    if (_selectedCategory == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Selecione uma categoria.')),
+                      );
+                      return;
+                    }
+                    if (_formKey.currentState!.validate()) {
+                      final uuid = Uuid();
+                      final userId = FirebaseAuth.instance.currentUser!.uid;
+
+                      final expense = Expense(
+                        id: uuid.v4(),
+                        category: _selectedCategory!,
+                        amount: double.parse(_amountController.text),
+                        description: _descricaoController.text,
+                        date: _selectedDate,
+                        userId: userId,
+                        type: 'expense',
+                      );
+
+                      context.read<CreateExpenseBloc>().add(
+                            CreateExpenseSubmitted(expense),
+                          );
+                    }
+                  },
+            backgroundColor: Colors.blueAccent,
+            child: isLoading
+                ? const CircularProgressIndicator(color: Colors.white)
+                : const Icon(Icons.check, size: 30), // ícone do "V"
+          );
+        },
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }

@@ -199,12 +199,21 @@ class _AddCategoryModalState extends State<AddCategoryModal> {
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Colors.transparent),
+                              borderSide: BorderSide(color: Colors.grey.shade400, width: 1.5),
+                            ),
+                            errorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: Colors.redAccent.shade700, width: 1.5),
+                            ),
+                            focusedErrorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: Colors.redAccent.shade700, width: 2),
                             ),
                           ),
                           validator: (value) => value == null || value.isEmpty ? 'Campo obrigatório' : null,
                           onSaved: (value) => _name = value!,
                         ),
+
                         const SizedBox(height: 16),
                         const Text('Escolha um ícone:', style: TextStyle(color: Colors.white)),
                         const SizedBox(height: 8),
