@@ -113,7 +113,7 @@ Widget build(BuildContext context) {
                       child: Row(
                         children: [
                           const Icon(Icons.calendar_today, color: Colors.white54),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 8),
                           Expanded(
                             child: Padding(
                               padding: const EdgeInsets.only(left: 20), // ajuste conforme desejar
@@ -158,147 +158,149 @@ Widget build(BuildContext context) {
                                 ListTile(                          
                                   leading: const Icon(Icons.flag, color: Colors.white54, size: 24),
                                   title: _selectedCategory != null
-                                ? Container(
-                                    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                        color: Color(_selectedCategory!.color),
-                                        width: 1.5,
-                                      ),
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    constraints: const BoxConstraints(
-                                      maxWidth: 40, // <-- diminua esse valor para reduzir o comprimento (largura)
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Image.asset(
-                                          'assets/${_selectedCategory!.icon}.png',
-                                          width: 20,
-                                          height: 20,
-                                          color: Color(_selectedCategory!.color),
-                                          fit: BoxFit.contain,
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Flexible(
-                                          child: Text(
-                                            _selectedCategory!.name,
-                                            style: const TextStyle(color: Colors.white70),
-                                            overflow: TextOverflow.ellipsis, // para cortar texto longo
+                                      ? Container(
+                                          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+                                          decoration: BoxDecoration(
+                                            border: Border.all(
+                                              color: Color(_selectedCategory!.color),
+                                              width: 1.5,
+                                            ),
+                                            borderRadius: BorderRadius.circular(20),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Image.asset(
+                                                'assets/${_selectedCategory!.icon}.png',
+                                                width: 20,
+                                                height: 20,
+                                                color: Color(_selectedCategory!.color),
+                                                fit: BoxFit.contain,
+                                              ),
+                                              const SizedBox(width: 12),
+                                              Flexible(
+                                                child: Text(
+                                                  _selectedCategory!.name,
+                                                  style: const TextStyle(color: Colors.white70),
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        )
+                                      : Container(
+                                          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+                                          decoration: BoxDecoration(
+                                            // sem borda aqui se quiser, ou com cor neutra
+                                            borderRadius: BorderRadius.circular(20),
+                                          ),
+                                          child: const Text(
+                                            'Opções de Categoria',
+                                            style: TextStyle(color: Colors.white70),
                                           ),
                                         ),
-                                      ],
-                                    ),
-                                  )
-                                : const Text(
-                                    'Opções de Categoria',
-                                    style: TextStyle(color: Colors.white70),
+                                      
+                                      trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.white54),
+                                      onTap: () async {
+                                        final resultado = await showModalBottomSheet<Category>(
+                                          context: context,
+                                          isScrollControlled: true,
+                                          backgroundColor: const Color(0xFF2C2C2C),
+                                          builder: (BuildContext context) {
+                                            return CategoryOptionsModal(userId: widget.userId);
+                                          },
+                                        );
+                                      if (resultado != null) {
+                                        setState(() {
+                                          _selectedCategory = resultado;
+                                        });
+                                      }
+                                    },
                                   ),
-                                  trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.white54),
-                                  onTap: () async {
-                                    final resultado = await showModalBottomSheet<Category>(
-                                      context: context,
-                                      isScrollControlled: true,
-                                      backgroundColor: const Color(0xFF2C2C2C),
-                                      builder: (BuildContext context) {
-                                        return CategoryOptionsModal(userId: widget.userId);
-                                      },
-                                    );
-
-                                    if (resultado != null) {
-                                      setState(() {
-                                        _selectedCategory = resultado;
-                                      });
-                                    }
-                                  },
-                                ),
-                              ],
-                            );
-                          } else if (state is GetCategoriesLoading) {
-                            return const CircularProgressIndicator();
-                          } else {
-                            return const Text(
-                              "Erro ao carregar categorias.",
-                              style: TextStyle(color: Colors.white),
+                                ],
+                              );
+                            } else if (state is GetCategoriesLoading) {
+                              return const CircularProgressIndicator();
+                            } else {
+                              return const Text(
+                                "Erro ao carregar categorias.",
+                                style: TextStyle(color: Colors.white),
+                              );
+                            }
+                          },
+                        ),
+                      ),                    
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 10),
+                        child: const Divider(
+                          color: Colors.white24, 
+                          height: 10, 
+                          thickness: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      const Spacer(),
+                      // Botão salvar
+                      BlocConsumer<CreateExpenseBloc, CreateExpenseState>(
+                        listener: (context, state) {
+                          if (state is CreateExpenseSuccess) {
+                            Navigator.pop(context);
+                          } else if (state is CreateExpenseFailure) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Erro ao salvar: ${state.message}'),
+                              ),
                             );
                           }
                         },
-                      ),
-                    ),
-
-
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 10),
-                      child: const Divider(
-                        color: Colors.white24, 
-                        height: 10, 
-                        thickness: 1.5,
-                        ),
-                    ),
-                    const SizedBox(height: 10),
-                    const Spacer(),
-                    // Botão salvar
-                    BlocConsumer<CreateExpenseBloc, CreateExpenseState>(
-                      listener: (context, state) {
-                        if (state is CreateExpenseSuccess) {
-                          Navigator.pop(context);
-                        } else if (state is CreateExpenseFailure) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Erro ao salvar: ${state.message}'),
+                        builder: (context, state) {
+                          final isLoading = state is CreateExpenseLoading;
+                          return ElevatedButton.icon(
+                            icon: isLoading
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Icon(Icons.save),
+                            label: Text(isLoading ? "Salvando..." : "Salvar Despesa"),
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: const Size.fromHeight(50),
+                              backgroundColor: Theme.of(context).colorScheme.primary,
                             ),
+                            onPressed: isLoading
+                                ? null
+                                : () {
+                                    if (_formKey.currentState!.validate()) {
+                                      // Garantir que a categoria selecionada tenha um 'type' válido
+                                      final type = _selectedCategory?.type ?? 'expense'; // Pega o 'type' da categoria, ou 'expense' como fallback
+
+                                      final expense = Expense(
+                                        id: '',
+                                        userId: widget.userId,
+                                        amount: double.parse(_amountController.text),
+                                        category: _selectedCategory!,
+                                        date: _selectedDate,
+                                        type: type, // Passa o type da categoria
+                                      );
+
+                                      context.read<CreateExpenseBloc>().add(CreateExpenseSubmitted(expense));
+                                    }
+                                  },
                           );
-                        }
-                      },
-                      builder: (context, state) {
-                        final isLoading = state is CreateExpenseLoading;
-                        return ElevatedButton.icon(
-                          icon: isLoading
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : const Icon(Icons.save),
-                          label: Text(isLoading ? "Salvando..." : "Salvar Despesa"),
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: const Size.fromHeight(50),
-                            backgroundColor: Theme.of(context).colorScheme.primary,
-                          ),
-                          onPressed: isLoading
-                              ? null
-                              : () {
-                                  if (_formKey.currentState!.validate()) {
-                                    // Garantir que a categoria selecionada tenha um 'type' válido
-                                    final type = _selectedCategory?.type ?? 'expense'; // Pega o 'type' da categoria, ou 'expense' como fallback
-
-                                    final expense = Expense(
-                                      id: '',
-                                      userId: widget.userId,
-                                      amount: double.parse(_amountController.text),
-                                      category: _selectedCategory!,
-                                      date: _selectedDate,
-                                      type: type, // Passa o type da categoria
-                                    );
-
-                                    context.read<CreateExpenseBloc>().add(CreateExpenseSubmitted(expense));
-                                  }
-                                },
-                        );
-                      },
-                    ),
-                  ],
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 }
