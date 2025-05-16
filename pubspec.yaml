@@ -29,6 +29,9 @@ dependencies:
   flutter_multi_formatter: ^2.7.0
   flutter_speed_dial: ^7.0.0
   math_expressions: ^2.1.0
+  speech_to_text: ^6.5.1
+  flutter_localizations:
+      sdk: flutter
     
 dev_dependencies:
   flutter_test:

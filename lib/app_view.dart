@@ -10,6 +10,9 @@ import 'screens/home/views/home_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'routes/app_router.dart';
 import 'routes/app_routes.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+
+
 
 
 void main() {
@@ -31,6 +34,16 @@ class MyAppView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      locale: const Locale('pt', 'BR'),
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en', 'US'),
+        Locale('pt', 'BR'),
+      ],
       debugShowCheckedModeBanner: false,
       title: "Expense Tracker",
       theme: ThemeData(
