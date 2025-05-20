@@ -1,8 +1,8 @@
 import 'dart:ui';
-
 import 'package:finc/screens/add_expense/blocs/create_expense_bloc/create_expense_bloc.dart';
 import 'package:finc/screens/add_expense/views/teclado_numerico.dart';
 import 'package:finc/screens/category/modal%20category/option_category.dart';
+import 'package:finc/screens/create_banks/modal_banks/created_baks_modal.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -23,17 +23,22 @@ class AddExpenseScreen extends StatefulWidget {
   
   
 }
-
-
 class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _descricaoController = TextEditingController();
+  BankEntity? _selectedBank;
   late final String userId;
   
   Category? _selectedCategory;
   DateTime _selectedDate = DateTime.now();
   
+final List<BankModel> exampleBanks = [
+  BankModel(code: '001', name: 'Banco do Brasil', logo: 'https://logos.com/bb.png'),
+  BankModel(code: '237', name: 'Bradesco', logo: 'https://logos.com/bradesco.png'),
+];
+
+
   @override
   void dispose() {
     _amountController.dispose();
@@ -47,6 +52,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     userId = FirebaseAuth.instance.currentUser!.uid;
     context.read<GetCategoriesBloc>().add(GetCategories(userId));
   }
+  
 
 @override
 Widget build(BuildContext context) {
@@ -329,8 +335,72 @@ Widget build(BuildContext context) {
                             thickness: 1.5,
                           ),
                         ),
-
-
+                       Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                            leading: const Icon(Icons.account_balance, color: Colors.white54, size: 22),
+                            title: _selectedBank != null
+                                ? Row(
+                                    children: [
+                                      Image.network(
+                                        _selectedBank!.logo,
+                                        width: 20,
+                                        height: 20,
+                                        fit: BoxFit.contain,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Flexible(
+                                        child: Text(
+                                          _selectedBank!.name,
+                                          style: const TextStyle(color: Colors.white70),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : Container(
+                                            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 11),
+                                            decoration: BoxDecoration(
+                                              // sem borda aqui se quiser, ou com cor neutra
+                                              borderRadius: BorderRadius.circular(20),
+                                            ),
+                                            child: const Text(
+                                              'Selecione um banco',
+                                              style: TextStyle(color: Colors.white70),
+                                            ),
+                                  ),
+                            trailing: const Padding(
+                              padding: EdgeInsets.only(right: 12), // Aumente esse valor se quiser mais à direita
+                              child: Icon(Icons.arrow_forward_ios, size: 14, color: Colors.white54),
+                            ),
+                            onTap: () async {
+                              final resultado = await showModalBottomSheet<BankEntity>(
+                                context: context,
+                                isScrollControlled: true,
+                                backgroundColor: const Color(0xFF2C2C2C),
+                                builder: (BuildContext context) {
+                                  return BankOptionsModal(banks: exampleBanks,);
+                                },
+                              );
+                          
+                              if (resultado != null) {
+                                setState(() {
+                                  _selectedBank = resultado;
+                                });
+                              }
+                            },
+                          
+                          ),
+                        ),
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 10),
+                          child: const Divider(
+                            color: Colors.white24, 
+                            height: 6, 
+                            thickness: 1.5,
+                          ),
+                        ),
                       ],
                     ),
                   ),

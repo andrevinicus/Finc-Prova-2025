@@ -9,3 +9,15 @@ abstract class ExpenseRepository {
 
   Future<List<ExpenseEntity>> getExpenses(String userId);
 }
+abstract class BankRepository {
+  Future<List<BankEntity>> getBanks();
+}
+class GetBanksUseCase {
+  final BankRepository repository;
+
+  GetBanksUseCase(this.repository);
+
+  Future<List<BankEntity>> call() {
+    return repository.getBanks();
+  }
+}

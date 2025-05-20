@@ -5,6 +5,7 @@ import 'package:expense_repository/expense_repository.dart';
 class FirebaseExpenseRepo implements ExpenseRepository {
   final categoryCollection = FirebaseFirestore.instance.collection('categories');
   final expenseCollection = FirebaseFirestore.instance.collection('expenses');
+  final bankCollection = FirebaseFirestore.instance.collection('banks');
 
   @override
   Future<void> createCategory(Category category) async {
@@ -18,6 +19,7 @@ class FirebaseExpenseRepo implements ExpenseRepository {
     }
   }
 
+  
   @override
   Future<List<Category>> getCategory(String userId) async {
     try {
