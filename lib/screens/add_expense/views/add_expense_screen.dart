@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:finc/screens/add_expense/blocs/create_expense_bloc/create_expense_bloc.dart';
 import 'package:finc/screens/add_expense/views/teclado_numerico.dart';
 import 'package:finc/screens/category/modal%20category/option_category.dart';
-import 'package:finc/screens/create_banks/blocs/bank_bloc.dart';
+import 'package:finc/screens/create_banks/blocs/get_bank_bloc.dart';
 import 'package:finc/screens/create_banks/blocs/bank_event.dart';
 import 'package:finc/screens/create_banks/modal_banks/created_baks_modal.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -197,7 +197,7 @@ Widget build(BuildContext context) {
                         ),
                       ),
                       Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 10),
+                        margin: const EdgeInsets.symmetric(horizontal: 10,),
                         child: const Divider(
                           color: Colors.white24, 
                           height: 10, 

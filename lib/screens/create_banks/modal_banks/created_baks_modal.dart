@@ -1,7 +1,7 @@
 import 'package:expense_repository/expense_repository.dart';
-import 'package:finc/screens/create_banks/blocs/bank_bloc.dart';
+import 'package:finc/screens/create_banks/blocs/get_bank_bloc.dart';
 import 'package:finc/screens/create_banks/blocs/bank_event.dart';
-import 'package:finc/screens/create_banks/blocs/bank_state.dart';
+import 'package:finc/screens/create_banks/blocs/get_bank_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -30,9 +30,20 @@ class _BankOptionsModalState extends State<BankOptionsModal> {
     return BlocBuilder<BankBloc, BankState>(
       builder: (context, state) {
         if (state is BankLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return Container(
+            padding: const EdgeInsets.all(16),
+            decoration: const BoxDecoration(
+              color: Color(0xFF2C2C2C),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: const FractionallySizedBox(
+              heightFactor: 0.5, // altura padrão durante o loading
+              child: Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              ),
+            ),
+          );
         }
-
         if (state is BankError) {
           return Center(
             child: Text(
@@ -100,7 +111,7 @@ class _BankOptionsModalState extends State<BankOptionsModal> {
                       child: ListView.separated(
                         itemCount: filteredBanks.length,
                         separatorBuilder: (_, __) =>
-                            const Divider(color: Colors.white24, height: 0.5),
+                        const Divider(color: Colors.white24, height: 0.5),
                         itemBuilder: (context, index) {
                           final bank = filteredBanks[index];
                           return ListTile(
@@ -143,37 +154,50 @@ class _BankOptionsModalState extends State<BankOptionsModal> {
                         ),
                       ),
                     ),
-
-                  if (allBanks.isNotEmpty) ...[
-                    const Divider(color: Colors.white24, height: 0.8),
-                    ListTile(
-                      leading:
-                          const Icon(Icons.manage_accounts, color: Colors.white),
-                      title: const Text('Gerenciar Bancos',
-                          style: TextStyle(color: Colors.white)),
-                      onTap: () {
-                        Navigator.pop(context);
-                        // TODO: Navegar para gerenciamento
-                      },
+                  const Divider(color: Colors.white24, height: 0.8),
+                  ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white10,
+                      ),
+                      child: const Icon(Icons.manage_accounts, color: Colors.white),
                     ),
-                    const Divider(color: Colors.white24, height: 0.8),
-                    ListTile(
-                      leading: const Icon(Icons.add, color: Colors.white),
-                      title: const Text('Cadastrar Banco',
-                          style: TextStyle(color: Colors.white)),
-                      onTap: () {
-                        Navigator.pop(context);
-                        // TODO: Navegar para cadastro
-                      },
+                    title: const Text(
+                      'Gerenciar Banco',
+                      style: TextStyle(color: Colors.white),
                     ),
-                  ],
+                    onTap: () {
+                      Navigator.pop(context);
+                      // TODO: Navegar para cadastro
+                    },
+                  ),
+                  const Divider(color: Colors.white24, height: 0.8),
+                  ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white10, // Círculo um pouco mais claro que o fundo
+                      ),
+                      child: const Icon(Icons.add, color: Colors.white),
+                    ),
+                    title: const Text(
+                      'Cadastrar Banco',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    onTap: () {
+                      Navigator.pop(context);
+                      // TODO: Navegar para cadastro
+                    },
+                  ),
+                  const Divider(color: Colors.white24, height: 0.8),
                 ],
               ),
             ),
           );
-        }
-
-        // Estado inicial, sem dados
+        } // Estado inicial, sem dados
         return const SizedBox.shrink();
       },
     );

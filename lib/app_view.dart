@@ -3,7 +3,7 @@ import 'package:finc/blocs/auth/auth_bloc.dart';
 import 'package:finc/blocs/auth/auth_state.dart';
 import 'package:finc/screens/category/blocs/create_categorybloc/create_category_bloc.dart';
 import 'package:finc/screens/category/blocs/get_categories_bloc/get_categories_bloc.dart';
-import 'package:finc/screens/create_banks/blocs/bank_bloc.dart';
+import 'package:finc/screens/create_banks/blocs/get_bank_bloc.dart';
 import 'package:finc/screens/create_banks/blocs/bank_event.dart';
 import 'package:finc/screens/home/blocs/get_expenses_bloc/get_expenses_bloc.dart';
 import 'package:flutter/material.dart';
