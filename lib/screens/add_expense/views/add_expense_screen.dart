@@ -2,6 +2,8 @@ import 'dart:ui';
 import 'package:finc/screens/add_expense/blocs/create_expense_bloc/create_expense_bloc.dart';
 import 'package:finc/screens/add_expense/views/teclado_numerico.dart';
 import 'package:finc/screens/category/modal%20category/option_category.dart';
+import 'package:finc/screens/create_banks/blocs/bank_bloc.dart';
+import 'package:finc/screens/create_banks/blocs/bank_event.dart';
 import 'package:finc/screens/create_banks/modal_banks/created_baks_modal.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -14,14 +16,9 @@ import 'package:uuid/uuid.dart';
 
 class AddExpenseScreen extends StatefulWidget {
   final String userId;
-  
-
   const AddExpenseScreen({super.key, required this.userId});
-
   @override
   State<AddExpenseScreen> createState() => _AddExpenseScreenState();
-  
-  
 }
 class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final _formKey = GlobalKey<FormState>();
@@ -33,12 +30,6 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   Category? _selectedCategory;
   DateTime _selectedDate = DateTime.now();
   
-final List<BankModel> exampleBanks = [
-  BankModel(code: '001', name: 'Banco do Brasil', logo: 'https://logos.com/bb.png'),
-  BankModel(code: '237', name: 'Bradesco', logo: 'https://logos.com/bradesco.png'),
-];
-
-
   @override
   void dispose() {
     _amountController.dispose();
@@ -374,23 +365,28 @@ Widget build(BuildContext context) {
                               padding: EdgeInsets.only(right: 12), // Aumente esse valor se quiser mais à direita
                               child: Icon(Icons.arrow_forward_ios, size: 14, color: Colors.white54),
                             ),
-                            onTap: () async {
+                          onTap: () async {
                               final resultado = await showModalBottomSheet<BankEntity>(
                                 context: context,
                                 isScrollControlled: true,
                                 backgroundColor: const Color(0xFF2C2C2C),
                                 builder: (BuildContext context) {
-                                  return BankOptionsModal(banks: exampleBanks,);
+                                  // Recupera o ExpenseRepository do contexto
+                                  final expenseRepository = RepositoryProvider.of<ExpenseRepository>(context);
+
+                                  return BlocProvider<BankBloc>(
+                                    create: (_) => BankBloc(expenseRepository)..add(LoadBanks(userId)),
+                                    child: BankOptionsModal(userId: userId),
+                                  );
                                 },
                               );
-                          
+
                               if (resultado != null) {
                                 setState(() {
                                   _selectedBank = resultado;
                                 });
                               }
                             },
-                          
                           ),
                         ),
                         Container(

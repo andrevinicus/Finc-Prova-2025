@@ -1,6 +1,8 @@
 import 'package:finc/screens/add_expense/blocs/create_expense_bloc/create_expense_bloc.dart';
 import 'package:finc/screens/add_expense/views/add_expense_screen.dart';
 import 'package:finc/screens/category/modal%20category/option_category.dart';
+import 'package:finc/screens/create_banks/blocs/bank_bloc.dart';
+import 'package:finc/screens/create_banks/blocs/bank_event.dart';
 import 'package:finc/screens/transactions/transaction_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:finc/routes/app_routes.dart';
@@ -43,21 +45,25 @@ class AppRouter {
           ),
         );
 
-      case AppRoutes.addExpense:
-        final userId = settings.arguments as String;
-        return MaterialPageRoute(
-          builder: (_) => MultiBlocProvider(
-            providers: [
-              BlocProvider(
-                create: (_) => GetCategoriesBloc(FirebaseExpenseRepo())..add(GetCategories(userId)),
-              ),
-              BlocProvider(
-                create: (_) => CreateExpenseBloc(FirebaseExpenseRepo()),
-              ),
-            ],
-            child: AddExpenseScreen(userId: userId),
-          ),
-        );
+    case AppRoutes.addExpense:
+  final userId = settings.arguments as String;
+  return MaterialPageRoute(
+    builder: (_) => MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => GetCategoriesBloc(FirebaseExpenseRepo())..add(GetCategories(userId)),
+        ),
+        BlocProvider(
+          create: (_) => CreateExpenseBloc(FirebaseExpenseRepo()),
+        ),
+        BlocProvider(
+          create: (_) => BankBloc(FirebaseExpenseRepo())..add(LoadBanks(userId)),  // <<< adiciona aqui
+        ),
+      ],
+      child: AddExpenseScreen(userId: userId),
+    ),
+  );
+
 
       case AppRoutes.categoryOptions:
         final userId = settings.arguments as String; // Aqui você espera que o argumento seja uma String

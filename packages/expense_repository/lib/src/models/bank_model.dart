@@ -5,13 +5,15 @@ class BankModel extends BankEntity {
     required String code,
     required String name,
     required String logo,
-  }) : super(code: code, name: name, logo: logo);
+    required String userId,
+  }) : super(code: code, name: name, logo: logo, userId: userId);
 
   factory BankModel.fromJson(Map<String, dynamic> json) {
     return BankModel(
       code: json['code'] ?? '',
       name: json['name'] ?? '',
       logo: json['logo'] ?? '',
+      userId: json['userId'] ?? '', // Adicione o campo userId se necessário
     );
   }
 
@@ -20,6 +22,7 @@ class BankModel extends BankEntity {
       'code': code,
       'name': name,
       'logo': logo,
+      'userId': userId,
     };
   }
 }

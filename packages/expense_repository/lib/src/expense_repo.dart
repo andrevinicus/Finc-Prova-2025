@@ -8,16 +8,6 @@ abstract class ExpenseRepository {
   Future<void> createExpense(ExpenseEntity expense);
 
   Future<List<ExpenseEntity>> getExpenses(String userId);
-}
-abstract class BankRepository {
-  Future<List<BankEntity>> getBanks();
-}
-class GetBanksUseCase {
-  final BankRepository repository;
 
-  GetBanksUseCase(this.repository);
-
-  Future<List<BankEntity>> call() {
-    return repository.getBanks();
-  }
+  Future<List<BankEntity>> fetchBanks(String userId); // Método para buscar bancos
 }

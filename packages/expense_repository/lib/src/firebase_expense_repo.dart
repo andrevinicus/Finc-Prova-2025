@@ -68,4 +68,20 @@ class FirebaseExpenseRepo implements ExpenseRepository {
       throw Exception('Erro ao buscar despesas');
     }
   }
+  @override
+Future<List<BankEntity>> fetchBanks(String userId) async {
+  try {
+    final querySnapshot = await bankCollection
+      .where('userId', isEqualTo: userId)
+      .get();
+
+    return querySnapshot.docs
+      .map((doc) => BankModel.fromJson(doc.data()))
+      .toList();
+  } catch (e) {
+    log('Erro ao buscar bancos: $e');
+    throw Exception('Erro ao buscar bancos');
+  }
+}
+
 }
