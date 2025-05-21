@@ -115,7 +115,6 @@ class BankDomains {
     '740': 'barclays.com.br', // Banco Barclays
     '741': 'brp.com.br', // Banco Ribeirão Preto
     '743': 'bancosemear.com.br', // Banco Semeiar
-    '745': 'citibank.com.br', // Citibank
     '746': 'modal.com.br', // Banco Modal
     '747': 'rabobank.com.br', // Rabobank
     '748': 'sicredi.com.br', // Banco Cooperativo Sicredi
