@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'bank_event.dart';
+import 'get_bank_event.dart';
 import 'get_bank_state.dart';
 import 'package:expense_repository/expense_repository.dart';
 

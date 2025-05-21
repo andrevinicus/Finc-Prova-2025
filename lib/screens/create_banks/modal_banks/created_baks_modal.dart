@@ -1,6 +1,7 @@
 import 'package:expense_repository/expense_repository.dart';
+import 'package:finc/routes/app_routes.dart';
 import 'package:finc/screens/create_banks/blocs/get_bank_bloc.dart';
-import 'package:finc/screens/create_banks/blocs/bank_event.dart';
+import 'package:finc/screens/create_banks/blocs/get_bank_event.dart';
 import 'package:finc/screens/create_banks/blocs/get_bank_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -189,7 +190,11 @@ class _BankOptionsModalState extends State<BankOptionsModal> {
                     ),
                     onTap: () {
                       Navigator.pop(context);
-                      // TODO: Navegar para cadastro
+                      Navigator.pushNamed(
+                        context,
+                        AppRoutes.addBanks,
+                        arguments: widget.userId,
+                      );
                     },
                   ),
                   const Divider(color: Colors.white24, height: 0.8),

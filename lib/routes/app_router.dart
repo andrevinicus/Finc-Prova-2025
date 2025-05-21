@@ -1,8 +1,9 @@
 import 'package:finc/screens/add_expense/blocs/create_expense_bloc/create_expense_bloc.dart';
 import 'package:finc/screens/add_expense/views/add_expense_screen.dart';
 import 'package:finc/screens/category/modal%20category/option_category.dart';
+import 'package:finc/screens/create_banks/add_banks.dart';
 import 'package:finc/screens/create_banks/blocs/get_bank_bloc.dart';
-import 'package:finc/screens/create_banks/blocs/bank_event.dart';
+import 'package:finc/screens/create_banks/blocs/get_bank_event.dart';
 import 'package:finc/screens/transactions/transaction_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:finc/routes/app_routes.dart';
@@ -69,6 +70,12 @@ class AppRouter {
         final userId = settings.arguments as String; // Aqui você espera que o argumento seja uma String
         return MaterialPageRoute(
           builder: (_) => CategoryOptionsModal(userId: userId), // Passando o userId para o modal
+        );
+
+      case AppRoutes.addBanks:
+        final userId = settings.arguments as String;
+        return MaterialPageRoute(
+          builder: (_) => AddBanksScreen(userId: userId),
         );
 
       default:

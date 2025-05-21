@@ -6,4 +6,5 @@ class AppRoutes {
   static const String addExpense = '/add-expense'; // 👈 Adicione isso
   static const String splash = '/'; // se você tiver uma splash screen
   static const String categoryOptions = '/categoryOptions';
+  static const String addBanks = '/add-banks';
 }

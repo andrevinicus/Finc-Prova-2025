@@ -3,7 +3,7 @@ import 'package:finc/screens/add_expense/blocs/create_expense_bloc/create_expens
 import 'package:finc/screens/add_expense/views/teclado_numerico.dart';
 import 'package:finc/screens/category/modal%20category/option_category.dart';
 import 'package:finc/screens/create_banks/blocs/get_bank_bloc.dart';
-import 'package:finc/screens/create_banks/blocs/bank_event.dart';
+import 'package:finc/screens/create_banks/blocs/get_bank_event.dart';
 import 'package:finc/screens/create_banks/modal_banks/created_baks_modal.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
