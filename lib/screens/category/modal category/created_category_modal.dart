@@ -27,6 +27,7 @@ class _AddCategoryModalState extends State<AddCategoryModal> {
   String _name = '';
   String _icon = defaultCategoryIcons.first;
   int _color = defaultCategoryColors.first;
+  bool _colorFromModal = false;
   // ignore: unused_field
   int _totalExpenses = 0;
   String _type = 'income'; // Pode ser 'income' ou 'expense'
@@ -74,7 +75,10 @@ class _AddCategoryModalState extends State<AddCategoryModal> {
               final isSelected = _color == colorValue;
               return GestureDetector(
                 onTap: () {
-                  setState(() => _color = colorValue);
+                  setState(() {
+                    _color = colorValue;
+                    _colorFromModal = true; // ← ativa a reorganização
+                  });
                   Navigator.pop(context);
                 },
                 child: Container(
@@ -247,20 +251,28 @@ class _AddCategoryModalState extends State<AddCategoryModal> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Selecione a cor da categoria:', style: TextStyle(color: Colors.white)),
+                            const Text('Cor da Conta', style: TextStyle(color: Colors.white)),
                             const SizedBox(height: 12),
                             SingleChildScrollView(
                               scrollDirection: Axis.horizontal,
                               child: Row(
                                 children: [
-                                  ...[
-                                    _color,
-                                    ...defaultCategoryColors.where((color) => color != _color),
-                                  ].take(5).map((colorValue) {
+                                  // lógica para montar a lista com a cor selecionada no modal no topo
+                                  ...(
+                                    _colorFromModal
+                                      ? [
+                                          _color,
+                                          ...defaultCategoryColors.where((color) => color != _color),
+                                        ]
+                                      : defaultCategoryColors
+                                  ).take(5).map((colorValue) {
                                     final isSelected = _color == colorValue;
                                     return GestureDetector(
                                       onTap: () {
-                                        setState(() => _color = colorValue);
+                                        setState(() {
+                                          _color = colorValue;
+                                          _colorFromModal = false; // ← NÃO reordena a lista
+                                        });
                                       },
                                       child: Container(
                                         margin: const EdgeInsets.only(right: 10),
@@ -277,6 +289,8 @@ class _AddCategoryModalState extends State<AddCategoryModal> {
                                       ),
                                     );
                                   }).toList(),
+                                  
+                                  // botão para abrir o modal
                                   GestureDetector(
                                     onTap: () => _showColorPickerModal(context),
                                     child: Container(
@@ -296,6 +310,7 @@ class _AddCategoryModalState extends State<AddCategoryModal> {
                             ),
                           ],
                         ),
+
                         const SizedBox(height: 24),
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(

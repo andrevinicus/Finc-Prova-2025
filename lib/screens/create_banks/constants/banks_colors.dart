@@ -1,4 +1,4 @@
-const List<int> defaultCategoryColors = [
+const List<int> defaultBanksColors = [
   0xFF2196F3, // azul
   0xFFE91E63, // rosa
   0xFFFFC107, // amarelo

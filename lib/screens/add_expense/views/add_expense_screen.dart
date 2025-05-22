@@ -10,7 +10,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:expense_repository/expense_repository.dart';
-import '../../category/blocs/get_categories_bloc/get_categories_bloc.dart';
 import 'package:uuid/uuid.dart';
 
 
@@ -192,7 +191,6 @@ Widget build(BuildContext context) {
                               }
                             },
                           ),
-
                           ],
                         ),
                       ),

@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:ui';
+import 'package:finc/screens/create_banks/constants/banks_colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:finc/screens/add_expense/views/teclado_numerico.dart';
 import 'package:finc/screens/create_banks/constants/banks_domains.dart';
@@ -20,6 +22,9 @@ class _AddBanksScreenState extends State<AddBanksScreen> {
   final _formKey = GlobalKey<FormState>();
   Map<String, dynamic>? selectedBank;
   final _amountController = TextEditingController();
+  final _descricaoController = TextEditingController();
+  bool _colorFromModal = false;
+  int _color = defaultBanksColors.first;
   List<dynamic> allBanks = [];
   List<dynamic> mostUsedBanks = [];
   bool isLoadingBanks = true;
@@ -34,11 +39,52 @@ class _AddBanksScreenState extends State<AddBanksScreen> {
     '104', '237', '341', '260', '623', '756', '380',
   ];
 
+  void _showColorPickerModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1E1E1E),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: defaultBanksColors.map((colorValue) {
+              final isSelected = _color == colorValue;
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _color = colorValue;
+                    _colorFromModal = true; // ← ativa a reorganização
+                  });
+                  Navigator.pop(context);
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: isSelected
+                        ? Border.all(color: Colors.white, width: 3)
+                        : null,
+                  ),
+                  child: CircleAvatar(
+                    backgroundColor: Color(colorValue),
+                    radius: 22,
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        );
+      },
+    );
+  }
   Future<void> fetchBanks() async {
     final prefs = await SharedPreferences.getInstance();
     final cachedData = prefs.getString('cachedBanks');
     if (cachedData != null) {
-      // Carrega do cache local
       final banks = json.decode(cachedData) as List<dynamic>;
       final filteredBanks = banks.where((bank) {
         final code = bank['code'].toString();
@@ -302,6 +348,14 @@ class _AddBanksScreenState extends State<AddBanksScreen> {
                             },
                           ),
                         ),
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          child: const Divider(
+                            color: Colors.transparent, 
+                            height: 1.5, 
+                            thickness: 1.5,
+                            ),
+                        ),
                         InkWell(
                           onTap: () async {
                             final bank = await showModalBottomSheet(
@@ -316,7 +370,7 @@ class _AddBanksScreenState extends State<AddBanksScreen> {
                             }
                           },
                           child: Padding(
-                            padding: const EdgeInsets.only(top: 10, left: 10, bottom: 8),
+                            padding: const EdgeInsets.only(top: 10, left: 10, bottom: 15),
                             child: Row(
                               children: [
                                 SizedBox(
@@ -362,16 +416,109 @@ class _AddBanksScreenState extends State<AddBanksScreen> {
                             ),
                           ),
                         ),
-
                         Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                          margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                           child: const Divider(
                             color: Colors.white24, 
-                            height: 8, 
+                            height: 1.5, 
                             thickness: 1.5,
                             ),
                         ),
-                        
+                         Padding(
+                          padding: const EdgeInsets.only( right: 9),
+                          child: TextFormField(
+                            controller: _descricaoController,
+                            style: const TextStyle(color: Colors.white),
+                            textCapitalization: TextCapitalization.words, // para capitalizar a primeira letra de cada palavra
+                            cursorColor: Colors.white, // cursor branco
+                            selectionControls: MaterialTextSelectionControls(), // mantém comportamento padrão de seleção
+                            selectionHeightStyle: BoxHeightStyle.tight,
+                            selectionWidthStyle: BoxWidthStyle.tight,
+                            decoration: InputDecoration(
+                              labelText: 'Descrição',
+                              labelStyle: const TextStyle(color: Colors.white70),
+                              prefixIcon: const Padding(
+                                padding: EdgeInsets.only(left: 15, right: 23),
+                                child: Icon(Icons.description, color: Colors.white54),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10), // padding mais equilibrado
+                              border: InputBorder.none,
+                            ),
+                            validator: (value) =>
+                                value == null || value.isEmpty ? 'Campo obrigatório' : null,
+                          ),
+                          
+                        ), 
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          child: const Divider(
+                            color: Colors.white24, 
+                            height: 1, 
+                            thickness: 1.5,
+                            ),
+                        ),
+                       Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Cor da Conta', style: TextStyle(color: Colors.white)),
+                          const SizedBox(height: 12),
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: [
+                                // lógica para montar a lista com a cor selecionada no modal no topo
+                                ...(
+                                  _colorFromModal
+                                    ? [
+                                        _color,
+                                        ...defaultBanksColors.where((color) => color != _color),
+                                      ]
+                                    : defaultBanksColors
+                                ).take(5).map((colorValue) {
+                                  final isSelected = _color == colorValue;
+                                  return GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        _color = colorValue;
+                                        _colorFromModal = false; // ← NÃO reordena a lista
+                                      });
+                                    },
+                                    child: Container(
+                                      margin: const EdgeInsets.only(right: 10),
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: isSelected
+                                            ? Border.all(color: Colors.white, width: 2)
+                                            : null,
+                                      ),
+                                      child: CircleAvatar(
+                                        backgroundColor: Color(colorValue),
+                                        radius: 22,
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                                
+                                // botão para abrir o modal
+                                GestureDetector(
+                                  onTap: () => _showColorPickerModal(context),
+                                  child: Container(
+                                    margin: const EdgeInsets.only(right: 14),
+                                    width: 43,
+                                    height: 43,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.white10,
+                                      border: Border.all(color: Colors.white38),
+                                    ),
+                                    child: const Icon(Icons.add, color: Colors.white),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                         // Espaço entre os bancos mais usados e o campo do banco
                         const SizedBox(height: 30),
                         ElevatedButton(
