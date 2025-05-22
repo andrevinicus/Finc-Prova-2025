@@ -108,7 +108,6 @@ class _AddCategoryModalState extends State<AddCategoryModal> {
       },
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
-        child: FractionallySizedBox(
           child: Scaffold(
             backgroundColor: const Color.fromARGB(255, 44, 44, 44),
             body: Center(
@@ -213,7 +212,6 @@ class _AddCategoryModalState extends State<AddCategoryModal> {
                           validator: (value) => value == null || value.isEmpty ? 'Campo obrigatório' : null,
                           onSaved: (value) => _name = value!,
                         ),
-
                         const SizedBox(height: 16),
                         const Text('Escolha um ícone:', style: TextStyle(color: Colors.white)),
                         const SizedBox(height: 8),
@@ -333,8 +331,7 @@ class _AddCategoryModalState extends State<AddCategoryModal> {
               ),
             ),
           ),
-        ),
-      ),
+        ),   
     );
   }
 }

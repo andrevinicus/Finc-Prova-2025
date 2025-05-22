@@ -41,7 +41,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   void initState() {
     super.initState();
     userId = FirebaseAuth.instance.currentUser!.uid;
-    context.read<GetCategoriesBloc>().add(GetCategories(userId));
+    
   }
   
 
@@ -52,7 +52,7 @@ Widget build(BuildContext context) {
       FocusScope.of(context).unfocus();  // tira o foco de qualquer campo de texto
     },
     child: Scaffold(
-      resizeToAvoidBottomInset: false,
+        resizeToAvoidBottomInset: false,
         backgroundColor: const Color.fromARGB(141, 31, 30, 30),
         appBar: AppBar(
           backgroundColor: const Color.fromARGB(141, 31, 30, 30),
@@ -205,87 +205,70 @@ Widget build(BuildContext context) {
                           ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.only(top: 1, right: 1),
-                        child: BlocBuilder<GetCategoriesBloc, GetCategoriesState>(
-                          builder: (context, state) {
-                            if (state is GetCategoriesSuccess) {
-                              return Column(
-                                children: [
-                                  ListTile(                          
-                                    leading: const Icon(Icons.flag, color: Colors.white54, size: 24),
-                                    title: _selectedCategory != null
-                                        ? Container(
-                                            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-                                            decoration: BoxDecoration(
-                                              border: Border.all(
-                                                color: Color(_selectedCategory!.color),
-                                                width: 1.5,
-                                              ),
-                                              borderRadius: BorderRadius.circular(20),
-                                            ),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Image.asset(
-                                                  'assets/${_selectedCategory!.icon}.png',
-                                                  width: 20,
-                                                  height: 20,
-                                                  color: Color(_selectedCategory!.color),
-                                                  fit: BoxFit.contain,
-                                                ),
-                                                const SizedBox(width: 12),
-                                                Flexible(
-                                                  child: Text(
-                                                    _selectedCategory!.name,
-                                                    style: const TextStyle(color: Colors.white70),
-                                                    overflow: TextOverflow.ellipsis,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          )
-                                        : Container(
-                                            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-                                            decoration: BoxDecoration(
-                                              // sem borda aqui se quiser, ou com cor neutra
-                                              borderRadius: BorderRadius.circular(20),
-                                            ),
-                                            child: const Text(
-                                              'Opções de Categoria',
-                                              style: TextStyle(color: Colors.white70),
-                                            ),
-                                          ),
-                                        
-                                        trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.white54),
-                                        onTap: () async {
-                                          final resultado = await showModalBottomSheet<Category>(
-                                            context: context,
-                                            isScrollControlled: true,
-                                            backgroundColor: const Color(0xFF2C2C2C),
-                                            builder: (BuildContext context) {
-                                              return CategoryOptionsModal(userId: userId);
-                                            },
-                                          );
-                                        if (resultado != null) {
-                                          setState(() {
-                                            _selectedCategory = resultado;
-                                          });
-                                        }
-                                      },
+                      padding: const EdgeInsets.only(top: 1, right: 1),
+                      child: ListTile(
+                        leading: const Icon(Icons.flag, color: Colors.white54, size: 24),
+                        title: _selectedCategory != null
+                            ? Container(
+                                padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: Color(_selectedCategory!.color),
+                                    width: 1.5,
+                                  ),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Image.asset(
+                                      'assets/${_selectedCategory!.icon}.png',
+                                      width: 20,
+                                      height: 20,
+                                      color: Color(_selectedCategory!.color),
+                                      fit: BoxFit.contain,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Flexible(
+                                      child: Text(
+                                        _selectedCategory!.name,
+                                        style: const TextStyle(color: Colors.white70),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
                                   ],
-                                );
-                              } else if (state is GetCategoriesLoading) {
-                                return const CircularProgressIndicator();
-                              } else {
-                                return const Text(
-                                  "Erro ao carregar categorias.",
-                                  style: TextStyle(color: Colors.white),
-                                );
-                              }
+                                ),
+                              )
+                            : Container(
+                                padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Text(
+                                  'Opções de Categoria',
+                                  style: TextStyle(color: Colors.white70),
+                                ),
+                              ),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.white54),
+                        onTap: () async {
+                          final resultado = await showModalBottomSheet<Category>(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: const Color(0xFF2C2C2C),
+                            builder: (BuildContext context) {
+                              return CategoryOptionsModal(userId: userId);
                             },
-                          ),
-                        ),                    
+                          );
+
+                          if (resultado != null) {
+                            setState(() {
+                              _selectedCategory = resultado;
+                            });
+                          }
+                        },
+                      ),
+                    ),
+                   
                         Container(
                           margin: const EdgeInsets.symmetric(horizontal: 10),
                           child: const Divider(

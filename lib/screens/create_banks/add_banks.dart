@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:finc/screens/add_expense/views/teclado_numerico.dart';
 import 'package:finc/screens/create_banks/constants/banks_domains.dart';
 import 'package:flutter/material.dart';
@@ -20,87 +20,68 @@ class _AddBanksScreenState extends State<AddBanksScreen> {
   final _formKey = GlobalKey<FormState>();
   Map<String, dynamic>? selectedBank;
   final _amountController = TextEditingController();
-
   List<dynamic> allBanks = [];
   List<dynamic> mostUsedBanks = [];
-
-
-
   bool isLoadingBanks = true;
 
-  @override
-  void initState() {
-    super.initState();
-    _amountController.text = '0,00';
-    fetchBanks();
-  }
-
-  final List<String> mostUsedBankCodes = [
-  '104', '237', '341', '260', '623', '756', '380',
-];
-
-Future<void> fetchBanks() async {
-  final url = Uri.parse('https://brasilapi.com.br/api/banks/v1');
-  final response = await http.get(url);
-
-  if (response.statusCode == 200) {
-    final List<dynamic> banks = json.decode(response.body);
-
-    final bankCodes = banks.map((b) => b['code'].toString()).toList();
-    print('Códigos retornados pela API: $bankCodes');
-
-    final filteredBanks = banks.where((bank) {
-      final code = bank['code'].toString();
-      return mostUsedBankCodes.contains(code);
-    }).toList();
-
-    print('Bancos filtrados (${filteredBanks.length}):');
-    for (var bank in filteredBanks) {
-      print('${bank['code']} - ${bank['name']}');
+    @override
+    void initState() {
+      super.initState();
+      _amountController.text = '0,00';
+      fetchBanks();
     }
+    final List<String> mostUsedBankCodes = [
+    '104', '237', '341', '260', '623', '756', '380',
+  ];
 
-    setState(() {
-      allBanks = banks;
-      mostUsedBanks = filteredBanks;
-      isLoadingBanks = false;
-    });
-  } else {
-    setState(() {
-      isLoadingBanks = false;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Erro ao carregar bancos')),
-    );
+  Future<void> fetchBanks() async {
+    final prefs = await SharedPreferences.getInstance();
+    final cachedData = prefs.getString('cachedBanks');
+    if (cachedData != null) {
+      // Carrega do cache local
+      final banks = json.decode(cachedData) as List<dynamic>;
+      final filteredBanks = banks.where((bank) {
+        final code = bank['code'].toString();
+        return mostUsedBankCodes.contains(code);
+      }).toList();
+      setState(() {
+        allBanks = banks;
+        mostUsedBanks = filteredBanks;
+        isLoadingBanks = false;
+      });
+      return; // sai da função porque já carregou do cache
+    }
+    // Se não tem cache, busca na API
+    final url = Uri.parse('https://brasilapi.com.br/api/banks/v1');
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      final List<dynamic> banks = json.decode(response.body);
+      final filteredBanks = banks.where((bank) {
+        final code = bank['code'].toString();
+        return mostUsedBankCodes.contains(code);
+      }).toList();
+      // Salva no cache local para a próxima vez
+      await prefs.setString('cachedBanks', response.body);
+      setState(() {
+        allBanks = banks;
+        mostUsedBanks = filteredBanks;
+        isLoadingBanks = false;
+      });
+    } else {
+      setState(() {
+        isLoadingBanks = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Erro ao carregar bancos')),
+      );
+    }
   }
-}
 
   @override
   void dispose() {
     _amountController.dispose();
     super.dispose();
   }
-
-  Future<void> _showBankModal(BuildContext context) async {
-    final result = await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: const Color(0xfff0f0f0),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (context) => SizedBox(
-        height: MediaQuery.of(context).size.height * 0.95,
-        child: const BankOptionsModal(),
-      ),
-    );
-
-    if (result != null) {
-      setState(() {
-        selectedBank = result;
-      });
-    }
-  }
-
   Future<void> _abrirTecladoNumerico() async {
     final result = await showModalBottomSheet<String>(
       context: context,
@@ -114,14 +95,12 @@ Future<void> fetchBanks() async {
         ),
       ),
     );
-
     if (result != null &&
         double.tryParse(result.replaceAll(',', '.')) != null) {
       _amountController.text = result.replaceAll('.', ',');
       setState(() {});
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -199,20 +178,20 @@ Future<void> fetchBanks() async {
                     topRight: Radius.circular(28),
                   ),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                 child: SingleChildScrollView(
                   child: Form(
                     key: _formKey,
                     child: Column(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+                          padding: const EdgeInsets.symmetric(vertical: 1, horizontal: 10),
                           child: GridView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 4,
-                              mainAxisSpacing: 0,
+                              mainAxisSpacing: 2,
                               crossAxisSpacing: 0,
                               childAspectRatio: 1,
                             ),
@@ -230,7 +209,7 @@ Future<void> fetchBanks() async {
                                         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
                                       ),
                                       builder: (context) => SizedBox(
-                                        height: MediaQuery.of(context).size.height * 0.95,
+                                        height: MediaQuery.of(context).size.height * 0.60,
                                         child: const BankOptionsModal(),
                                       ),
                                     );
@@ -305,7 +284,7 @@ Future<void> fetchBanks() async {
                                             height: 80,
                                             decoration: BoxDecoration(
                                               shape: BoxShape.circle,
-                                              color: Colors.black.withOpacity(0.3),
+                                              color: const Color.fromARGB(0, 255, 244, 244).withOpacity(0.3),
                                             ),
                                             child: const Center(
                                               child: Icon(
@@ -323,8 +302,77 @@ Future<void> fetchBanks() async {
                             },
                           ),
                         ),
+                        InkWell(
+                          onTap: () async {
+                            final bank = await showModalBottomSheet(
+                              isScrollControlled: false,
+                              context: context,
+                              builder: (context) => BankOptionsModal(),
+                            );
+                            if (bank != null) {
+                              setState(() {
+                                selectedBank = bank;
+                              });
+                            }
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 10, left: 10, bottom: 8),
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width: 40,
+                                  height: 40,
+                                  child: selectedBank == null
+                                      ? const Icon(Icons.account_balance, color: Colors.white70, size: 30)
+                                      : ClipOval(
+                                          child: Image.network(
+                                            'https://img.logo.dev/${BankDomains.getDomain(selectedBank!['code'].toString())}?token=pk_TboSWrKJRDKchCKkTSXr3Q',
+                                            width: 40,
+                                            height: 40,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (_, __, ___) =>
+                                                const Icon(Icons.image_not_supported, color: Colors.grey, size: 30),
+                                          ),
+                                        ),
+                                ),
+                                const SizedBox(width: 20),
+                                Expanded(
+                                  child: Text(
+                                    selectedBank != null
+                                        ? selectedBank!['name']
+                                            .replaceAll(RegExp(r'\b(BCO|Bco)\b', caseSensitive: false), '')
+                                            .trim()
+                                        : 'Selecione uma instituição financeira',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.white70,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 40, // largura fixa para o ícone, ajusta conforme quiser
+                                  child: Transform.translate(
+                                    offset: const Offset(-13, 1),
+                                    child: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.white54),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                          child: const Divider(
+                            color: Colors.white24, 
+                            height: 8, 
+                            thickness: 1.5,
+                            ),
+                        ),
+                        
                         // Espaço entre os bancos mais usados e o campo do banco
-                        const SizedBox(height: 12),
                         const SizedBox(height: 30),
                         ElevatedButton(
                           onPressed: () {
