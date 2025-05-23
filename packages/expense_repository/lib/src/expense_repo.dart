@@ -2,12 +2,11 @@ import 'package:expense_repository/expense_repository.dart';
 
 abstract class ExpenseRepository {
   Future<void> createCategory(Category category);
-
-  Future<List<Category>> getCategory(String userId);  // Método para buscar categorias de um usuário
+  Future<List<Category>> getCategory(String userId);
 
   Future<void> createExpense(ExpenseEntity expense);
-
   Future<List<ExpenseEntity>> getExpenses(String userId);
 
-  Future<List<BankEntity>> fetchBanks(String userId); // Método para buscar bancos
+  Future<List<BankAccountEntity>> fetchBanks(String userId);
+  Future<void> createBank(BankAccountEntity bank);
 }

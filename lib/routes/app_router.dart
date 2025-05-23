@@ -1,19 +1,21 @@
+import 'package:finc/routes/app_routes.dart';
+import 'package:expense_repository/expense_repository.dart';
 import 'package:finc/screens/add_expense/blocs/create_expense_bloc/create_expense_bloc.dart';
 import 'package:finc/screens/add_expense/views/add_expense_screen.dart';
-import 'package:finc/screens/category/modal%20category/option_category.dart';
-import 'package:finc/screens/create_banks/add_banks.dart';
-import 'package:finc/screens/create_banks/blocs/get_bank_bloc.dart';
-import 'package:finc/screens/create_banks/blocs/get_bank_event.dart';
-import 'package:finc/screens/transactions/transaction_screen.dart';
-import 'package:flutter/material.dart';
-import 'package:finc/routes/app_routes.dart';
 import 'package:finc/screens/auth/login_screen.dart';
 import 'package:finc/screens/auth/register_screen.dart';
-import 'package:finc/screens/home/views/home_screen.dart';
-import 'package:expense_repository/expense_repository.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:finc/screens/home/blocs/get_expenses_bloc/get_expenses_bloc.dart';
 import 'package:finc/screens/category/blocs/get_categories_bloc/get_categories_bloc.dart';
+import 'package:finc/screens/category/modal%20category/option_category.dart';
+import 'package:finc/screens/create_banks/add_banks.dart';
+import 'package:finc/screens/create_banks/blocs/creat_banks/creat_banks_blco.dart';
+import 'package:finc/screens/create_banks/blocs/get_bank/get_bank_bloc.dart';
+import 'package:finc/screens/create_banks/blocs/get_bank/get_bank_event.dart';
+import 'package:finc/screens/home/blocs/get_expenses_bloc/get_expenses_bloc.dart';
+import 'package:finc/screens/home/views/home_screen.dart';
+import 'package:finc/screens/transactions/transaction_screen.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AppRouter {
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
@@ -58,7 +60,7 @@ class AppRouter {
           create: (_) => CreateExpenseBloc(FirebaseExpenseRepo()),
         ),
         BlocProvider(
-          create: (_) => BankBloc(FirebaseExpenseRepo())..add(LoadBanks(userId)),  // <<< adiciona aqui
+          create: (_) => GetBankBloc(FirebaseExpenseRepo())..add(GetLoadBanks(userId)),  // <<< adiciona aqui
         ),
       ],
       child: AddExpenseScreen(userId: userId),
@@ -75,7 +77,12 @@ class AppRouter {
       case AppRoutes.addBanks:
         final userId = settings.arguments as String;
         return MaterialPageRoute(
-          builder: (_) => AddBanksScreen(userId: userId),
+          builder: (context) {
+            return BlocProvider<AddBankBloc>(
+              create: (_) => AddBankBloc(expenseRepository: FirebaseExpenseRepo()),
+              child: AddBanksScreen(userId: userId),
+            );
+          },
         );
 
       default:

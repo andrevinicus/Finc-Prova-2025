@@ -1,17 +1,17 @@
 import 'package:equatable/equatable.dart';
 
-abstract class BankEvent extends Equatable {
-  const BankEvent();
+abstract class GetBankEvent extends Equatable {
+  const GetBankEvent();
 
   @override
   List<Object> get props => [];
 }
 
 // Evento para carregar os bancos com o userId
-class LoadBanks extends BankEvent {
+class GetLoadBanks extends GetBankEvent {
   final String userId;
 
-  const LoadBanks(this.userId);
+  const GetLoadBanks(this.userId);
 
   @override
   List<Object> get props => [userId];

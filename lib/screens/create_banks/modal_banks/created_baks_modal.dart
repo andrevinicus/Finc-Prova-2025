@@ -1,8 +1,8 @@
 import 'package:expense_repository/expense_repository.dart';
 import 'package:finc/routes/app_routes.dart';
-import 'package:finc/screens/create_banks/blocs/get_bank_bloc.dart';
-import 'package:finc/screens/create_banks/blocs/get_bank_event.dart';
-import 'package:finc/screens/create_banks/blocs/get_bank_state.dart';
+import 'package:finc/screens/create_banks/blocs/get_bank/get_bank_bloc.dart';
+import 'package:finc/screens/create_banks/blocs/get_bank/get_bank_event.dart';
+import 'package:finc/screens/create_banks/blocs/get_bank/get_bank_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -16,53 +16,47 @@ class BankOptionsModal extends StatefulWidget {
 }
 
 class _BankOptionsModalState extends State<BankOptionsModal> {
-  BankEntity? selectedBank;
+  BankAccountEntity? selectedBank;
   String searchQuery = '';
 
   @override
   void initState() {
     super.initState();
-    // Carrega bancos ao iniciar o modal
-    context.read<BankBloc>().add(LoadBanks(widget.userId));
+    context.read<GetBankBloc>().add(GetLoadBanks(widget.userId));
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<BankBloc, BankState>(
+    return BlocBuilder<GetBankBloc, GetBankState>(
       builder: (context, state) {
-        if (state is BankLoading) {
-          return Container(
-            padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
-              color: Color(0xFF2C2C2C),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        if (state is GetBankLoading) {
+          return _buildContainer(
+            heightFactor: 0.5,
+            child: const Center(
+              child: CircularProgressIndicator(color: Colors.white),
             ),
-            child: const FractionallySizedBox(
-              heightFactor: 0.5, // altura padrão durante o loading
-              child: Center(
-                child: CircularProgressIndicator(color: Colors.white),
+          );
+        }
+
+        if (state is GetBankError) {
+          return _buildContainer(
+            heightFactor: 0.35,
+            child: Center(
+              child: Text(
+                state.message,
+                style: const TextStyle(color: Colors.redAccent),
               ),
             ),
           );
         }
-        if (state is BankError) {
-          return Center(
-            child: Text(
-              state.message,
-              style: const TextStyle(color: Colors.redAccent),
-            ),
-          );
-        }
 
-        if (state is BankLoaded) {
+        if (state is GetBankLoaded) {
           final allBanks = state.banks;
           final filteredBanks = allBanks
-              .where((bank) =>
-                  bank.name.toLowerCase().contains(searchQuery.toLowerCase()))
+              .where((bank) => bank.bankName.toLowerCase().contains(searchQuery.toLowerCase()))
               .take(5)
               .toList();
 
-          // Ajusta altura do modal conforme quantidade de itens
           double heightFactor;
           if (filteredBanks.isEmpty) {
             heightFactor = 0.35;
@@ -74,137 +68,146 @@ class _BankOptionsModalState extends State<BankOptionsModal> {
             heightFactor = 0.75;
           }
 
-          return Container(
-            padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
-              color: Color(0xFF2C2C2C),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-            ),
-            child: FractionallySizedBox(
-              heightFactor: heightFactor,
-              child: Column(
-                children: [
-                  // Campo de busca
-                  TextField(
-                    cursorColor: Colors.white,
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.search, color: Colors.white),
-                      hintText: 'Pesquisar bancos...',
-                      hintStyle: const TextStyle(color: Colors.white60),
-                      filled: true,
-                      fillColor: Colors.grey[800],
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                    style: const TextStyle(color: Colors.white),
-                    onChanged: (value) {
-                      setState(() {
-                        searchQuery = value;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 16),
+          return _buildContainer(
+            heightFactor: heightFactor,
+            child: Column(
+              children: [
+                _buildSearchField(),
+                const SizedBox(height: 16),
+                if (filteredBanks.isNotEmpty)
+                  Expanded(
+                    child: ListView.separated(
+                      itemCount: filteredBanks.length,
+                      separatorBuilder: (_, __) => const Divider(color: Colors.white24, height: 0.5),
+                      itemBuilder: (context, index) {
+                        final bank = filteredBanks[index];
+                        final isSelected = selectedBank != null && selectedBank!.id == bank.id;
 
-                  if (filteredBanks.isNotEmpty)
-                    Expanded(
-                      child: ListView.separated(
-                        itemCount: filteredBanks.length,
-                        separatorBuilder: (_, __) =>
-                        const Divider(color: Colors.white24, height: 0.5),
-                        itemBuilder: (context, index) {
-                          final bank = filteredBanks[index];
-                          return ListTile(
-                            leading: ClipRRect(
-                              borderRadius: BorderRadius.circular(4),
-                              child: Image.network(
-                                bank.logo,
-                                width: 32,
-                                height: 32,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    const Icon(Icons.broken_image,
-                                        color: Colors.white30),
-                              ),
-                            ),
-                            title: Text(
-                              bank.name,
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                            trailing: selectedBank == bank
-                                ? const Icon(Icons.check_circle,
-                                    color: Colors.greenAccent, size: 18)
-                                : null,
-                            onTap: () {
-                              setState(() {
-                                selectedBank = bank;
-                              });
-                              Navigator.pop(context, bank);
-                            },
-                          );
-                        },
-                      ),
-                    )
-                  else
-                    const Expanded(
-                      child: Center(
-                        child: Text(
-                          'Nenhum banco encontrado.',
-                          style: TextStyle(color: Colors.white70),
-                        ),
+                        return ListTile(
+                          leading: bank.logo != null && bank.logo!.isNotEmpty
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: Image.network(
+                                    bank.logo!,
+                                    width: 32,
+                                    height: 32,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) =>
+                                        const Icon(Icons.broken_image, color: Colors.white30),
+                                  ),
+                                )
+                              : Container(
+                                  width: 32,
+                                  height: 32,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white10,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: const Icon(Icons.account_balance, color: Colors.white30, size: 20),
+                                ),
+                          title: Text(
+                            bank.bankName,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          trailing: isSelected
+                              ? const Icon(Icons.check_circle, color: Colors.greenAccent, size: 18)
+                              : null,
+                          onTap: () {
+                            setState(() {
+                              selectedBank = bank;
+                            });
+                            Navigator.pop(context, bank);
+                          },
+                        );
+                      },
+                    ),
+                  )
+                else
+                  const Expanded(
+                    child: Center(
+                      child: Text(
+                        'Nenhum banco encontrado.',
+                        style: TextStyle(color: Colors.white70),
                       ),
                     ),
-                  const Divider(color: Colors.white24, height: 0.8),
-                  ListTile(
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white10,
-                      ),
-                      child: const Icon(Icons.manage_accounts, color: Colors.white),
-                    ),
-                    title: const Text(
-                      'Gerenciar Banco',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    onTap: () {
-                      Navigator.pop(context);
-                      // TODO: Navegar para cadastro
-                    },
                   ),
-                  const Divider(color: Colors.white24, height: 0.8),
-                  ListTile(
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white10, // Círculo um pouco mais claro que o fundo
-                      ),
-                      child: const Icon(Icons.add, color: Colors.white),
-                    ),
-                    title: const Text(
-                      'Cadastrar Banco',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.pushNamed(
-                        context,
-                        AppRoutes.addBanks,
-                        arguments: widget.userId,
-                      );
-                    },
-                  ),
-                  const Divider(color: Colors.white24, height: 0.8),
-                ],
-              ),
+                const Divider(color: Colors.white24),
+                ListTile(
+                  leading: _circleIcon(Icons.manage_accounts),
+                  title: const Text('Gerenciar Banco', style: TextStyle(color: Colors.white)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    // TODO: implementar rota de gerenciamento se necessário
+                  },
+                ),
+                const Divider(color: Colors.white24),
+                ListTile(
+                  leading: _circleIcon(Icons.add),
+                  title: const Text('Cadastrar Banco', style: TextStyle(color: Colors.white)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(
+                      context,
+                      AppRoutes.addBanks,
+                      arguments: widget.userId,
+                    );
+                  },
+                ),
+              ],
             ),
           );
-        } // Estado inicial, sem dados
-        return const SizedBox.shrink();
+        }
+
+        return const SizedBox.shrink(); // fallback caso estado não esperado
       },
+    );
+  }
+
+  Widget _buildSearchField() {
+    return TextField(
+      cursorColor: Colors.white,
+      decoration: InputDecoration(
+        prefixIcon: const Icon(Icons.search, color: Colors.white),
+        hintText: 'Pesquisar bancos...',
+        hintStyle: const TextStyle(color: Colors.white60),
+        filled: true,
+        fillColor: Colors.grey[800],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+      ),
+      style: const TextStyle(color: Colors.white),
+      onChanged: (value) {
+        setState(() {
+          searchQuery = value;
+        });
+      },
+    );
+  }
+
+  Widget _buildContainer({required double heightFactor, required Widget child}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: const BoxDecoration(
+        color: Color(0xFF2C2C2C),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: FractionallySizedBox(
+        heightFactor: heightFactor,
+        child: child,
+      ),
+    );
+  }
+
+  Widget _circleIcon(IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: const BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white10,
+      ),
+      child: Icon(icon, color: Colors.white),
     );
   }
 }

@@ -69,19 +69,31 @@ class FirebaseExpenseRepo implements ExpenseRepository {
     }
   }
   @override
-Future<List<BankEntity>> fetchBanks(String userId) async {
-  try {
-    final querySnapshot = await bankCollection
-      .where('userId', isEqualTo: userId)
-      .get();
+  Future<List<BankAccountEntity>> fetchBanks(String userId) async {
+    try {
+      final querySnapshot = await bankCollection
+        .where('userId', isEqualTo: userId)
+        .get();
 
-    return querySnapshot.docs
-      .map((doc) => BankModel.fromJson(doc.data()))
-      .toList();
-  } catch (e) {
-    log('Erro ao buscar bancos: $e');
-    throw Exception('Erro ao buscar bancos');
+      return querySnapshot.docs
+        .map((doc) => BankAccountModel.fromJson(doc.data()))
+        .toList(); // ← Model que herda da Entity
+    } catch (e) {
+      log('Erro ao buscar bancos: $e');
+      throw Exception('Erro ao buscar bancos');
+    }
   }
-}
+  @override
+  Future<void> createBank(BankAccountEntity bank) async {
+    try {
+      final bankModel = BankAccountModel.fromEntity(bank);
+      await bankCollection
+          .doc(bankModel.id)
+          .set(bankModel.toJson());
+    } catch (e, stackTrace) {
+      log('Erro ao criar banco', error: e, stackTrace: stackTrace);
+      throw Exception('Erro ao criar banco');
+    }
+  }
 
 }

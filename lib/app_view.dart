@@ -3,8 +3,8 @@ import 'package:finc/blocs/auth/auth_bloc.dart';
 import 'package:finc/blocs/auth/auth_state.dart';
 import 'package:finc/screens/category/blocs/create_categorybloc/create_category_bloc.dart';
 import 'package:finc/screens/category/blocs/get_categories_bloc/get_categories_bloc.dart';
-import 'package:finc/screens/create_banks/blocs/get_bank_bloc.dart';
-import 'package:finc/screens/create_banks/blocs/get_bank_event.dart';
+import 'package:finc/screens/create_banks/blocs/get_bank/get_bank_bloc.dart';
+import 'package:finc/screens/create_banks/blocs/get_bank/get_bank_event.dart';
 import 'package:finc/screens/home/blocs/get_expenses_bloc/get_expenses_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -67,7 +67,7 @@ class MyAppView extends StatelessWidget {
           final getExpensesBloc = GetExpensesBloc(expenseRepository)..add(GetExpenses(state.user.uid));
           final getCategoriesBloc = GetCategoriesBloc(expenseRepository)..add(GetCategories(state.user.uid));
           final createCategoryBloc = CreateCategoryBloc(expenseRepository: expenseRepository);
-          final getBanksBloc = BankBloc(expenseRepository)..add(LoadBanks(state.user.uid));
+          final getBanksBloc = GetBankBloc(expenseRepository)..add(GetLoadBanks(state.user.uid));
 
           return MultiBlocProvider(
             providers: [
