@@ -408,7 +408,7 @@ class _AddBanksScreenState extends State<AddBanksScreen> {
                                             ? selectedBank!['name']
                                                   .replaceAll(RegExp(r'\b(BCO|Bco)\b', caseSensitive: false), '')
                                                   .trim()
-                                            : 'Selecione uma instituição financeira',
+                                            : 'instituição financeira',
                                         style: const TextStyle(
                                           fontSize: 16,
                                           color: Colors.white70,
@@ -587,9 +587,9 @@ class _AddBanksScreenState extends State<AddBanksScreen> {
                 final uuid = Uuid();
                 final userId = FirebaseAuth.instance.currentUser!.uid;
 
-                final bankName = selectedBank!['bankName'] as String? ?? '';
-                final bankCode = selectedBank!['bankCode'] as String?;
-                final logo = selectedBank!['logo'] as String?;
+                final bankName = selectedBank!['name'] as String? ?? '';
+                final bankCode = selectedBank!['code'].toString();
+                final logo = 'https://img.logo.dev/${BankDomains.getDomain(bankCode!)}?token=pk_TboSWrKJRDKchCKkTSXr3Q';
 
                 final bankAccountEntity = BankAccountEntity(
                   id: uuid.v4(),
