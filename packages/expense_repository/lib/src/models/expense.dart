@@ -7,8 +7,9 @@ class Expense {
   final double amount;
   final DateTime date;
   final String userId;
-  final String type; // 'despesa' ou 'receita'
-  final String description; // ✅ Adicionado
+  final String type; 
+  final String description; 
+  final String? bankId;
 
   Expense({
     required this.id,
@@ -17,7 +18,8 @@ class Expense {
     required this.date,
     required this.userId,
     required this.type,
-    required this.description, // ✅ Adicionado
+    required this.description,
+    required this.bankId,
   });
 
   /// Getter para uma instância "vazia"
@@ -29,6 +31,7 @@ class Expense {
         userId: '',
         type: 'despesa',
         description: '',
+        bankId: '',
       );
 
   /// Permite criar uma nova instância com modificações
@@ -40,6 +43,7 @@ class Expense {
     String? userId,
     String? type,
     String? description,
+    String? bankId,
   }) {
     return Expense(
       id: id ?? this.id,
@@ -49,6 +53,7 @@ class Expense {
       userId: userId ?? this.userId,
       type: type ?? this.type,
       description: description ?? this.description,
+      bankId: bankId,
     );
   }
 
@@ -64,6 +69,7 @@ class Expense {
       userId: map['userId'] ?? '',
       type: map['type'] ?? 'despesa',
       description: map['description'] ?? '',
+      bankId: map['bankId'],
     );
   }
 
@@ -76,6 +82,7 @@ class Expense {
       'userId': userId,
       'type': type,
       'description': description,
+      'bankId': bankId,
     };
   }
 
@@ -89,6 +96,7 @@ class Expense {
       userId: entity.userId,
       type: entity.type,
       description: entity.description,
+      bankId: entity.bankId,
     );
   }
 
@@ -102,6 +110,7 @@ class Expense {
       userId: userId,
       type: type,
       description: description,
+      bankId: bankId,
     );
   }
 

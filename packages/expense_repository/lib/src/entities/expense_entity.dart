@@ -9,6 +9,7 @@ class ExpenseEntity {
   final String userId;
   final String type; // 'despesa' ou 'receita'
   final String description; // ✅ Novo campo
+  final String? bankId;
 
   ExpenseEntity({
     required this.expenseId,
@@ -17,7 +18,8 @@ class ExpenseEntity {
     required this.amount,
     required this.userId,
     required this.type,
-    required this.description, // ✅ Incluído
+    required this.description,
+    required this.bankId, // ✅ Incluído
   });
 
   /// Converte a entidade para um documento (mapa) do Firestore
@@ -29,7 +31,8 @@ class ExpenseEntity {
       'amount': amount,
       'userId': userId,
       'type': type,
-      'description': description, // ✅ Incluído
+      'description': description, 
+      'bankId': bankId, // ✅ Incluído
     };
   }
 
@@ -44,7 +47,8 @@ class ExpenseEntity {
       amount: (doc['amount'] as num).toInt(),
       userId: doc['userId'] as String,
       type: doc['type'] ?? 'despesa',
-      description: doc['description'] ?? '', // ✅ Incluído com fallback
+      description: doc['description'] ?? '',
+      bankId: doc['bankId'] as String?,
     );
   }
 }

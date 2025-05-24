@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'dart:ui';
 import 'package:finc/screens/add_expense/blocs/create_expense_bloc/create_expense_bloc.dart';
 import 'package:finc/screens/add_expense/views/teclado_numerico.dart';
+import 'package:finc/screens/add_expense/views/upload_dir.dart';
 import 'package:finc/screens/category/modal%20category/option_category.dart';
 import 'package:finc/screens/create_banks/blocs/get_bank/get_bank_bloc.dart';
 import 'package:finc/screens/create_banks/blocs/get_bank/get_bank_event.dart';
@@ -13,6 +15,7 @@ import 'package:expense_repository/expense_repository.dart';
 import 'package:uuid/uuid.dart';
 
 
+
 class AddExpenseScreen extends StatefulWidget {
   final String userId;
   const AddExpenseScreen({super.key, required this.userId});
@@ -21,11 +24,12 @@ class AddExpenseScreen extends StatefulWidget {
 }
 class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final _formKey = GlobalKey<FormState>();
+  File? _selectedImage;
+  String? _selectedImageName;
   final _amountController = TextEditingController();
   final _descricaoController = TextEditingController();
   BankAccountEntity? _selectedBank;
   late final String userId;
-
   Category? _selectedCategory;
   DateTime _selectedDate = DateTime.now();
 
@@ -35,14 +39,17 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     _descricaoController.dispose();
     super.dispose();
   }
-
   @override
   void initState() {
     super.initState();
     userId = FirebaseAuth.instance.currentUser!.uid;
 
   }
-
+  String truncatedName(String? name) {
+    if (name == null) return 'Selecionar Imagem';
+    if (name.length <= 25) return name;
+    return '${name.substring(0, 22)}...'; // 22 + "..." = 25 caracteres
+  }
 
 @override
 Widget build(BuildContext context) {
@@ -303,7 +310,7 @@ Widget build(BuildContext context) {
                             ),
                           ),
                           Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 10),
+                            margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             child: const Divider(
                               color: Colors.white24,
                               height: 10,
@@ -311,7 +318,7 @@ Widget build(BuildContext context) {
                               ),
                           ),
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
                             child: ListTile(
                               contentPadding: const EdgeInsets.symmetric(horizontal: 12),
                               leading: const Icon(Icons.account_balance, color: Colors.white54, size: 22),
@@ -320,8 +327,8 @@ Widget build(BuildContext context) {
                                         children: [
                                           Image.network(
                                             _selectedBank!.logo!,
-                                            width: 20,
-                                            height: 20,
+                                            width: 25,
+                                            height: 25,
                                             fit: BoxFit.contain,
                                           ),
                                           const SizedBox(width: 8),
@@ -372,7 +379,72 @@ Widget build(BuildContext context) {
                             ),
                           ),
                           Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 10),
+                            margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                            child: const Divider(
+                              color: Colors.white24,
+                              height: 6,
+                              thickness: 1.5,
+                              ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 0, right: 9),
+                            child: InkWell(
+                              onTap: () async {
+                                final pickedFile = await showImagePickerModal(context);
+                                if (pickedFile != null) {
+                                  setState(() {
+                                    _selectedImage = pickedFile;
+                                    _selectedImageName = pickedFile.path.split('/').last;
+                                  });
+                                }
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                                decoration: BoxDecoration(
+                                  color: Colors.transparent,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.image, color: Colors.white54),
+                                    SizedBox(width: 16),
+
+                                    if (_selectedImage != null) 
+                                      Container(
+                                        width: 40,
+                                        height: 40,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(color: Colors.white54),
+                                        ),
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(8),
+                                          child: Image.file(
+                                            _selectedImage!,
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
+                                      ),
+                                    if (_selectedImage != null) SizedBox(width: 16),
+
+                                    Expanded(
+                                      child: Text(
+                                        truncatedName(_selectedImageName),
+                                        style: TextStyle(
+                                          color: Colors.white54,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                        textAlign: TextAlign.left,
+                                      ),
+                                    ),
+                                    Icon(Icons.cloud_upload_outlined, color: Colors.white54),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                             child: const Divider(
                               color: Colors.white24,
                               height: 6,
@@ -420,6 +492,7 @@ Widget build(BuildContext context) {
                         if (_formKey.currentState!.validate()) {
                           final uuid = Uuid();
                           final userId = FirebaseAuth.instance.currentUser!.uid;
+                          
 
                           final expense = Expense(
                             id: uuid.v4(),
@@ -429,6 +502,7 @@ Widget build(BuildContext context) {
                             date: _selectedDate,
                             userId: userId,
                             type: 'expense',
+                            bankId: _selectedBank?.id,
                           );
 
                           context.read<CreateExpenseBloc>().add(

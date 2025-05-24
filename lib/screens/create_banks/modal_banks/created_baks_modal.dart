@@ -137,7 +137,6 @@ class _BankOptionsModalState extends State<BankOptionsModal> {
                   title: const Text('Gerenciar Banco', style: TextStyle(color: Colors.white)),
                   onTap: () {
                     Navigator.pop(context);
-                    // TODO: implementar rota de gerenciamento se necessário
                   },
                 ),
                 const Divider(color: Colors.white24),

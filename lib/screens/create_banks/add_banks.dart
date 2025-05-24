@@ -550,75 +550,76 @@ class _AddBanksScreenState extends State<AddBanksScreen> {
           ],
         ),
        floatingActionButton: BlocConsumer<AddBankBloc, AddBankState>(
-  listener: (context, state) {
-    if (state is AddBankSuccess) {
-      Navigator.pop(context); // Fecha tela ao salvar com sucesso
-    } else if (state is AddBankFailure) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao salvar: ${state.message}')),
-      );
-    }
-  },
-  builder: (context, state) {
-    final isLoading = state is AddBankLoading;
+        listener: (context, state) {
+          if (state is AddBankSuccess) {
+            Navigator.pop(context); // Fecha tela ao salvar com sucesso
+          } else if (state is AddBankFailure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Erro ao salvar: ${state.message}')),
+            );
+          }
+        },
+        builder: (context, state) {
+          final isLoading = state is AddBankLoading;
 
-    return FloatingActionButton(
-      onPressed: isLoading
-          ? null
-          : () {
-              final amountText = _amountController.text.trim();
-              final amount = double.tryParse(amountText.replaceAll(',', '.'));
+          return FloatingActionButton(
+            onPressed: isLoading
+                ? null
+                : () {
+                    final amountText = _amountController.text.trim();
+                    final amount = double.tryParse(amountText.replaceAll(',', '.'));
 
-              if (amountText.isEmpty || amount == null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Informe um valor válido.')),
-                );
-                return;
-              }
+                    if (amountText.isEmpty || amount == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Informe um valor válido.')),
+                      );
+                      return;
+                    }
 
-              if (selectedBank == null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Selecione um banco.')),
-                );
-                return;
-              }
+                    if (selectedBank == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Selecione um banco.')),
+                      );
+                      return;
+                    }
 
-              if (_formKey.currentState!.validate()) {
-                final uuid = Uuid();
-                final userId = FirebaseAuth.instance.currentUser!.uid;
+                    if (_formKey.currentState!.validate()) {
+                      final uuid = Uuid();
+                      final userId = FirebaseAuth.instance.currentUser!.uid;
 
-                final bankName = selectedBank!['name'] as String? ?? '';
-                final bankCode = selectedBank!['code'].toString();
-                final logo = 'https://img.logo.dev/${BankDomains.getDomain(bankCode!)}?token=pk_TboSWrKJRDKchCKkTSXr3Q';
+                      final bankName = selectedBank!['name'] as String? ?? '';
+                      final bankCode = selectedBank!['code'].toString();
+                      final logo = 'https://img.logo.dev/${BankDomains.getDomain(bankCode!)}?token=pk_TboSWrKJRDKchCKkTSXr3Q';
+                      print('DEBUG: Valor de selectedBank antes de usar!: $selectedBank'); 
 
-                final bankAccountEntity = BankAccountEntity(
-                  id: uuid.v4(),
-                  descricao: _descricaoController.text.trim(),
-                  bankName: bankName,
-                  bankCode: bankCode,
-                  logo: logo,
-                  initialBalance: amount,
-                  colorHex: _color,
-                  userId: userId,
-                );
+                      final bankAccountEntity = BankAccountEntity(
+                        id: uuid.v4(),
+                        descricao: _descricaoController.text.trim(),
+                        bankName: bankName,
+                        bankCode: bankCode,
+                        logo: logo,
+                        initialBalance: amount,
+                        colorHex: _color,
+                        userId: userId,
+                      );
 
-                // Converter para Model para enviar no evento
-                final bankAccountModel = BankAccountModel.fromEntity(bankAccountEntity);
+                      // Converter para Model para enviar no evento
+                      final bankAccountModel = BankAccountModel.fromEntity(bankAccountEntity);
 
-                // Dispara evento para salvar banco
-                context.read<AddBankBloc>().add(
-                      SubmitNewBank(bankAccountModel),
-                    );
-              }
-            },
-      backgroundColor: Colors.blueAccent,
-      child: isLoading
-          ? const CircularProgressIndicator(color: Colors.white)
-          : const Icon(Icons.check, size: 30),
-    );
-  },
-),
-floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+                      // Dispara evento para salvar banco
+                      context.read<AddBankBloc>().add(
+                            SubmitNewBank(bankAccountModel),
+                          );
+                    }
+                  },
+            backgroundColor: Colors.blueAccent,
+            child: isLoading
+                ? const CircularProgressIndicator(color: Colors.white)
+                : const Icon(Icons.check, size: 30),
+          );
+        },
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
 
 
       ),
