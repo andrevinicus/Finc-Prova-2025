@@ -1,7 +1,7 @@
 import 'package:expense_repository/expense_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class ExpenseEntity {
+class IncomeEntity {
   final String expenseId;
   final Category category;
   final DateTime date;
@@ -12,7 +12,7 @@ class ExpenseEntity {
   final String? bankId;
   final String? imageId; // alterado de idImg para imageId
 
-  ExpenseEntity({
+  IncomeEntity({
     required this.expenseId,
     required this.category,
     required this.date,
@@ -38,8 +38,8 @@ class ExpenseEntity {
     };
   }
 
-  static ExpenseEntity fromDocument(Map<String, dynamic> doc) {
-    return ExpenseEntity(
+  static IncomeEntity fromDocument(Map<String, dynamic> doc) {
+    return IncomeEntity(
       expenseId: doc['expenseId'] as String,
       category: Category.fromEntity(
         CategoryEntity.fromDocument(doc['category'] as Map<String, dynamic>),

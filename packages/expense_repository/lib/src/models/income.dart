@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expense_repository/expense_repository.dart';
 
-class Expense {
+class Income {
   final String id;
   final Category category;
   final double amount;
@@ -12,7 +12,7 @@ class Expense {
   final String? bankId;
   final String? imageId; // Opcional para imagens
 
-  Expense({
+  Income({
     required this.id,
     required this.category,
     required this.amount,
@@ -25,7 +25,7 @@ class Expense {
   });
 
   /// Getter para uma instância "vazia"
-  static Expense get empty => Expense(
+  static Income get empty => Income(
         id: '',
         category: Category.empty,
         date: DateTime.now(),
@@ -38,7 +38,7 @@ class Expense {
       );
 
   /// Permite criar uma nova instância com modificações
-  Expense copyWith({
+  Income copyWith({
     String? id,
     Category? category,
     double? amount,
@@ -49,7 +49,7 @@ class Expense {
     String? bankId,
     String? imageId,
   }) {
-    return Expense(
+    return Income(
       id: id ?? this.id,
       category: category ?? this.category,
       amount: amount ?? this.amount,
@@ -62,9 +62,9 @@ class Expense {
     );
   }
 
-  /// Cria um `Expense` a partir de um `Map`
-  factory Expense.fromMap(Map<String, dynamic> map, String id) {
-    return Expense(
+  /// Cria um `Income` a partir de um `Map`
+  factory Income.fromMap(Map<String, dynamic> map, String id) {
+    return Income(
       id: id,
       category: Category.fromEntity(
         CategoryEntity.fromDocument(map['category']),
@@ -93,9 +93,9 @@ class Expense {
     };
   }
 
-  /// Conversão de `ExpenseEntity` para `Expense`
-  static Expense fromEntity(ExpenseEntity entity) {
-    return Expense(
+  /// Conversão de `IncomeEntity` para `Income`
+  static Income fromEntity(IncomeEntity entity) {
+    return Income(
       id: entity.expenseId,
       category: entity.category,
       amount: entity.amount.toDouble(),
@@ -108,9 +108,9 @@ class Expense {
     );
   }
 
-  /// Conversão de `Expense` para `ExpenseEntity`
-  ExpenseEntity toEntity() {
-    return ExpenseEntity(
+  /// Conversão de `Income` para `IncomeEntity`
+  IncomeEntity toEntity() {
+    return IncomeEntity(
       expenseId: id,
       category: category,
       date: date,
@@ -123,6 +123,6 @@ class Expense {
     );
   }
 
-  /// Getter útil para lógica: verificar se é uma despesa
-  bool get isExpense => type == 'despesa';
+  /// Getter útil para lógica: verificar se é uma receita
+  bool get isIncome => type == 'income';
 }

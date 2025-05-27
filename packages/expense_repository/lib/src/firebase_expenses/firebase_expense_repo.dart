@@ -6,6 +6,9 @@ class FirebaseExpenseRepo implements ExpenseRepository {
   final categoryCollection = FirebaseFirestore.instance.collection('categories');
   final expenseCollection = FirebaseFirestore.instance.collection('expenses');
   final bankCollection = FirebaseFirestore.instance.collection('banks');
+  final expenseImagesCollection = FirebaseFirestore.instance.collection('imgs');
+  
+
 
   @override
   Future<void> createCategory(Category category) async {
@@ -68,32 +71,5 @@ class FirebaseExpenseRepo implements ExpenseRepository {
       throw Exception('Erro ao buscar despesas');
     }
   }
-  @override
-  Future<List<BankAccountEntity>> fetchBanks(String userId) async {
-    try {
-      final querySnapshot = await bankCollection
-        .where('userId', isEqualTo: userId)
-        .get();
-
-      return querySnapshot.docs
-        .map((doc) => BankAccountModel.fromJson(doc.data()))
-        .toList(); // ← Model que herda da Entity
-    } catch (e) {
-      log('Erro ao buscar bancos: $e');
-      throw Exception('Erro ao buscar bancos');
-    }
-  }
-  @override
-  Future<void> createBank(BankAccountEntity bank) async {
-    try {
-      final bankModel = BankAccountModel.fromEntity(bank);
-      await bankCollection
-          .doc(bankModel.id)
-          .set(bankModel.toJson());
-    } catch (e, stackTrace) {
-      log('Erro ao criar banco', error: e, stackTrace: stackTrace);
-      throw Exception('Erro ao criar banco');
-    }
-  }
-
+   
 }

@@ -15,6 +15,7 @@ class BankRepository {
           .where('userId', isEqualTo: userId)
           .get();
 
+      // Converte os documentos para entidades
       return querySnapshot.docs
           .map((doc) => BankAccountModel.fromJson(doc.data()))
           .toList();

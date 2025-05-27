@@ -13,7 +13,7 @@ import 'package:finc/screens/create_banks/blocs/get_bank/get_bank_event.dart';
 import 'package:finc/screens/home/blocs/get_expenses_bloc/get_expenses_bloc.dart';
 import 'package:finc/screens/home/views/home_screen.dart';
 import 'package:finc/screens/transactions/transaction_screen.dart';
-import 'package:flutter/cupertino.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -60,7 +60,7 @@ class AppRouter {
           create: (_) => CreateExpenseBloc(FirebaseExpenseRepo()),
         ),
         BlocProvider(
-          create: (_) => GetBankBloc(FirebaseExpenseRepo())..add(GetLoadBanks(userId)),  // <<< adiciona aqui
+          create: (_) => GetBankBloc(BankRepository())..add(GetLoadBanks(userId)),  // <<< adiciona aqui
         ),
       ],
       child: AddExpenseScreen(userId: userId),
@@ -79,7 +79,7 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (context) {
             return BlocProvider<AddBankBloc>(
-              create: (_) => AddBankBloc(expenseRepository: FirebaseExpenseRepo()),
+              create: (_) => AddBankBloc(bankRepository: BankRepository()),
               child: AddBanksScreen(userId: userId),
             );
           },

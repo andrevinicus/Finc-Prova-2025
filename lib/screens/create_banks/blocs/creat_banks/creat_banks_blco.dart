@@ -4,9 +4,9 @@ import 'package:finc/screens/create_banks/blocs/creat_banks/creat_bank_event.dar
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AddBankBloc extends Bloc<AddBankEvent, AddBankState> {
-  final ExpenseRepository expenseRepository;
+  final BankRepository bankRepository;
 
-  AddBankBloc({required this.expenseRepository}) : super(AddBankInitial()) {
+  AddBankBloc({required this.bankRepository}) : super(AddBankInitial()) {
     on<SubmitNewBank>(_onSubmittedNewBank);
   }
 
@@ -15,7 +15,7 @@ class AddBankBloc extends Bloc<AddBankEvent, AddBankState> {
       SubmitNewBank event, Emitter<AddBankState> emit) async {
     emit(AddBankLoading());
     try {
-      await expenseRepository.createBank(event.bankAccount);
+      await bankRepository.createBank(event.bankAccount);
       emit(AddBankSuccess());
     } catch (e) {
       emit(AddBankFailure("Erro ao salvar a conta: ${e.toString()}"));

@@ -5,14 +5,14 @@ import 'get_bank_event.dart';
 import 'get_bank_state.dart';
 
 class GetBankBloc extends Bloc<GetBankEvent, GetBankState> {
-  final ExpenseRepository expenseRepository;
+  final BankRepository bankRepository;
 
-  GetBankBloc(this.expenseRepository) : super(GetBankInitial()) {
+  GetBankBloc(this.bankRepository) : super(GetBankInitial()) {
     on<GetLoadBanks>((event, emit) async {
       emit(GetBankLoading());
 
       try {
-        final banks = await expenseRepository.fetchBanks(event.userId);
+        final banks = await bankRepository.fetchBanks(event.userId);
         emit(GetBankLoaded(banks));
       } catch (e) {
         emit(GetBankError('Erro ao carregar bancos: ${e.toString()}'));

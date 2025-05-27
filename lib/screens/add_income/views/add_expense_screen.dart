@@ -1,9 +1,10 @@
 import 'dart:io';
 import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:finc/screens/add_expense/blocs/create_expense_bloc/create_expense_bloc.dart';
-import 'package:finc/screens/add_expense/views/teclado_numerico.dart';
-import 'package:finc/screens/add_expense/views/upload_dir.dart';
+import 'package:expense_repository/expense_repository.dart';
+import 'package:finc/screens/add_income/blocs/create_expense_bloc/create_income_bloc.dart';
+import 'package:finc/screens/add_income/views/teclado_numerico.dart';
+import 'package:finc/screens/add_income/views/upload_dir.dart';
 import 'package:finc/screens/category/modal%20category/option_category.dart';
 import 'package:finc/screens/create_banks/blocs/get_bank/get_bank_bloc.dart';
 import 'package:finc/screens/create_banks/blocs/get_bank/get_bank_event.dart';
@@ -12,19 +13,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:expense_repository/expense_repository.dart';
 import 'package:uuid/uuid.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 
 
-class AddExpenseScreen extends StatefulWidget {
+class AddIncomeScreen extends StatefulWidget {
   final String userId;
-  const AddExpenseScreen({super.key, required this.userId});
+  const AddIncomeScreen({super.key, required this.userId});
   @override
-  State<AddExpenseScreen> createState() => _AddExpenseScreenState();
+  State<AddIncomeScreen> createState() => _AddIncomeScreenState();
 }
-class _AddExpenseScreenState extends State<AddExpenseScreen> {
+class _AddIncomeScreenState extends State<AddIncomeScreen> {
   final _formKey = GlobalKey<FormState>();
   File? _selectedImage;
   String? _selectedImageName;
@@ -493,18 +493,18 @@ Widget build(BuildContext context) {
               ),
             ],
           ),
-          floatingActionButton: BlocConsumer<CreateExpenseBloc, CreateExpenseState>(
+          floatingActionButton: BlocConsumer<CreateIncomeBloc, CreateIncomeState>(
             listener: (context, state) {
-              if (state is CreateExpenseSuccess) {
+              if (state is CreateIncomeSuccess) {
                 Navigator.pop(context);
-              } else if (state is CreateExpenseFailure) {
+              } else if (state is CreateIncomeFailure) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Erro ao salvar: ${state.message}')),
                 );
               }
             },
             builder: (context, state) {
-              final isLoading = state is CreateExpenseLoading;
+              final isLoading = state is CreateIncomeLoading;
 
               return FloatingActionButton(
                 onPressed: isLoading
@@ -535,20 +535,20 @@ Widget build(BuildContext context) {
                             imageId = await uploadImagemComUserIdERetornarId(_selectedImage!);
                           }
 
-                          final expense = Expense(
+                          final income = Income(
                             id: uuid.v4(),
                             category: _selectedCategory!,
                             amount: double.parse(_amountController.text),
                             description: _descricaoController.text,
                             date: _selectedDate,
                             userId: userId,
-                            type: 'expense',
+                            type: 'income',
                             bankId: _selectedBank?.id,
                             imageId: imageId,
                           );
 
                           // Aqui dispara o evento de submissão, que já emite loading dentro do BLoC
-                          context.read<CreateExpenseBloc>().add(CreateExpenseSubmitted(expense));
+                          context.read<CreateIncomeBloc>().add(CreateIncomeSubmitted(income));
                         }
                       },
 

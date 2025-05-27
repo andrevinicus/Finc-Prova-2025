@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:expense_repository/expense_repository.dart';
 import 'package:finc/blocs/auth/auth_bloc.dart';
 import 'package:finc/blocs/auth/auth_event.dart';
-import 'package:finc/app_view.dart'; // onde está o MyAppView
+import 'package:finc/app_view.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -12,12 +12,16 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final expenseRepository = FirebaseExpenseRepo();
+    final bankRepository = BankRepository();
 
-    return RepositoryProvider<ExpenseRepository>.value(
-      value: expenseRepository,
+    return MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider<ExpenseRepository>.value(value: expenseRepository),
+        RepositoryProvider<BankRepository>.value(value: bankRepository),
+      ],
       child: BlocProvider(
         create: (_) => AuthBloc(FirebaseAuth.instance)..add(AuthCheckRequested()),
-        child: MyAppView(expenseRepository: expenseRepository),
+        child: const MyAppView(),
       ),
     );
   }
