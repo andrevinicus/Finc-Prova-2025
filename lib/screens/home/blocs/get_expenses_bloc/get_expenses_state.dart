@@ -9,8 +9,10 @@ sealed class GetExpensesState extends Equatable {
 
 final class GetExpensesInitial extends GetExpensesState {}
 
-final class GetExpensesFailure extends GetExpensesState {}
 final class GetExpensesLoading extends GetExpensesState {}
+
+final class GetExpensesFailure extends GetExpensesState {}
+
 final class GetExpensesSuccess extends GetExpensesState {
   final List<Expense> expenses;
 
@@ -18,5 +20,4 @@ final class GetExpensesSuccess extends GetExpensesState {
 
   @override
   List<Object> get props => [expenses];
-  
 }

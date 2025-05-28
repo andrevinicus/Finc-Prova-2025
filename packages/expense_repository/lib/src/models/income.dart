@@ -123,6 +123,24 @@ class Income {
     );
   }
 
+factory Income.fromFirestore(DocumentSnapshot doc) {
+  final data = doc.data() as Map<String, dynamic>;
+  return Income(
+    id: doc.id,
+    category: Category.fromEntity(
+      CategoryEntity.fromDocument(data['category']),
+    ),
+    amount: (data['amount'] ?? 0).toDouble(),
+    date: (data['date'] as Timestamp).toDate(),
+    userId: data['userId'] ?? '',
+    type: data['type'] ?? 'income',
+    description: data['description'] ?? '',
+    bankId: data['bankId'],
+    imageId: data['imageId'],
+  );
+}
+
+
   /// Getter útil para lógica: verificar se é uma receita
   bool get isIncome => type == 'income';
 }

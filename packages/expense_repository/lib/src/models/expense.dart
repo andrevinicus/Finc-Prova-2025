@@ -122,7 +122,23 @@ class Expense {
       imageId: imageId,
     );
   }
+  factory Expense.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return Expense(
+      id: doc.id,
+      category: Category.fromEntity(
+        CategoryEntity.fromDocument(data['category']),
+      ),
+      amount: (data['amount'] ?? 0).toDouble(),
+      date: (data['date'] as Timestamp).toDate(),
+      userId: data['userId'] ?? '',
+      type: data['type'] ?? 'despesa',
+      description: data['description'] ?? '',
+      bankId: data['bankId'],
+      imageId: data['imageId'],
+    );
+  }
 
   /// Getter útil para lógica: verificar se é uma despesa
-  bool get isExpense => type == 'despesa';
+  bool get isExpense => type == 'expense';
 }

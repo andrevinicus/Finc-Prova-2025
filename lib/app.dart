@@ -13,10 +13,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final expenseRepository = FirebaseExpenseRepo();
     final bankRepository = BankRepository();
-
+    final incomeRepository = FirebaseIncomeRepo(); 
     return MultiRepositoryProvider(
       providers: [
         RepositoryProvider<ExpenseRepository>.value(value: expenseRepository),
+        RepositoryProvider<IncomeRepository>.value(value: incomeRepository),
         RepositoryProvider<BankRepository>.value(value: bankRepository),
       ],
       child: BlocProvider(

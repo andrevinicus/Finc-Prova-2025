@@ -12,7 +12,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class MainScreen extends StatefulWidget {
   final List<Expense> expenses;
-  const MainScreen(this.expenses, {super.key});
+  final List<Income> income;
+  const MainScreen(this.expenses, this.income, {super.key});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -25,6 +26,13 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     final userGoogle = FirebaseAuth.instance.currentUser;
     final uid = FirebaseAuth.instance.currentUser!.uid;
+    final incomeTotal = widget.income
+      .where((e) => e.isIncome) 
+      .fold<double>(0.0, (sum, e) => sum + e.amount);
+
+    final expenseTotal = widget.expenses
+        .where((e) => e.isExpense)
+        .fold<double>(0.0, (sum, e) => sum + e.amount);
 
     return Scaffold(
       key: _scaffoldKey,
@@ -146,8 +154,7 @@ class _MainScreenState extends State<MainScreen> {
                           fontWeight: FontWeight.bold),
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 12, horizontal: 20),
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -157,35 +164,39 @@ class _MainScreenState extends State<MainScreen> {
                                 width: 25,
                                 height: 25,
                                 decoration: const BoxDecoration(
-                                    color: Colors.white30,
-                                    shape: BoxShape.circle),
+                                  color: Colors.white30,
+                                  shape: BoxShape.circle,
+                                ),
                                 child: const Center(
-                                    child: Icon(
-                                  CupertinoIcons.arrow_up,
-                                  size: 12,
-                                  color: Colors.greenAccent,
-                                )),
+                                  child: Icon(
+                                    CupertinoIcons.arrow_up,
+                                    size: 12,
+                                    color: Colors.greenAccent,
+                                  ),
+                                ),
                               ),
                               const SizedBox(width: 8),
-                              const Column(
+                              Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
+                                  const Text(
                                     'Income',
                                     style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w400),
+                                      fontSize: 14,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w400,
+                                    ),
                                   ),
                                   Text(
-                                    '€ 2500.00',
-                                    style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w600),
+                                    '€ ${incomeTotal.toStringAsFixed(2)}',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                 ],
-                              )
+                              ),
                             ],
                           ),
                           Row(
@@ -194,40 +205,44 @@ class _MainScreenState extends State<MainScreen> {
                                 width: 25,
                                 height: 25,
                                 decoration: const BoxDecoration(
-                                    color: Colors.white30,
-                                    shape: BoxShape.circle),
+                                  color: Colors.white30,
+                                  shape: BoxShape.circle,
+                                ),
                                 child: const Center(
-                                    child: Icon(
-                                  CupertinoIcons.arrow_down,
-                                  size: 12,
-                                  color: Colors.red,
-                                )),
+                                  child: Icon(
+                                    CupertinoIcons.arrow_down,
+                                    size: 12,
+                                    color: Colors.red,
+                                  ),
+                                ),
                               ),
                               const SizedBox(width: 8),
-                              const Column(
+                              Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
+                                  const Text(
                                     'Expenses',
                                     style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w400),
+                                      fontSize: 14,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w400,
+                                    ),
                                   ),
                                   Text(
-                                    '€ 800.00',
-                                    style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w600),
+                                    '€ ${expenseTotal.toStringAsFixed(2)}',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                 ],
-                              )
+                              ),
                             ],
-                          )
+                          ),
                         ],
                       ),
-                    )
+                    ),
                   ],
                 ),
               ),
