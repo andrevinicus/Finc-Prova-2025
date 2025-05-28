@@ -6,17 +6,17 @@ import 'package:expense_repository/expense_repository.dart'; // Importando repos
 import 'package:finc/screens/category/blocs/get_categories_bloc/get_categories_bloc.dart';
 import 'package:finc/screens/category/modal%20category/created_category_modal.dart';
 
-class CategoryOptionsModal extends StatefulWidget {
+class CategoryOptionsModalIncome extends StatefulWidget {
   final String userId;
 
-  const CategoryOptionsModal({Key? key, required this.userId})
+  const CategoryOptionsModalIncome({Key? key, required this.userId})
     : super(key: key);
 
   @override
   _CategoryOptionsModalState createState() => _CategoryOptionsModalState();
 }
 
-class _CategoryOptionsModalState extends State<CategoryOptionsModal> {
+class _CategoryOptionsModalState extends State<CategoryOptionsModalIncome> {
   Category? selectedCategory;
   String searchQuery = '';
 
@@ -95,7 +95,7 @@ class _CategoryOptionsModalState extends State<CategoryOptionsModal> {
                   final categories = state.categories
                   .where((category) =>
                       category.name.toLowerCase().contains(searchQuery) &&
-                      category.type == 'expense')
+                      category.type == 'income')
                   .toList()
                 ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 

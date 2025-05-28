@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:finc/screens/add_expense/blocs/create_expense_bloc/create_expense_bloc.dart';
 import 'package:finc/screens/add_expense/views/teclado_numerico.dart';
 import 'package:finc/screens/add_expense/views/upload_dir.dart';
-import 'package:finc/screens/category/modal%20category/option_category.dart';
+import 'package:finc/screens/category/modal%20category/option_category_expense.dart';
 import 'package:finc/screens/create_banks/blocs/get_bank/get_bank_bloc.dart';
 import 'package:finc/screens/create_banks/blocs/get_bank/get_bank_event.dart';
 import 'package:finc/screens/create_banks/modal_banks/created_baks_modal.dart';
@@ -298,7 +298,7 @@ Widget build(BuildContext context) {
                               isScrollControlled: true,
                               backgroundColor: bottomContainerColor, // Fundo do ModalBottomSheet da Categoria
                               builder: (BuildContext context) {
-                                return CategoryOptionsModal(userId: userId);
+                                return CategoryOptionsModalExpense(userId: userId);
                               },
                             );
 

@@ -63,8 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   label: 'Receita',
                   backgroundColor: Theme.of(context).colorScheme.secondary,
                   onTap: () {
-                    // ação para adicionar receita
-                    print('Adicionar Receita');
+                    Navigator.pushNamed(context, AppRoutes.addIncome, arguments: userId);
                   },
                 ),
                 SpeedDialChild(

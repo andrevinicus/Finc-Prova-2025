@@ -1,14 +1,14 @@
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expense_repository/expense_repository.dart';
-import 'package:expense_repository/src/firebase_income/Income_repo.dart';
+
 
 
 class FirebaseIncomeRepo implements IncomeRepository {
   final categoryCollection = FirebaseFirestore.instance.collection('categories');
-  final expenseCollection = FirebaseFirestore.instance.collection('expenses');
+  final incomeCollection = FirebaseFirestore.instance.collection('income');
   final bankCollection = FirebaseFirestore.instance.collection('banks');
-  final expenseImagesCollection = FirebaseFirestore.instance.collection('imgs');
+  
   
 
 
@@ -46,10 +46,10 @@ class FirebaseIncomeRepo implements IncomeRepository {
   }
 
   @override
-  Future<void> createIncome(IncomeEntity expense) async {
+  Future<void> createIncome(IncomeEntity income) async {
     try {
-      final expenseDocRef = expenseCollection.doc();
-      await expenseDocRef.set(expense.toDocument());
+      final incomeDocRef = incomeCollection.doc();
+      await incomeDocRef.set(income.toDocument());
     } catch (e) {
       log('Erro ao criar despesa: $e');
       throw Exception('Erro ao criar despesa');
@@ -59,7 +59,7 @@ class FirebaseIncomeRepo implements IncomeRepository {
   @override
   Future<List<IncomeEntity>> getIncomes(String userId) async {
     try {
-      final snapshot = await expenseCollection
+      final snapshot = await incomeCollection
           .where('userId', isEqualTo: userId)
           .get();
 

@@ -10,5 +10,5 @@ export 'src/entities/bank_entity.dart';
 export 'src/models/bank_model.dart';
 export 'src/firebase_income/Income_repo.dart';
 export 'src/firebase_income/firebase_income_repo.dart';
-export 'src/firebase_bank_repo.dart';
+export 'src/firebase_bank/firebase_bank_repo.dart';
 

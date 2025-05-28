@@ -247,118 +247,129 @@ class _AddBanksScreenState extends State<AddBanksScreen> {
                             Container(
                               padding: const EdgeInsets.symmetric(vertical: 1, horizontal: 10),
                               child: GridView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 4,
-                                  mainAxisSpacing: 2,
-                                  crossAxisSpacing: 0,
-                                  childAspectRatio: 1,
-                                ),
-                                itemCount: mostUsedBanks.length + 1,
-                                itemBuilder: (context, index) {
-                                  if (index == mostUsedBanks.length) {
-                                    return GestureDetector(
-                                      onTap: () async {
-                                        final result = await showModalBottomSheet(
-                                          context: context,
-                                          isScrollControlled: true,
-                                          backgroundColor: const Color(0xfff0f0f0),
-                                          shape: const RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-                                          ),
-                                          builder: (context) => SizedBox(
-                                            height: MediaQuery.of(context).size.height * 0.60,
-                                            child: const BankOptionsModal(),
-                                          ),
-                                        );
-                                        if (result != null) {
-                                          setState(() {
-                                            selectedBank = result;
-                                          });
-                                        }
-                                      },
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 4,
+                                mainAxisSpacing: 10,
+                                crossAxisSpacing: 10,
+                                childAspectRatio: 1,
+                              ),
+                              itemCount: mostUsedBanks.length + 1,
+                              itemBuilder: (context, index) {
+                                final isOutros = index == mostUsedBanks.length;
+
+                                if (isOutros) {
+                                  return GestureDetector(
+                                    onTap: () async {
+                                      final result = await showModalBottomSheet(
+                                        context: context,
+                                        isScrollControlled: true,
+                                        backgroundColor: const Color(0xfff0f0f0),
+                                        shape: const RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                                        ),
+                                        builder: (context) => SizedBox(
+                                          height: MediaQuery.of(context).size.height * 0.60,
+                                          child: const BankOptionsModal(),
+                                        ),
+                                      );
+                                      if (result != null) {
+                                        setState(() {
+                                          selectedBank = result;
+                                        });
+                                      }
+                                    },
+                                    child: Container(
+                                      alignment: Alignment.center,
                                       child: Container(
-                                        padding: const EdgeInsets.all(12),
-                                        child: Center(
-                                          child: ClipOval(
-                                            child: Container(
-                                              color: Colors.white.withOpacity(0.5),
-                                              width: 80,
-                                              height: 80,
-                                              child: const Center(
-                                                child: Text(
-                                                  'Outros',
-                                                  style: TextStyle(
-                                                    color: Colors.black87,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                  textAlign: TextAlign.center,
+                                        width: 60,
+                                        height: 60,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(color: Colors.white54),
+                                        ),
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(8),
+                                          child: Container(
+                                            color: Colors.white.withOpacity(0.5),
+                                            child: const Center(
+                                              child: Text(
+                                                'Outros',
+                                                style: TextStyle(
+                                                  color: Colors.black87,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 12,
                                                 ),
+                                                textAlign: TextAlign.center,
                                               ),
                                             ),
                                           ),
                                         ),
                                       ),
-                                    );
-                                  }
-                                  final bank = mostUsedBanks[index];
-                                  final code = bank['code'].toString();
-                                  final logoUrl =
-                                      'https://img.logo.dev/${BankDomains.getDomain(code)}?token=pk_TboSWrKJRDKchCKkTSXr3Q';
-                                  final isSelected = selectedBank?['code']?.toString() == code;
+                                    ),
+                                  );
+                                }
 
-                                  return GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        selectedBank = bank;
-                                      });
-                                    },
-                                    child: Container(
-                                      padding: const EdgeInsets.all(12),
-                                      child: Stack(
-                                        alignment: Alignment.center,
-                                        children: [
-                                          ClipOval(
-                                            child: Container(
-                                              color: Colors.white,
-                                              width: 80,
-                                              height: 80,
-                                              child: Image.network(
-                                                logoUrl,
-                                                fit: BoxFit.contain,
-                                                errorBuilder: (_, __, ___) => const Icon(
-                                                  Icons.account_balance,
-                                                  color: Colors.grey,
-                                                  size: 50,
-                                                ),
+                                final bank = mostUsedBanks[index];
+                                final code = bank['code'].toString();
+                                final logoUrl =
+                                    'https://img.logo.dev/${BankDomains.getDomain(code)}?token=pk_TboSWrKJRDKchCKkTSXr3Q';
+                                final isSelected = selectedBank?['code']?.toString() == code;
+
+                                return GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      selectedBank = bank;
+                                    });
+                                  },
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      Container(
+                                        width: 60,
+                                        height: 60,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(color: Colors.white54),
+                                        ),
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(8),
+                                          child: Image.network(
+                                            logoUrl,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (_, __, ___) => const Icon(
+                                              Icons.account_balance,
+                                              color: Colors.grey,
+                                              size: 24,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      if (isSelected)
+                                        IgnorePointer(
+                                          child: Container(
+                                            width: 60,
+                                            height: 60,
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(8),
+                                              color: const Color.fromARGB(0, 255, 244, 244).withOpacity(0.3),
+                                            ),
+                                            child: const Center(
+                                              child: Icon(
+                                                Icons.check,
+                                                color: Colors.white,
+                                                size: 28,
                                               ),
                                             ),
                                           ),
-                                          if (isSelected)
-                                            IgnorePointer(
-                                              child: Container(
-                                                width: 80,
-                                                height: 80,
-                                                decoration: BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  color: const Color.fromARGB(0, 255, 244, 244).withOpacity(0.3),
-                                                ),
-                                                child: const Center(
-                                                  child: Icon(
-                                                    Icons.check,
-                                                    color: Colors.white,
-                                                    size: 36,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
+                                        ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            )
+
                             ),
                             Container(
                               margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -385,23 +396,31 @@ class _AddBanksScreenState extends State<AddBanksScreen> {
                                 padding: const EdgeInsets.only(top: 10, left: 10, bottom: 15),
                                 child: Row(
                                   children: [
-                                    SizedBox(
-                                      width: 40,
-                                      height: 40,
+                                    Container(
+                                      width: 35,
+                                      height: 35,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: Colors.white54),
+                                      ),
                                       child: selectedBank == null
                                           ? const Icon(Icons.account_balance, color: Colors.white70, size: 30)
-                                          : ClipOval(
-                                                child: Image.network(
-                                                  'https://img.logo.dev/${BankDomains.getDomain(selectedBank!['code'].toString())}?token=pk_TboSWrKJRDKchCKkTSXr3Q',
-                                                  width: 40,
-                                                  height: 40,
-                                                  fit: BoxFit.cover,
-                                                  errorBuilder: (_, __, ___) =>
-                                                      const Icon(Icons.image_not_supported, color: Colors.grey, size: 30),
+                                          : ClipRRect(
+                                              borderRadius: BorderRadius.circular(8),
+                                              child: Image.network(
+                                                'https://img.logo.dev/${BankDomains.getDomain(selectedBank!['code'].toString())}?token=pk_TboSWrKJRDKchCKkTSXr3Q',
+                                                width: 60,
+                                                height: 60,
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (_, __, ___) => const Icon(
+                                                  Icons.image_not_supported,
+                                                  color: Colors.grey,
+                                                  size: 30,
                                                 ),
                                               ),
+                                            ),
                                     ),
-                                    const SizedBox(width: 20),
+                                    const SizedBox(width: 16),
                                     Expanded(
                                       child: Text(
                                         selectedBank != null

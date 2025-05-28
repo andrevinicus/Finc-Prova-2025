@@ -2,10 +2,10 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expense_repository/expense_repository.dart';
+import 'package:finc/screens/add_expense/views/teclado_numerico.dart';
+import 'package:finc/screens/add_expense/views/upload_dir.dart';
 import 'package:finc/screens/add_income/blocs/create_expense_bloc/create_income_bloc.dart';
-import 'package:finc/screens/add_income/views/teclado_numerico.dart';
-import 'package:finc/screens/add_income/views/upload_dir.dart';
-import 'package:finc/screens/category/modal%20category/option_category.dart';
+import 'package:finc/screens/category/modal%20category/option_category_income.dart';
 import 'package:finc/screens/create_banks/blocs/get_bank/get_bank_bloc.dart';
 import 'package:finc/screens/create_banks/blocs/get_bank/get_bank_event.dart';
 import 'package:finc/screens/create_banks/modal_banks/created_baks_modal.dart';
@@ -115,7 +115,7 @@ Widget build(BuildContext context) {
                 ),
                 const SizedBox(width: 2),
                 const Text(
-                  "Nova Despesa",
+                  "Nova Receita",
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -132,7 +132,7 @@ Widget build(BuildContext context) {
                 final result = await showModalBottomSheet<String>(
                   context: context,
                   isScrollControlled: true,
-                  backgroundColor: bottomContainerColor, // Fundo do teclado numérico
+                  backgroundColor: bottomContainerColor,
                   builder: (context) => FractionallySizedBox(
                     child: TecladoNumerico(
                       valorInicial: _amountController.text.isEmpty
@@ -165,7 +165,7 @@ Widget build(BuildContext context) {
                     ),
                     const SizedBox(height: 4),
                     const Text(
-                      "Valor da despesa",
+                      "Valor da Receita",
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.white70,
@@ -298,7 +298,7 @@ Widget build(BuildContext context) {
                               isScrollControlled: true,
                               backgroundColor: bottomContainerColor, // Fundo do ModalBottomSheet da Categoria
                               builder: (BuildContext context) {
-                                return CategoryOptionsModal(userId: userId);
+                                return CategoryOptionsModalIncome(userId: userId);
                               },
                             );
 
@@ -357,13 +357,24 @@ Widget build(BuildContext context) {
                               contentPadding: const EdgeInsets.symmetric(horizontal: 12),
                               leading: const Icon(Icons.account_balance, color: Colors.white54, size: 22),
                               title: _selectedBank != null
-                                  ? Row(
+                                  ? Padding(
+                                      padding: const EdgeInsets.only(left: 10), // desloca o Row todo para a direita
+                                      child: Row(
                                         children: [
-                                          Image.network(
-                                            _selectedBank!.logo!,
-                                            width: 25,
-                                            height: 25,
-                                            fit: BoxFit.contain,
+                                          Container(
+                                            width: 35,
+                                            height: 35,
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(8),
+                                              border: Border.all(color: Colors.white54),
+                                            ),
+                                            child: ClipRRect(
+                                              borderRadius: BorderRadius.circular(8),
+                                              child: Image.network(
+                                                _selectedBank!.logo!,
+                                                fit: BoxFit.cover,
+                                              ),
+                                            ),
                                           ),
                                           const SizedBox(width: 8),
                                           Flexible(
@@ -374,42 +385,43 @@ Widget build(BuildContext context) {
                                             ),
                                           ),
                                         ],
-                                      )
+                                      ),
+                                    )
                                   : Container(
-                                            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 11),
-                                            decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.circular(20),
-                                            ),
-                                            child: const Text(
-                                              'Selecione um banco',
-                                              style: TextStyle(color: Colors.white70),
-                                            ),
-                                        ),
+                                      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 11),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: const Text(
+                                        'Selecione um banco',
+                                        style: TextStyle(color: Colors.white70),
+                                      ),
+                                    ),
                               trailing: const Padding(
-                                padding: EdgeInsets.only(right: 12), // Aumente esse valor se quiser mais à direita
+                                padding: EdgeInsets.only(right: 12),
                                 child: Icon(Icons.arrow_forward_ios, size: 14, color: Colors.white54),
                               ),
                               onTap: () async {
-                                  final resultado = await showModalBottomSheet<BankAccountEntity>(
-                                    context: context,
-                                    isScrollControlled: true,
-                                    backgroundColor: bottomContainerColor, // Fundo do ModalBottomSheet do Banco
-                                    builder: (BuildContext context) {
-                                      final bankRepository = RepositoryProvider.of<BankRepository>(context);
+                                final resultado = await showModalBottomSheet<BankAccountEntity>(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  backgroundColor: bottomContainerColor,
+                                  builder: (BuildContext context) {
+                                    final bankRepository = RepositoryProvider.of<BankRepository>(context);
 
-                                      return BlocProvider<GetBankBloc>(
-                                        create: (_) => GetBankBloc(bankRepository)..add(GetLoadBanks(userId)),
-                                        child: BankOptionsModal(userId: userId),
-                                      );
-                                    },
-                                  );
+                                    return BlocProvider<GetBankBloc>(
+                                      create: (_) => GetBankBloc(bankRepository)..add(GetLoadBanks(userId)),
+                                      child: BankOptionsModal(userId: userId),
+                                    );
+                                  },
+                                );
 
-                                  if (resultado != null) {
-                                    setState(() {
-                                      _selectedBank = resultado;
-                                    });
-                                  }
-                                },
+                                if (resultado != null) {
+                                  setState(() {
+                                    _selectedBank = resultado;
+                                  });
+                                }
+                              },
                             ),
                           ),
                           Container(
@@ -444,8 +456,8 @@ Widget build(BuildContext context) {
 
                                     if (_selectedImage != null) 
                                       Container(
-                                        width: 40,
-                                        height: 40,
+                                        width: 35,
+                                        height: 35,
                                         decoration: BoxDecoration(
                                           borderRadius: BorderRadius.circular(8),
                                           border: Border.all(color: Colors.white54),
@@ -459,16 +471,18 @@ Widget build(BuildContext context) {
                                         ),
                                       ),
                                     if (_selectedImage != null) SizedBox(width: 16),
-
                                     Expanded(
-                                      child: Text(
-                                        truncatedName(_selectedImageName),
-                                        style: TextStyle(
-                                          color: Colors.white54,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w500,
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(left: 10), // Altere esse valor conforme necessário
+                                        child: Text(
+                                          truncatedName(_selectedImageName),
+                                          style: TextStyle(
+                                            color: Colors.white54,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          textAlign: TextAlign.left,
                                         ),
-                                        textAlign: TextAlign.left,
                                       ),
                                     ),
                                     Icon(Icons.cloud_upload_outlined, color: Colors.white54),
