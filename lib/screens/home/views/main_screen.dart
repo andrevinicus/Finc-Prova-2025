@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:finc/screens/category/blocs/create_categorybloc/create_category_bloc.dart';
 import 'package:finc/screens/add_expense/views/add_expense_screen.dart';
+import 'package:finc/screens/home/views/multi_selector_date.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:expense_repository/expense_repository.dart';
 import 'package:flutter/cupertino.dart';
@@ -17,22 +18,43 @@ class MainScreen extends StatefulWidget {
 
   @override
   State<MainScreen> createState() => _MainScreenState();
+  
 }
+
 
 class _MainScreenState extends State<MainScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  DateTime selectedMonth = DateTime.now();
+  User? userGoogle;
+  String? uid;
+  Future<UserModel?>? futureUserModel;
+
+  @override
+  void initState() {
+    super.initState();
+    userGoogle = FirebaseAuth.instance.currentUser;
+    uid = userGoogle?.uid;
+    if (uid != null) {
+      futureUserModel = FirebaseUserRepo().getUserById(uid!);
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
-    final userGoogle = FirebaseAuth.instance.currentUser;
-    final uid = FirebaseAuth.instance.currentUser!.uid;
-    final incomeTotal = widget.income
-      .where((e) => e.isIncome) 
-      .fold<double>(0.0, (sum, e) => sum + e.amount);
+      final filteredIcome = widget.income.where((e) => 
+        e.isIncome && 
+        e.date.month == selectedMonth.month &&
+        e.date.year == selectedMonth.year);
 
-    final expenseTotal = widget.expenses
-        .where((e) => e.isExpense)
-        .fold<double>(0.0, (sum, e) => sum + e.amount);
+      final filteredExpenses = widget.expenses.where((e) => 
+        e.isExpense &&
+        e.date.month == selectedMonth.month &&
+        e.date.year == selectedMonth.year);
+      
+      final incomeTotal = filteredIcome.fold<double>(0.0, (sum, e) => sum + e.amount);
+      final expenseTotal = filteredExpenses.fold<double>(0.0, (sum, e) => sum + e.amount);
+      final balance = incomeTotal - expenseTotal;
 
     return Scaffold(
       key: _scaffoldKey,
@@ -52,8 +74,7 @@ class _MainScreenState extends State<MainScreen> {
                         child: userGoogle?.photoURL != null
                             ? CircleAvatar(
                                 radius: 25,
-                                backgroundImage:
-                                    NetworkImage(userGoogle!.photoURL!),
+                                backgroundImage: NetworkImage(userGoogle!.photoURL!),
                               )
                             : Container(
                                 width: 50,
@@ -81,22 +102,18 @@ class _MainScreenState extends State<MainScreen> {
                             ),
                           ),
                           FutureBuilder<UserModel?>(
-                            future: FirebaseUserRepo().getUserById(uid),
+                            future: futureUserModel, 
                             builder: (context, snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.waiting) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
                                 return const CircularProgressIndicator();
-                              } else if (snapshot.hasData &&
-                                  snapshot.data != null) {
+                              } else if (snapshot.hasData && snapshot.data != null) {
                                 final user = snapshot.data!;
                                 return Text(
                                   user.name.split(' ').take(2).join(' '),
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onBackground,
+                                    color: Theme.of(context).colorScheme.onBackground,
                                   ),
                                 );
                               } else {
@@ -114,139 +131,164 @@ class _MainScreenState extends State<MainScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
-              Container(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.width / 2,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Theme.of(context).colorScheme.primary,
-                      Theme.of(context).colorScheme.secondary,
-                      Theme.of(context).colorScheme.tertiary,
-                    ],
-                    transform: const GradientRotation(pi / 4),
-                  ),
-                  borderRadius: BorderRadius.circular(25),
-                  boxShadow: [
-                    BoxShadow(
+                                    MonthSelector(
+                        onMonthChanged: (date) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            setState(() {
+                              selectedMonth = date;
+                            });
+                          });
+                        },
+                      ),
+              const SizedBox(height: 30),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.width / 2,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Theme.of(context).colorScheme.primary,
+                        Theme.of(context).colorScheme.secondary,
+                        Theme.of(context).colorScheme.tertiary,
+                      ],
+                      transform: const GradientRotation(pi / 4),
+                    ),
+                    borderRadius: BorderRadius.circular(25),
+                    boxShadow: [
+                      BoxShadow(
                         blurRadius: 4,
                         color: Colors.grey.shade300,
-                        offset: const Offset(5, 5))
-                  ],
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      'Balanço Total',
-                      style: TextStyle(
+                        offset: const Offset(5, 5),
+                      )
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Balanço Total',
+                        style: TextStyle(
                           fontSize: 16,
                           color: Colors.white,
-                          fontWeight: FontWeight.w600),
-                    ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      '\$ 4800.00',
-                      style: TextStyle(
-                          fontSize: 40,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                width: 25,
-                                height: 25,
-                                decoration: const BoxDecoration(
-                                  color: Colors.white30,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Center(
-                                  child: Icon(
-                                    CupertinoIcons.arrow_up,
-                                    size: 12,
-                                    color: Colors.greenAccent,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Income',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                  ),
-                                  Text(
-                                    '€ ${incomeTotal.toStringAsFixed(2)}',
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              Container(
-                                width: 25,
-                                height: 25,
-                                decoration: const BoxDecoration(
-                                  color: Colors.white30,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Center(
-                                  child: Icon(
-                                    CupertinoIcons.arrow_down,
-                                    size: 12,
-                                    color: Colors.red,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Expenses',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                  ),
-                                  Text(
-                                    '€ ${expenseTotal.toStringAsFixed(2)}',
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
-                  ],
+                      Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: Text(
+                          'R\$ ${balance.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontSize: 40,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  width: 30,
+                                  height: 30,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white30,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Center(
+                                    child: Icon(
+                                      CupertinoIcons.arrow_up,
+                                      size: 12,
+                                      color: Colors.greenAccent,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Receitas',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ),
+                                    Text(
+                                      'R\$ ${incomeTotal.toStringAsFixed(2)}',
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 5),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 30,
+                                    height: 30,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.white30,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Center(
+                                      child: Icon(
+                                        CupertinoIcons.arrow_down,
+                                        size: 12,
+                                        color: Colors.red,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 5),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Despesas',
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w400,
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: 90, // largura fixa (ajuste conforme necessário)
+                                        child: Text(
+                                          'R\$ ${expenseTotal.toStringAsFixed(2)}',
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontSize: 15,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -269,7 +311,7 @@ class _MainScreenState extends State<MainScreen> {
                   )
                 ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               Expanded(
                 child: ListView.builder(
                   itemCount: widget.expenses.length,
@@ -291,8 +333,8 @@ class _MainScreenState extends State<MainScreen> {
                                     alignment: Alignment.center,
                                     children: [
                                       Container(
-                                        width: 50,
-                                        height: 50,
+                                        width: 45,
+                                        height: 45,
                                         decoration: BoxDecoration(
                                             color: Color(widget.expenses[i]
                                                 .category
@@ -322,7 +364,7 @@ class _MainScreenState extends State<MainScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   Text(
-                                    "\$${widget.expenses[i].amount}.00",
+                                    "\$${widget.expenses[i].amount}0",
                                     style: TextStyle(
                                         fontSize: 14,
                                         color: Theme.of(context)

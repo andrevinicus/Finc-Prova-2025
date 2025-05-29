@@ -47,7 +47,7 @@ class ExpenseEntity {
       date: (doc['date'] as Timestamp).toDate(),
       amount: (doc['amount'] as num).toInt(),
       userId: doc['userId'] as String,
-      type: doc['type'] ?? 'despesa',
+      type: doc['type'] ?? 'expense',
       description: doc['description'] ?? '',
       bankId: doc['bankId'] as String?,
       imageId: doc['imageId'] as String?,

@@ -31,7 +31,7 @@ class Expense {
         date: DateTime.now(),
         amount: 0,
         userId: '',
-        type: 'despesa',
+        type: 'expense',
         description: '',
         bankId: '',
         imageId: null,
