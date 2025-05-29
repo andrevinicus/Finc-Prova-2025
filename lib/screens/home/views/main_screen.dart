@@ -73,12 +73,12 @@ class _MainScreenState extends State<MainScreen> {
                         onTap: () => _scaffoldKey.currentState?.openDrawer(),
                         child: userGoogle?.photoURL != null
                             ? CircleAvatar(
-                                radius: 25,
+                                radius: 20,
                                 backgroundImage: NetworkImage(userGoogle!.photoURL!),
                               )
                             : Container(
-                                width: 50,
-                                height: 50,
+                                width: 40,
+                                height: 40,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   color: Colors.yellow[700],
@@ -131,16 +131,15 @@ class _MainScreenState extends State<MainScreen> {
                   ),
                 ],
               ),
-                                    MonthSelector(
-                        onMonthChanged: (date) {
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            setState(() {
-                              selectedMonth = date;
-                            });
-                          });
-                        },
-                      ),
-              const SizedBox(height: 30),
+              MonthSelector(
+                onMonthChanged: (date) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    setState(() {
+                      selectedMonth = date;
+                    });
+                  });
+                },
+              ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 child: Container(
