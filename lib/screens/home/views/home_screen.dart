@@ -1,7 +1,6 @@
 import 'package:finc/routes/app_routes.dart';
 import 'package:finc/screens/home/blocs/get_block_expense_income.dart';
 import 'package:finc/screens/transactions/transaction_screen.dart';
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:finc/screens/home/views/main_screen.dart';
 import 'package:finc/screens/stats/stats.dart';
 import 'package:flutter/cupertino.dart';
@@ -15,10 +14,29 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   int index = 0;
   late String userId;
-  bool _hasFetchedData = false; // flag para evitar múltiplas chamadas
+  bool _hasFetchedData = false;
+  bool showActionButtons = false;
+
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   void didChangeDependencies() {
@@ -27,18 +45,18 @@ class _HomeScreenState extends State<HomeScreen> {
       final args = ModalRoute.of(context)?.settings.arguments;
       if (args is String && args.isNotEmpty) {
         userId = args;
-        // Dispara evento para buscar dados financeiros somente uma vez
         context.read<GetFinancialDataBloc>().add(GetFinancialData(userId));
         _hasFetchedData = true;
       } else {
         userId = '';
-        // Se quiser, pode redirecionar para tela de login ou exibir erro
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return BlocBuilder<GetFinancialDataBloc, GetFinancialDataState>(
       builder: (context, state) {
         if (state is GetFinancialDataSuccess) {
@@ -49,92 +67,205 @@ class _HomeScreenState extends State<HomeScreen> {
           ];
 
           return Scaffold(
-            body: IndexedStack(
-              index: index,
-              children: pages,
-            ),
-            floatingActionButton: SpeedDial(
-              icon: Icons.add,
-              activeIcon: Icons.close,
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              foregroundColor: Colors.white,
-              overlayOpacity: 0.3,
-              spacing: 20,
-              spaceBetweenChildren: 10,
+            body: Stack(
               children: [
-                SpeedDialChild(
-                  child: const Icon(Icons.arrow_upward),
-                  label: 'Receita',
-                  backgroundColor: Theme.of(context).colorScheme.secondary,
-                  onTap: () {
-                    Navigator.pushNamed(
-                      context,
-                      AppRoutes.addIncome,
-                      arguments: userId,
-                    );
-                  },
+                IndexedStack(
+                  index: index,
+                  children: pages,
                 ),
-                SpeedDialChild(
-                  child: const Icon(Icons.arrow_downward),
-                  label: 'Despesa',
-                  backgroundColor: Theme.of(context).colorScheme.tertiary,
-                  onTap: () {
-                    Navigator.pushNamed(
-                      context,
-                      AppRoutes.addExpense,
-                      arguments: userId,
-                    );
-                  },
+
+                // BottomNavigationBar fixado na base, por baixo do fundo escurecido
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+                    child: BottomNavigationBar(
+                      currentIndex: index,
+                      onTap: (value) {
+                        setState(() {
+                          index = value;
+                        });
+                      },
+                      showSelectedLabels: false,
+                      showUnselectedLabels: false,
+                      elevation: 3,
+                      items: const [
+                        BottomNavigationBarItem(
+                          icon: Icon(CupertinoIcons.home),
+                          label: 'Home',
+                        ),
+                        BottomNavigationBarItem(
+                          icon: Icon(CupertinoIcons.graph_square_fill),
+                          label: 'Stats',
+                        ),
+                        BottomNavigationBarItem(
+                          icon: Icon(CupertinoIcons.list_bullet),
+                          label: 'Transações',
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                SpeedDialChild(
-                  child: const Icon(Icons.compare_arrows),
-                  label: 'Transferência',
-                  backgroundColor: Colors.deepPurple,
-                  onTap: () {
-                    // Implementar lógica de transferência
-                    print('Adicionar Transferência');
-                  },
+
+                // Fundo escurecido cobre o BottomNavigationBar quando menu aberto
+                if (showActionButtons)
+                  Positioned.fill(
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          showActionButtons = false;
+                          _controller.reverse();
+                        });
+                      },
+                      child: AnimatedOpacity(
+                        duration: const Duration(milliseconds: 300),
+                        opacity: showActionButtons ? 0.6 : 0,
+                        child: Container(color: Colors.black),
+                      ),
+                    ),
+                  ),
+
+                // Botões animados ficam por cima do fundo
+                // Botão Transferência (acima)
+                AnimatedPositioned(
+                  duration: const Duration(milliseconds: 300),
+                  bottom: showActionButtons ? 90 : 40,
+                  left: screenWidth / 2 - 50,
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 300),
+                    opacity: showActionButtons ? 1 : 0,
+                    child: Column(
+                      children: [
+                        FloatingActionButton(
+                          heroTag: 'transferBtn',
+                          backgroundColor: Colors.deepPurple,
+                          onPressed: () {
+                            print('Transferência');
+                            setState(() {
+                              showActionButtons = false;
+                              _controller.reverse();
+                            });
+                          },
+                          child: const Icon(Icons.compare_arrows),
+                        ),
+                        const SizedBox(height: 6),
+                        const Text("Transferência", style: TextStyle(fontSize: 15, color: Colors.white), ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Botão Despesa (diagonal esquerda)
+                AnimatedPositioned(
+                  duration: const Duration(milliseconds: 300),
+                  bottom: 60,
+                  left: showActionButtons ? screenWidth / 2 - 125 : screenWidth / 2 - 18,
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 300),
+                    opacity: showActionButtons ? 1 : 0,
+                    child: Column(
+                      children: [
+                        FloatingActionButton(
+                          heroTag: 'expenseBtn',
+                          backgroundColor: Theme.of(context).colorScheme.tertiary,
+                          onPressed: () {
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.addExpense,
+                              arguments: userId,
+                            );
+                            setState(() {
+                              showActionButtons = false;
+                              _controller.reverse();
+                            });
+                          },
+                          child: const Icon(Icons.arrow_downward),
+                        ),
+                        const SizedBox(height: 6),
+                        const Text("Despesa", style: TextStyle(fontSize: 15, color: Colors.white)),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Botão Receita (diagonal direita)
+                AnimatedPositioned(
+                  duration: const Duration(milliseconds: 300),
+                  bottom: 60,
+                  left: showActionButtons ? screenWidth / 2 + 70 : screenWidth / 2 - 18,
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 300),
+                    opacity: showActionButtons ? 1 : 0,
+                    child: Column(
+                      children: [
+                        FloatingActionButton(
+                          heroTag: 'incomeBtn',
+                          backgroundColor: Theme.of(context).colorScheme.secondary,
+                          onPressed: () {
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.addIncome,
+                              arguments: userId,
+                            );
+                            setState(() {
+                              showActionButtons = false;
+                              _controller.reverse();
+                            });
+                          },
+                          child: const Icon(Icons.arrow_upward),
+                        ),
+                        const SizedBox(height: 6),
+                        const Text("Receita", style: TextStyle(fontSize: 15, color: Colors.white)),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
-            bottomNavigationBar: ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
-              child: BottomNavigationBar(
-                currentIndex: index,
-                onTap: (value) {
-                  setState(() {
-                    index = value;
-                  });
-                },
-                showSelectedLabels: false,
-                showUnselectedLabels: false,
-                elevation: 3,
-                items: const [
-                  BottomNavigationBarItem(
-                    icon: Icon(CupertinoIcons.home),
-                    label: 'Home',
+            floatingActionButton: FloatingActionButton(
+              shape: const CircleBorder(),
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              onPressed: () {
+                setState(() {
+                  showActionButtons = !showActionButtons;
+                  if (showActionButtons) {
+                    _controller.forward();
+                  } else {
+                    _controller.reverse();
+                  }
+                });
+              },
+              child: RotationTransition(
+                turns: Tween(begin: 0.0, end: 0.5).animate(_controller), 
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  transitionBuilder: (child, animation) {
+                    return ScaleTransition(scale: animation, child: child);
+                  },
+                  child: Icon(
+                    showActionButtons ? Icons.close : Icons.add,
+                    key: ValueKey<bool>(showActionButtons),
+                    size: 32,
                   ),
-                  BottomNavigationBarItem(
-                    icon: Icon(CupertinoIcons.graph_square_fill),
-                    label: 'Stats',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(CupertinoIcons.list_bullet),
-                    label: 'Transações',
-                  ),
-                ],
+                ),
               ),
             ),
+            floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
           );
-        } else if (state is GetFinancialDataLoading) {
+        }
+        else if (state is GetFinancialDataLoading) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
-        } else if (state is GetFinancialDataFailure) {
+        }
+        else if (state is GetFinancialDataFailure) {
           return const Scaffold(
             body: Center(child: Text('Erro ao carregar dados financeiros')),
           );
-        } else {
+        }
+        else {
           return const SizedBox.shrink();
         }
       },

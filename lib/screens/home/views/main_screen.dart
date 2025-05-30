@@ -1,6 +1,4 @@
 import 'dart:math';
-import 'package:finc/screens/category/blocs/create_categorybloc/create_category_bloc.dart';
-import 'package:finc/screens/add_expense/views/add_expense_screen.dart';
 import 'package:finc/screens/home/views/multi_selector_date.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:expense_repository/expense_repository.dart'; // Assume que Expense, Income, Category, UserModel vêm daqui ou de outro lugar
@@ -8,7 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:finc/screens/drawer/app_drawer.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+
 
 
 class MainScreen extends StatefulWidget {
@@ -26,7 +24,6 @@ class _MainScreenState extends State<MainScreen> {
   User? userGoogle;
   String? uid;
   Future<UserModel?>? futureUserModel;
-
   @override
   void initState() {
     super.initState();
@@ -36,15 +33,18 @@ class _MainScreenState extends State<MainScreen> {
       futureUserModel = FirebaseUserRepo().getUserById(uid!);
     }
   }
-
   @override
   Widget build(BuildContext context) {
+    final currencyFormatter = NumberFormat.currency(
+      locale: 'pt_BR', // Define a localidade para formatação brasileira
+      symbol: 'R\$',    // Define o símbolo da moeda
+      decimalDigits: 2, // Garante duas casas decimais
+    );
     // Filtra receitas para o mês e ano selecionados
     // A flag e.isIncome é redundante se widget.income é List<Income>
     final filteredMonthIncome = widget.income.where((incomeEntry) =>
         incomeEntry.date.month == selectedMonth.month &&
         incomeEntry.date.year == selectedMonth.year);
-
     // Filtra despesas para o mês e ano selecionados
     // A flag e.isExpense é redundante se widget.expenses é List<Expense>
     final filteredMonthExpenses = widget.expenses.where((expenseEntry) =>
@@ -56,49 +56,34 @@ class _MainScreenState extends State<MainScreen> {
     final expenseTotal =
         filteredMonthExpenses.fold<double>(0.0, (sum, e) => sum + e.amount);
     final balance = incomeTotal - expenseTotal;
-
     // --- INÍCIO DAS MODIFICAÇÕES PARA LISTA COMBINADA ---
-    List<DisplayListItem> transactionsForListView = [];
-
     // Mapear despesas para DisplayListItem
+    List<DisplayListItem> transactionsForListView = [];
+    // Mapear despesas
     for (var expense in filteredMonthExpenses) {
       transactionsForListView.add(DisplayListItem(
         date: expense.date,
         amount: expense.amount,
-        title: expense.category.name,
-        iconName: expense.category.icon, // Apenas o nome base do ícone
+        title: expense.description, // <--- AQUI: usa a descrição da despesa
+        iconName: expense.category.icon,
         iconBackgroundColorValue: expense.category.color,
         isExpense: true,
       ));
     }
-
-    // Mapear receitas para DisplayListItem
-    // !!! IMPORTANTE: ADAPTE ESTA SEÇÃO CONFORME A ESTRUTURA DA SUA CLASSE Income !!!
-    // O exemplo abaixo assume que 'Income' também tem um campo 'category'
-    // do mesmo tipo que 'Expense.category'.
-    // Se 'Income' tiver campos diferentes (ex: income.sourceName, income.sourceIcon),
-    // ajuste as linhas correspondentes.
+    // Mapear receitas
     for (var incomeEntry in filteredMonthIncome) {
-      // Exemplo de como poderia ser se Income não tivesse 'category':
-      // String incomeTitle = incomeEntry.description ?? 'Receita';
-      // String incomeIcon = 'default_income_icon'; // um ícone padrão seu
-      // int incomeColor = Colors.green.value; // uma cor padrão
-
       transactionsForListView.add(DisplayListItem(
         date: incomeEntry.date,
         amount: incomeEntry.amount,
-        // Substitua pelas propriedades corretas do seu objeto 'incomeEntry'
-        title: incomeEntry.category.name,      // Ex: incomeTitle ou incomeEntry.source.name
-        iconName: incomeEntry.category.icon,   // Ex: incomeIcon ou incomeEntry.source.icon
-        iconBackgroundColorValue: incomeEntry.category.color, // Ex: incomeColor ou incomeEntry.source.color
+        title: incomeEntry.description, // <--- AQUI: usa a descrição da receita
+        iconName: incomeEntry.category.icon,   // Ajuste se Income usa outra estrutura para ícone/cor
+        iconBackgroundColorValue: incomeEntry.category.color, // Ajuste se Income usa outra estrutura para ícone/cor
         isExpense: false,
       ));
     }
-
     // Ordenar todas as transações por data (mais recentes primeiro)
     transactionsForListView.sort((a, b) => b.date.compareTo(a.date));
     // --- FIM DAS MODIFICAÇÕES PARA LISTA COMBINADA ---
-
     return Scaffold(
       key: _scaffoldKey,
       drawer: AppDrawer(user: userGoogle),
@@ -107,7 +92,6 @@ class _MainScreenState extends State<MainScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 10),
           child: Column(
             children: [
-              // --- SEU CABEÇALHO (AVATAR, BEM VINDO, NOME) - SEM ALTERAÇÕES ---
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -137,14 +121,6 @@ class _MainScreenState extends State<MainScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            "Bem Vindo!",
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: Theme.of(context).colorScheme.outline,
-                            ),
-                          ),
                           FutureBuilder<UserModel?>(
                             future: futureUserModel,
                             builder: (context, snapshot) {
@@ -219,7 +195,8 @@ class _MainScreenState extends State<MainScreen> {
                       Padding(
                         padding: const EdgeInsets.only(right: 6),
                         child: Text(
-                          'R\$ ${balance.toStringAsFixed(2)}',
+                          // MODIFICADO: Usa o currencyFormatter
+                          currencyFormatter.format(balance),
                           style: const TextStyle(
                             fontSize: 40,
                             color: Colors.white,
@@ -263,7 +240,7 @@ class _MainScreenState extends State<MainScreen> {
                                       ),
                                     ),
                                     Text(
-                                      'R\$ ${incomeTotal.toStringAsFixed(2)}',
+                                       currencyFormatter.format(incomeTotal),
                                       style: const TextStyle(
                                         fontSize: 15,
                                         color: Colors.white,
@@ -306,9 +283,9 @@ class _MainScreenState extends State<MainScreen> {
                                         ),
                                       ),
                                       SizedBox(
-                                        width: 90,
+                                        width: 95,
                                         child: Text(
-                                          'R\$ ${expenseTotal.toStringAsFixed(2)}',
+                                          currencyFormatter.format(expenseTotal),
                                           overflow: TextOverflow.ellipsis,
                                           style: const TextStyle(
                                             fontSize: 15,
@@ -359,7 +336,7 @@ class _MainScreenState extends State<MainScreen> {
               // --- LISTVIEW.BUILDER MODIFICADO ---
               Expanded(
                 child: ListView.builder(
-                  padding: const EdgeInsets.only(bottom: 80), // Espaço para o FAB
+                  padding: const EdgeInsets.only(bottom: 10), // Espaço para o FAB
                   itemCount: transactionsForListView.length, // USA A NOVA LISTA COMBINADA
                   itemBuilder: (context, int i) {
                     final transactionItem = transactionsForListView[i]; // PEGA O ITEM COMBINADO
@@ -457,26 +434,7 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => BlocProvider(
-                create: (context) => CreateCategoryBloc(
-                  expenseRepository: context.read<ExpenseRepository>(),
-                ),
-                child: AddExpenseScreen(
-                  userId: FirebaseAuth.instance.currentUser!.uid,
-                ),
-              ),
-            ),
-          );
-        },
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add, color: Colors.white), // Ícone branco no FAB
-      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
