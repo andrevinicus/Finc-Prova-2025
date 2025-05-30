@@ -608,7 +608,7 @@ class _AddBanksScreenState extends State<AddBanksScreen> {
 
                       final bankName = selectedBank!['name'] as String? ?? '';
                       final bankCode = selectedBank!['code'].toString();
-                      final logo = 'https://img.logo.dev/${BankDomains.getDomain(bankCode!)}?token=pk_TboSWrKJRDKchCKkTSXr3Q';
+                      final logo = 'https://img.logo.dev/${BankDomains.getDomain(bankCode)}?token=pk_TboSWrKJRDKchCKkTSXr3Q';
                       print('DEBUG: Valor de selectedBank antes de usar!: $selectedBank'); 
 
                       final bankAccountEntity = BankAccountEntity(

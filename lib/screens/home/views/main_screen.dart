@@ -42,6 +42,7 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+      
       final filteredIcome = widget.income.where((e) => 
         e.isIncome && 
         e.date.month == selectedMonth.month &&
@@ -124,10 +125,6 @@ class _MainScreenState extends State<MainScreen> {
                         ],
                       ),
                     ],
-                  ),
-                  IconButton(
-                    onPressed: () {},
-                    icon: const Icon(CupertinoIcons.settings),
                   ),
                 ],
               ),
@@ -310,13 +307,14 @@ class _MainScreenState extends State<MainScreen> {
                   )
                 ],
               ),
-              const SizedBox(height: 15),
+              const SizedBox(height: 10),
               Expanded(
                 child: ListView.builder(
-                  itemCount: widget.expenses.length,
+                  padding: const EdgeInsets.only(bottom: 80),
+                  itemCount: filteredExpenses.length,
                   itemBuilder: (context, int i) {
                     return Padding(
-                      padding: const EdgeInsets.only(bottom: 16.0),
+                      padding: const EdgeInsets.only(bottom: 10),
                       child: Container(
                         decoration: BoxDecoration(
                             color: Colors.white,
@@ -347,7 +345,7 @@ class _MainScreenState extends State<MainScreen> {
                                       )
                                     ],
                                   ),
-                                  const SizedBox(width: 12),
+                                  const SizedBox(width: 10),
                                   Text(
                                     widget.expenses[i].category.name,
                                     style: TextStyle(

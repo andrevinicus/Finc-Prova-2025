@@ -81,7 +81,7 @@ class _TecladoNumericoState extends State<TecladoNumerico> {
           texto,
           style: const TextStyle(
             fontSize: 32,
-            color: Colors.white,
+            color: Colors.black87, // Alterado para texto mais escuro
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -91,47 +91,44 @@ class _TecladoNumericoState extends State<TecladoNumerico> {
 
   @override
   Widget build(BuildContext context) {
-    // REMOVIDO: DraggableScrollableSheet
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        color: Color(0xFF1E1E1E),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration( // Removido 'const' para permitir colors.grey[200]
+        color: Colors.grey[200], // Alterado para um cinza claro
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
-        // Adicione mainAxisSize.min para que o Column ocupe o mínimo de espaço necessário
-        mainAxisSize: MainAxisSize.min, // ESSENCIAL para que o teclado não expanda
+        mainAxisSize: MainAxisSize.min,
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('R\$', style: TextStyle(fontSize: 18, color: Colors.grey)),
+                const Text('R\$', style: TextStyle(fontSize: 18, color: Colors.black54)), // Alterado para texto mais escuro
                 Expanded(
                   child: Text(
                     valorDigitado,
                     textAlign: TextAlign.right,
-                    style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.white),
+                    style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.black), // Alterado para texto preto
                   ),
                 ),
                 IconButton(
                   onPressed: apagar,
-                  icon: const Icon(Icons.backspace_outlined, color: Colors.white),
+                  icon: const Icon(Icons.backspace_outlined, color: Colors.grey), // Alterado para ícone cinza
                 ),
               ],
             ),
           ),
           const SizedBox(height: 8),
-          // REMOVIDO: Expanded em torno do GridView e controller: scrollController
           GridView.count(
             crossAxisCount: 4,
             childAspectRatio: 1.4,
             mainAxisSpacing: 8,
             crossAxisSpacing: 8,
-            physics: const NeverScrollableScrollPhysics(), // Mantém a rolagem desativada
+            physics: const NeverScrollableScrollPhysics(),
             padding: EdgeInsets.zero,
-            shrinkWrap: true, // ESSENCIAL para o GridView dentro de um Column com mainAxisSize.min
+            shrinkWrap: true,
             children: [
               ...['7', '8', '9', '÷', '4', '5', '6', '×', '1', '2', '3', '-', ',', '0', '=', '+']
                   .map((e) => _buildNumeroSolto(e, () {
@@ -151,15 +148,15 @@ class _TecladoNumericoState extends State<TecladoNumerico> {
               Expanded(
                 child: OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.grey[300],
-                    side: const BorderSide(color: Colors.grey),
+                    foregroundColor: Colors.black54, // Alterado para texto mais escuro
+                    side: const BorderSide(color: Colors.grey), // Alterado para borda cinza
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close),
+                  icon: const Icon(Icons.close, color: Colors.grey), // Alterado para ícone cinza
                   label: const Text("Cancelar"),
                 ),
               ),
@@ -167,15 +164,15 @@ class _TecladoNumericoState extends State<TecladoNumerico> {
               Expanded(
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.blueAccent, // Alterado para azul accent
+                    foregroundColor: Colors.white, // Alterado para texto branco
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   onPressed: () => Navigator.pop(context, valorDigitado),
-                  icon: const Icon(Icons.check),
+                  icon: const Icon(Icons.check, color: Colors.white), // Alterado para ícone branco
                   label: const Text("Concluir"),
                 ),
               ),

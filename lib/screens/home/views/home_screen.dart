@@ -59,7 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
               backgroundColor: Theme.of(context).colorScheme.primary,
               foregroundColor: Colors.white,
               overlayOpacity: 0.3,
-              spacing: 10,
+              spacing: 20,
               spaceBetweenChildren: 10,
               children: [
                 SpeedDialChild(
