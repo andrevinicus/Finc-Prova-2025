@@ -65,7 +65,7 @@ Widget build(BuildContext context) {
     // AJUSTE 2: Diminuir o tamanho de abertura (largura)
     // Experimente valores como 70% da tela (screenWidth * 0.7) ou um valor fixo.
     // O padrão é aproximadamente 304dp.
-    width: screenWidth * 0.75, // Exemplo: 75% da largura da tela. Ajuste conforme necessário.
+    width: screenWidth * 0.50, // Exemplo: 75% da largura da tela. Ajuste conforme necessário.
     // Ou um valor fixo: width: 280,
 
     child: Column(

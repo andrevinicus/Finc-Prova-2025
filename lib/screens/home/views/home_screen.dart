@@ -62,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         if (state is GetFinancialDataSuccess) {
           final pages = [
             MainScreen(state.expenses, state.income),
-            const StatScreen(),
+            StatScreen(userId: userId,),
             TransactionScreen(transactions: state.expenses),
           ];
 
@@ -75,40 +75,62 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 ),
 
                 // BottomNavigationBar fixado na base, por baixo do fundo escurecido
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
-                    child: BottomNavigationBar(
-                      currentIndex: index,
-                      onTap: (value) {
-                        setState(() {
-                          index = value;
-                        });
-                      },
-                      showSelectedLabels: false,
-                      showUnselectedLabels: false,
-                      elevation: 3,
-                      items: const [
-                        BottomNavigationBarItem(
-                          icon: Icon(CupertinoIcons.home),
-                          label: 'Home',
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: ClipRRect(
+                  child: BottomNavigationBar(
+                    type: BottomNavigationBarType.fixed,
+                    currentIndex: index,
+                    onTap: (value) {
+                      setState(() {
+                        index = value;
+                      });
+                    },
+                    showSelectedLabels: false,
+                    showUnselectedLabels: false,
+                    elevation: 3,
+                    backgroundColor: Colors.white,
+                    selectedItemColor: const Color.fromARGB(195, 22, 22, 22),
+                    unselectedItemColor: Colors.grey,
+                    items:  [
+                      BottomNavigationBarItem(
+                        icon: Icon(CupertinoIcons.home),
+                        activeIcon: Icon(CupertinoIcons.house_fill, size: 26),
+                        label: 'Home',
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Transform.translate(
+                          offset: Offset(-22, 0), // move para a esquerda
+                          child: Icon(CupertinoIcons.graph_square),
                         ),
-                        BottomNavigationBarItem(
-                          icon: Icon(CupertinoIcons.graph_square_fill),
-                          label: 'Stats',
+                        activeIcon: Transform.translate(
+                          offset: Offset(-22, 0), // move para a esquerda
+                          child: Icon(CupertinoIcons.graph_square_fill, size: 26),
                         ),
-                        BottomNavigationBarItem(
-                          icon: Icon(CupertinoIcons.list_bullet),
-                          label: 'Transações',
+                        label: 'Stats',
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Transform.translate(
+                          offset: Offset(22, 0), // move para a esquerda
+                          child: Icon(CupertinoIcons.list_bullet),
                         ),
-                      ],
-                    ),
+                        activeIcon: Transform.translate(
+                          offset: Offset(22, 0), // move para a esquerda
+                          child: Icon(CupertinoIcons.list_bullet_indent, size: 26),
+                        ),
+                        label: 'Transações',
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.settings_outlined),
+                        activeIcon: Icon(Icons.settings, size: 26),
+                        label: 'Configurações',
+                      ),
+                    ],
                   ),
                 ),
-
+              ),
                 // Fundo escurecido cobre o BottomNavigationBar quando menu aberto
                 if (showActionButtons)
                   Positioned.fill(
