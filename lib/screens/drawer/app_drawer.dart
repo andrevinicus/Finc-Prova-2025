@@ -39,8 +39,8 @@ class _AppDrawerState extends State<AppDrawer> {
       final userModel = await FirebaseUserRepo().getUserById(widget.user!.uid);
       if (mounted && userModel != null) {
         setState(() {
-          nome = userModel.name ?? nome;
-          email = userModel.email ?? email;
+          nome = userModel.name;
+          email = userModel.email;
           photoUrl = userModel.photoUrl ?? photoUrl;
         });
       }

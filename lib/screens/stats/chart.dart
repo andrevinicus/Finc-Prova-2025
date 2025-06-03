@@ -71,13 +71,22 @@ class _MyChartState extends State<MyChart> {
     }
   }
   
+  double get _rawMaxValue {
+    double maxExpense = expensesPerDay.isNotEmpty ? expensesPerDay.reduce((a, b) => a > b ? a : b) / 1000 : 0;
+    double maxIncome = incomesPerDay.isNotEmpty ? incomesPerDay.reduce((a, b) => a > b ? a : b) / 1000 : 0;
+    return (maxExpense > maxIncome ? maxExpense : maxIncome) * 1.1;
+  }
+
   double get yInterval {
-    if (maxY <= 10) return 2;
-    if (maxY <= 20) return 5;
-    if (maxY <= 50) return 10;
+    final maxValue = _rawMaxValue;
+    if (maxValue <= 10) return 2;
+    if (maxValue <= 20) return 5;
+    if (maxValue <= 50) return 10;
     return 25;
   }
-  
+
+  double get maxY => _roundToNearest(_rawMaxValue, yInterval);
+
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -96,20 +105,10 @@ class _MyChartState extends State<MyChart> {
   bool _isSameDay(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;
 
-  // ALTERAÇÃO PRINCIPAL: Corrigida a recursão infinita.
-  double get maxY {
-    // Primeiro, verifica se as listas estão vazias antes de usar 'reduce'
-    double maxExpense = expensesPerDay.isNotEmpty ? expensesPerDay.reduce((a, b) => a > b ? a : b) / 1000 : 0;
-    double maxIncome = incomesPerDay.isNotEmpty ? incomesPerDay.reduce((a, b) => a > b ? a : b) / 1000 : 0;
-    
-    // Calcula o valor máximo e adiciona uma margem de 30%
-    double calculatedMaxY = (maxExpense > maxIncome ? maxExpense : maxIncome) * 1.3;
-    
-    // Arredonda para cima para ter um número "bonito" e garante um mínimo de 5
-    // Esta função agora não depende mais de yInterval, quebrando o loop.
-    return calculatedMaxY < 5 ? 5 : calculatedMaxY.ceilToDouble();
+  double _roundToNearest(double value, double interval) {
+    return (value / interval).round() * interval;
   }
-  
+
   Widget _buildBarChartPage() {
     return Padding(
       padding: const EdgeInsets.only(right: 18.0),
@@ -138,35 +137,95 @@ class _MyChartState extends State<MyChart> {
             ),
           ),
           titlesData: FlTitlesData(
-            bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 30, getTitlesWidget: (value, meta) => SideTitleWidget(axisSide: meta.axisSide, child: Text(dayLabels[value.toInt()])))),
-            leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 40, interval: yInterval, getTitlesWidget: (value, meta) => Text('${value.toInt()}K'))),
-            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 30,
+                getTitlesWidget: (value, meta) => SideTitleWidget(
+                  axisSide: meta.axisSide,
+                  child: Text(dayLabels[value.toInt()]),
+                ),
+              ),
+            ),
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize:20,
+                interval: yInterval,
+                getTitlesWidget: (value, meta) => Text(
+                  '${value.toInt()}K',
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            topTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 5, 
+                getTitlesWidget: (value, meta) => Text(
+                  '',
+                  style: const TextStyle(fontSize: 12, color: Colors.transparent),
+                ),
+              ),
+            ),
+            rightTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 5, 
+                getTitlesWidget: (value, meta) {
+                  return const Text(
+                    '',
+                    style: TextStyle(color: Colors.transparent),
+                  );
+                },
+              ),
+            ),
           ),
+
           gridData: FlGridData(
             show: true,
             drawVerticalLine: false,
             horizontalInterval: yInterval,
-            getDrawingHorizontalLine: (value) => FlLine(color: Colors.grey.shade200, strokeWidth: 1),
+            getDrawingHorizontalLine: (value) =>
+                FlLine(color: Colors.grey.shade200, strokeWidth: 1),
           ),
           borderData: FlBorderData(show: false),
-          barGroups: List.generate(7, (i) => BarChartGroupData(
-            x: i,
-            barRods: [
-              BarChartRodData(toY: expensesPerDay[i] / 1000, width: 12, color: Colors.redAccent, borderRadius: const BorderRadius.all(Radius.circular(4))),
-              BarChartRodData(toY: incomesPerDay[i] / 1000, width: 12, color: Colors.greenAccent, borderRadius: const BorderRadius.all(Radius.circular(4))),
-            ],
-            barsSpace: 5,
-          )),
+          barGroups: List.generate(
+            7,
+            (i) => BarChartGroupData(
+              x: i,
+              barRods: [
+                BarChartRodData(
+                  toY: expensesPerDay[i] / 1000,
+                  width: 8,
+                  color: Colors.redAccent,
+                  borderRadius: const BorderRadius.all(Radius.circular(4)),
+                ),
+                BarChartRodData(
+                  toY: incomesPerDay[i] / 1000,
+                  width: 8,
+                  color: Colors.greenAccent,
+                  borderRadius: const BorderRadius.all(Radius.circular(4)),
+                ),
+              ],
+              barsSpace: 3,
+            ),
+          ),
         ),
       ),
     );
   }
 
   Widget _buildLineChartPage() {
-    final List<FlSpot> expenseSpots = List.generate(7, (i) => FlSpot(i.toDouble(), expensesPerDay[i] / 1000));
-    final List<FlSpot> incomeSpots = List.generate(7, (i) => FlSpot(i.toDouble(), incomesPerDay[i] / 1000));
-    
+    final List<FlSpot> expenseSpots = List.generate(
+      7,
+      (i) => FlSpot(i.toDouble(), expensesPerDay[i] / 1000),
+    );
+    final List<FlSpot> incomeSpots = List.generate(
+      7,
+      (i) => FlSpot(i.toDouble(), incomesPerDay[i] / 1000),
+    );
+
     return Padding(
       padding: const EdgeInsets.only(right: 18.0),
       child: LineChart(
@@ -183,18 +242,75 @@ class _MyChartState extends State<MyChart> {
             show: true,
             drawVerticalLine: false,
             horizontalInterval: yInterval,
-            getDrawingHorizontalLine: (value) => FlLine(color: Colors.grey.shade200, strokeWidth: 1),
+            getDrawingHorizontalLine: (value) =>
+                FlLine(color: Colors.grey.shade200, strokeWidth: 1),
           ),
           borderData: FlBorderData(show: false),
           titlesData: FlTitlesData(
-            bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 30, getTitlesWidget: (value, meta) => SideTitleWidget(axisSide: meta.axisSide, child: Text(dayLabels[value.toInt()])))),
-            leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 40, interval: yInterval, getTitlesWidget: (value, meta) => Text('${value.toInt()}K'))),
-            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 30,
+                getTitlesWidget: (value, meta) => SideTitleWidget(
+                  axisSide: meta.axisSide,
+                  child: Text(dayLabels[value.toInt()]),
+                ),
+              ),
+            ),
+            // CÓDIGO CORRIGIDO
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 40,
+                interval: yInterval,
+                getTitlesWidget: (value, meta) => Text(
+                  '${value.toInt()}K',
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            // O resto do seu titlesData continua igual...
+            topTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 5, 
+                getTitlesWidget: (value, meta) => Text(
+                  '',
+                  style: const TextStyle(fontSize: 12, color: Colors.transparent),
+                ),),
+            ),
+            rightTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 5, 
+                getTitlesWidget: (value, meta) {
+                  return const Text(
+                    '', 
+                    style: TextStyle(color: Colors.transparent),
+                  );
+                },
+              ),
+            ),
           ),
           lineBarsData: [
-            LineChartBarData(spots: expenseSpots, isCurved: true, color: Colors.redAccent, barWidth: 4, isStrokeCapRound: true, dotData: const FlDotData(show: false), belowBarData: BarAreaData(show: true, color: Colors.redAccent.withOpacity(0.2))),
-            LineChartBarData(spots: incomeSpots, isCurved: true, color: Colors.greenAccent, barWidth: 4, isStrokeCapRound: true, dotData: const FlDotData(show: false), belowBarData: BarAreaData(show: true, color: Colors.greenAccent.withOpacity(0.2))),
+            LineChartBarData(
+              spots: expenseSpots,
+              isCurved: true,
+              color: Colors.redAccent,
+              barWidth: 4,
+              isStrokeCapRound: true,
+              dotData: const FlDotData(show: false),
+              belowBarData: BarAreaData(show: true, color: Colors.redAccent.withOpacity(0.2)),
+            ),
+            LineChartBarData(
+              spots: incomeSpots,
+              isCurved: true,
+              color: Colors.greenAccent,
+              barWidth: 4,
+              isStrokeCapRound: true,
+              dotData: const FlDotData(show: false),
+              belowBarData: BarAreaData(show: true, color: Colors.greenAccent.withOpacity(0.2)),
+            ),
           ],
         ),
       ),
@@ -211,43 +327,46 @@ class _MyChartState extends State<MyChart> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Row(children: [
-                  Container(width: 10, height: 10, color: Colors.redAccent),
-                  const SizedBox(width: 4),
+              Row(
+                children: [
+                  Container(width: 8, height: 8, color: Colors.redAccent),
+                  const SizedBox(width: 6),
                   const Text("Despesas", style: TextStyle(fontSize: 12)),
-              ]),
+                ],
+              ),
               const SizedBox(width: 16),
-              Row(children: [
-                  Container(width: 10, height: 10, color: Colors.greenAccent),
+              Row(
+                children: [
+                  Container(width: 8, height: 8, color: Colors.greenAccent),
                   const SizedBox(width: 4),
                   const Text("Receitas", style: TextStyle(fontSize: 12)),
-              ]),
+                ],
+              ),
               const Spacer(),
               TextButton.icon(
-                icon: const Icon(Icons.calendar_today, size: 18),
+                icon: const Icon(Icons.calendar_today, size: 20),
                 label: Text(DateFormat('d MMM').format(selectedDate)),
                 onPressed: () => _selectDate(context),
               ),
             ],
           ),
         ),
-        
-        const SizedBox(height: 16),
-
         Expanded(
           child: Card(
             elevation: 4,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 0, 8),
+              padding: const EdgeInsets.fromLTRB(10, 8, 0, 8),
               child: Column(
                 children: [
-                  Text(
-                    _chartTitles[_currentPageIndex],
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  Padding(
+                   padding: const EdgeInsets.only(bottom: 10),
+                    child: Text(
+                      _chartTitles[_currentPageIndex],
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
                   ),
-                  const SizedBox(height: 20),
-                  
+                  const SizedBox(height: 0),         
                   Expanded(
                     child: PageView(
                       controller: _pageController,
@@ -262,19 +381,19 @@ class _MyChartState extends State<MyChart> {
                       ],
                     ),
                   ),
-
-                  const SizedBox(height: 10),
-
+                  const SizedBox(height: 5),
                   SmoothPageIndicator(
                     controller: _pageController,
                     count: 2,
                     effect: ExpandingDotsEffect(
-                      dotHeight: 8,
-                      dotWidth: 8,
                       activeDotColor: Theme.of(context).colorScheme.primary,
                       dotColor: Colors.grey.shade300,
+                      dotHeight: 8,
+                      dotWidth: 8,
+                      spacing: 8,
                     ),
                   ),
+                  const SizedBox(height: 6),
                 ],
               ),
             ),

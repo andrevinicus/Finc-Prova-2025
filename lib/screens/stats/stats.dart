@@ -23,15 +23,12 @@ class StatScreen extends StatelessWidget {
               'Gráficos Despesas e Receitas',
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 16),
-
-            // ALTERAÇÃO PRINCIPAL: Usamos um SizedBox com altura proporcional à tela.
             SizedBox(
               // Definimos a altura como 55% da altura total da tela.
               // Você pode ajustar este valor (ex: 0.5 para metade, 0.6 para 60%).
-              height: screenSize.height * 0.60,
-   child: Card(
-                elevation: 4,
+              height: screenSize.height * 0.50,
+              child: Card(
+                elevation: 2,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
