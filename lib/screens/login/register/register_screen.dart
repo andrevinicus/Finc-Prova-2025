@@ -2,8 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:expense_repository/expense_repository.dart';
-import 'package:finc/blocs/auth/auth_bloc.dart';
-import 'package:finc/blocs/auth/auth_event.dart';
+import 'package:finc/auth/auth_bloc.dart';
+import 'package:finc/auth/auth_event.dart';
 import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 
 class RegisterScreen extends StatefulWidget {

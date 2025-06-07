@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:expense_repository/expense_repository.dart'; // Importando repositório
 import 'package:finc/screens/category/blocs/get_categories_bloc/get_categories_bloc.dart';
-import 'package:finc/screens/category/modal%20category/created_category_modal.dart';
+import 'package:finc/screens/category/created_category.dart';
 
 class CategoryOptionsModalIncome extends StatefulWidget {
   final String userId;

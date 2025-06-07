@@ -1,5 +1,5 @@
 import 'package:expense_repository/expense_repository.dart';
-import 'package:finc/screens/auth/login_screen.dart'; // Certifique-se que o caminho está correto
+import 'package:finc/screens/login/register/login_screen.dart'; // Certifique-se que o caminho está correto
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';

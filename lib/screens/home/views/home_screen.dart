@@ -164,7 +164,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           heroTag: 'transferBtn',
                           backgroundColor: Colors.deepPurple,
                           onPressed: () {
-                            print('Transferência');
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.transfer,
+                              arguments: userId,
+                            );
                             setState(() {
                               showActionButtons = false;
                               _controller.reverse();

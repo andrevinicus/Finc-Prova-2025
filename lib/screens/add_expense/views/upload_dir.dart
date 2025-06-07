@@ -31,20 +31,20 @@ Future<File?> showImagePickerModal(BuildContext context) async {
   return showDialog<File?>(
     context: context,
     builder: (_) => AlertDialog(
-      backgroundColor: Colors.grey[900], // Fundo escuro para o modal
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255), // Fundo escuro para o modal
       title: const Text(
         'Selecionar Imagem',
-        style: TextStyle(color: Colors.white), // Título branco
+        style: TextStyle(color: Color.fromARGB(153, 19, 18, 18)), // Título branco
       ),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           ListTile(
-            leading: const Icon(Icons.camera_alt, color: Colors.white70),
+            leading: const Icon(Icons.camera_alt, color:  Color.fromARGB(153, 19, 18, 18)),
             title: const Text(
               'Tirar Foto',
-              style: TextStyle(color: Colors.white70),
+              style: TextStyle(color:  Color.fromARGB(153, 19, 18, 18)),
             ),
             onTap: () async {
               final file = await _pick(ImageSource.camera);
@@ -52,10 +52,10 @@ Future<File?> showImagePickerModal(BuildContext context) async {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.photo_library, color: Colors.white70),
+            leading: const Icon(Icons.photo_library, color: Color.fromARGB(153, 19, 18, 18)),
             title: const Text(
               'Escolher da Galeria',
-              style: TextStyle(color: Colors.white70),
+              style: TextStyle(color:  Color.fromARGB(153, 19, 18, 18)),
             ),
             onTap: () async {
               final file = await _pick(ImageSource.gallery);

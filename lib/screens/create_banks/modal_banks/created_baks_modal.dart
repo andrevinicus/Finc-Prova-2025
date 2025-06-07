@@ -30,17 +30,16 @@ class _BankOptionsModalState extends State<BankOptionsModal> {
     return BlocBuilder<GetBankBloc, GetBankState>(
       builder: (context, state) {
         if (state is GetBankLoading) {
+          // Mantém um tamanho fixo para o loading
           return _buildContainer(
-            heightFactor: 0.5,
             child: const Center(
-              child: CircularProgressIndicator(color: Colors.white),
+              child: CircularProgressIndicator(color: Colors.blueAccent),
             ),
           );
         }
 
         if (state is GetBankError) {
           return _buildContainer(
-            heightFactor: 0.35,
             child: Center(
               child: Text(
                 state.message,
@@ -52,97 +51,88 @@ class _BankOptionsModalState extends State<BankOptionsModal> {
 
         if (state is GetBankLoaded) {
           final allBanks = state.banks;
+          // Filtra os bancos sem limitar a quantidade com take()
           final filteredBanks = allBanks
-              .where((bank) => bank.bankName.toLowerCase().contains(searchQuery.toLowerCase()))
-              .take(5)
+              .where((bank) =>
+                  bank.bankName.toLowerCase().contains(searchQuery.toLowerCase()))
               .toList();
 
-          double heightFactor;
-          if (filteredBanks.isEmpty) {
-            heightFactor = 0.35;
-          } else if (filteredBanks.length <= 2) {
-            heightFactor = 0.5;
-          } else if (filteredBanks.length <= 4) {
-            heightFactor = 0.65;
-          } else {
-            heightFactor = 0.75;
-          }
-
           return _buildContainer(
-            heightFactor: heightFactor,
             child: Column(
+              // Faz a coluna se ajustar ao tamanho dos filhos
               children: [
                 _buildSearchField(),
                 const SizedBox(height: 16),
-                if (filteredBanks.isNotEmpty)
-                  Expanded(
-                    child: ListView.separated(
-                      itemCount: filteredBanks.length,
-                      separatorBuilder: (_, __) => const Divider(color: Colors.white24, height: 0.5),
-                      itemBuilder: (context, index) {
-                        final bank = filteredBanks[index];
-                        final isSelected = selectedBank != null && selectedBank!.id == bank.id;
+                // Flexible permite que o ListView ocupe o espaço restante e se torne rolável
+                Flexible(
+                  child: filteredBanks.isNotEmpty
+                      ? ListView.separated(
+                          // shrinkWrap é importante para o ListView dentro de uma Column com MainAxisSize.min
+                          shrinkWrap: true,
+                          itemCount: filteredBanks.length,
+                          separatorBuilder: (_, __) => const Divider(color: Colors.black12, height: 0.5),
+                          itemBuilder: (context, index) {
+                            final bank = filteredBanks[index];
+                            final isSelected = selectedBank != null && selectedBank!.id == bank.id;
 
-                        return ListTile(
-                          leading: bank.logo != null && bank.logo!.isNotEmpty
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(4),
-                                  child: Image.network(
-                                    bank.logo!,
-                                    width: 32,
-                                    height: 32,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) =>
-                                        const Icon(Icons.broken_image, color: Colors.white30),
-                                  ),
-                                )
-                              : Container(
-                                  width: 32,
-                                  height: 32,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white10,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: const Icon(Icons.account_balance, color: Colors.white30, size: 20),
-                                ),
-                          title: Text(
-                            bank.bankName,
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                          trailing: isSelected
-                              ? const Icon(Icons.check_circle, color: Colors.greenAccent, size: 18)
-                              : null,
-                          onTap: () {
-                            setState(() {
-                              selectedBank = bank;
-                            });
-                            Navigator.pop(context, bank);
+                            return ListTile(
+                              leading: bank.logo != null && bank.logo!.isNotEmpty
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(4),
+                                      child: Image.network(
+                                        bank.logo!,
+                                        width: 32,
+                                        height: 32,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) =>
+                                            const Icon(Icons.broken_image, color: Colors.grey),
+                                      ),
+                                    )
+                                  : Container(
+                                      width: 32,
+                                      height: 32,
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey.shade200,
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Icon(Icons.account_balance, color: Colors.grey.shade600, size: 20),
+                                    ),
+                              title: Text(
+                                bank.bankName,
+                                style: const TextStyle(color: Colors.black87),
+                              ),
+                              trailing: isSelected
+                                  ? const Icon(Icons.check_circle, color: Colors.green, size: 18)
+                                  : null,
+                              onTap: () {
+                                setState(() {
+                                  selectedBank = bank;
+                                });
+                                Navigator.pop(context, bank);
+                              },
+                            );
                           },
-                        );
-                      },
-                    ),
-                  )
-                else
-                  const Expanded(
-                    child: Center(
-                      child: Text(
-                        'Nenhum banco encontrado.',
-                        style: TextStyle(color: Colors.white70),
-                      ),
-                    ),
-                  ),
-                const Divider(color: Colors.white24),
+                        )
+                      : const Center(
+                          child: Text(
+                            'Nenhum banco encontrado.',
+                            style: TextStyle(color: Colors.black54),
+                          ),
+                        ),
+                ),
+                // Opções fixas na parte inferior
+                const Divider(color: Colors.black12),
                 ListTile(
                   leading: _circleIcon(Icons.manage_accounts),
-                  title: const Text('Gerenciar Banco', style: TextStyle(color: Colors.white)),
+                  title: const Text('Gerenciar Banco', style: TextStyle(color: Colors.black87)),
                   onTap: () {
                     Navigator.pop(context);
                   },
                 ),
-                const Divider(color: Colors.white24),
+                const Divider(color: Colors.black12),
                 ListTile(
                   leading: _circleIcon(Icons.add),
-                  title: const Text('Cadastrar Banco', style: TextStyle(color: Colors.white)),
+                  title: const Text('Cadastrar Banco', style: TextStyle(color: Colors.black87)),
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.pushNamed(
@@ -157,26 +147,27 @@ class _BankOptionsModalState extends State<BankOptionsModal> {
           );
         }
 
-        return const SizedBox.shrink(); // fallback caso estado não esperado
+        return const SizedBox.shrink();
       },
     );
   }
 
   Widget _buildSearchField() {
+    // Seu método _buildSearchField() continua o mesmo
     return TextField(
-      cursorColor: Colors.white,
+      cursorColor: Colors.black,
       decoration: InputDecoration(
-        prefixIcon: const Icon(Icons.search, color: Colors.white),
+        prefixIcon: const Icon(Icons.search, color: Colors.black54),
         hintText: 'Pesquisar bancos...',
-        hintStyle: const TextStyle(color: Colors.white60),
+        hintStyle: const TextStyle(color: Colors.black45),
         filled: true,
-        fillColor: Colors.grey[800],
+        fillColor: Colors.grey[200],
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
         ),
       ),
-      style: const TextStyle(color: Colors.white),
+      style: const TextStyle(color: Colors.black),
       onChanged: (value) {
         setState(() {
           searchQuery = value;
@@ -185,28 +176,37 @@ class _BankOptionsModalState extends State<BankOptionsModal> {
     );
   }
 
-  Widget _buildContainer({required double heightFactor, required Widget child}) {
+  // MÉTODO ATUALIZADO
+  Widget _buildContainer({required Widget child}) {
+    // Obtém a altura da tela
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Container(
-      padding: const EdgeInsets.all(16),
+      // Padding interno do modal
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      // Define as restrições de altura
+      constraints: BoxConstraints(
+        // A altura máxima será 50% da tela
+        maxHeight: screenHeight * 0.65,
+      ),
       decoration: const BoxDecoration(
-        color: Color(0xFF2C2C2C),
+        color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      child: FractionallySizedBox(
-        heightFactor: heightFactor,
-        child: child,
-      ),
+      // O filho agora é diretamente o Column
+      child: child,
     );
   }
 
   Widget _circleIcon(IconData icon) {
+    // Seu método _circleIcon() continua o mesmo
     return Container(
       padding: const EdgeInsets.all(8),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.white10,
+        color: Colors.grey.shade200,
       ),
-      child: Icon(icon, color: Colors.white),
+      child: Icon(icon, color: Colors.black54),
     );
   }
 }

@@ -59,9 +59,11 @@ class _BankOptionsModalState extends State<BankOptionsModal> {
       });
     } else {
       setState(() => isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Erro ao carregar bancos')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Erro ao carregar bancos')),
+        );
+      }
     }
   }
 
@@ -93,7 +95,7 @@ class _BankOptionsModalState extends State<BankOptionsModal> {
       builder: (context, scrollController) {
         return Container(
           decoration: const BoxDecoration(
-            color: Color(0xFF121212),
+            color: Color(0xFFF5F5F5), // Alterado para cinza claro
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           padding: const EdgeInsets.only(top: 12),
@@ -103,7 +105,7 @@ class _BankOptionsModalState extends State<BankOptionsModal> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey[700],
+                  color: Colors.grey[400], // Alterado para cinza mais claro
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -111,13 +113,13 @@ class _BankOptionsModalState extends State<BankOptionsModal> {
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 child: TextField(
                   controller: searchController,
-                  style: const TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Colors.black87), // Alterado para preto
                   decoration: InputDecoration(
                     hintText: 'Buscar banco...',
-                    hintStyle: TextStyle(color: Colors.grey[400]),
+                    hintStyle: TextStyle(color: Colors.grey[600]), // Alterado para cinza mais escuro
                     prefixIcon: const Icon(Icons.search, color: Colors.grey),
                     filled: true,
-                    fillColor: const Color(0xFF2A2A2A),
+                    fillColor: Colors.white, // Alterado para branco
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
@@ -129,14 +131,14 @@ class _BankOptionsModalState extends State<BankOptionsModal> {
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 child: Row(
                   children: [
-                    const Icon(Icons.filter_list, color: Colors.white70),
+                    const Icon(Icons.filter_list, color: Colors.black54), // Alterado para preto
                     const SizedBox(width: 8),
                     Expanded(
                       child: DropdownButton<String>(
                         value: _sortOrder,
-                        dropdownColor: const Color(0xFF2A2A2A),
+                        dropdownColor: Colors.white, // Alterado para branco
                         isExpanded: true,
-                        iconEnabledColor: Colors.white,
+                        iconEnabledColor: Colors.black54, // Alterado para preto
                         underline: Container(),
                         items: {
                           'asc': 'Ordem Alfabética (A-Z)',
@@ -144,7 +146,7 @@ class _BankOptionsModalState extends State<BankOptionsModal> {
                         }.entries
                             .map((entry) => DropdownMenuItem<String>(
                                   value: entry.key,
-                                  child: Text(entry.value, style: const TextStyle(color: Colors.white)),
+                                  child: Text(entry.value, style: const TextStyle(color: Colors.black87)), // Alterado
                                 ))
                             .toList(),
                         onChanged: (value) {
@@ -180,11 +182,11 @@ class _BankOptionsModalState extends State<BankOptionsModal> {
                               borderRadius: BorderRadius.circular(12),
                               child: Container(
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF1E1E1E),
+                                  color: Colors.white, // Alterado para branco
                                   borderRadius: BorderRadius.circular(12),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.4),
+                                      color: Colors.grey.withOpacity(0.2), // Alterado para sombra suave
                                       offset: const Offset(0, 2),
                                       blurRadius: 6,
                                     ),
@@ -197,7 +199,7 @@ class _BankOptionsModalState extends State<BankOptionsModal> {
                                       width: 50,
                                       height: 50,
                                       decoration: BoxDecoration(
-                                        color: Colors.grey[800],
+                                        color: Colors.grey[100], // Alterado para cinza bem claro
                                         borderRadius: BorderRadius.circular(8),
                                         image: logoUrl.isNotEmpty
                                             ? DecorationImage(
@@ -211,7 +213,7 @@ class _BankOptionsModalState extends State<BankOptionsModal> {
                                               child: Text(
                                                 name.isNotEmpty ? name[0] : '',
                                                 style: const TextStyle(
-                                                  color: Colors.white,
+                                                  color: Colors.black54, // Alterado para preto
                                                   fontSize: 24,
                                                   fontWeight: FontWeight.bold,
                                                 ),
@@ -227,7 +229,7 @@ class _BankOptionsModalState extends State<BankOptionsModal> {
                                           Text(
                                             name,
                                             style: const TextStyle(
-                                              color: Colors.white,
+                                              color: Colors.black87, // Alterado para preto
                                               fontSize: 16,
                                               fontWeight: FontWeight.w600,
                                             ),
@@ -236,7 +238,7 @@ class _BankOptionsModalState extends State<BankOptionsModal> {
                                           Text(
                                             'Código: $code',
                                             style: TextStyle(
-                                              color: Colors.grey[400],
+                                              color: Colors.grey[600], // Alterado para cinza escuro
                                               fontSize: 13,
                                             ),
                                           ),

@@ -80,7 +80,7 @@ class _MyChartState extends State<MyChart> {
   double get yInterval {
     final maxValue = _rawMaxValue;
     if (maxValue <= 10) return 2;
-    if (maxValue <= 20) return 5;
+    if (maxValue <= 20) return 4;
     if (maxValue <= 50) return 10;
     return 25;
   }
@@ -150,7 +150,7 @@ class _MyChartState extends State<MyChart> {
             leftTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
-                reservedSize:20,
+                reservedSize: 40,
                 interval: yInterval,
                 getTitlesWidget: (value, meta) => Text(
                   '${value.toInt()}K',
