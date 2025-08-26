@@ -1,5 +1,6 @@
 import 'package:finc/routes/app_routes.dart';
 import 'package:expense_repository/expense_repository.dart';
+import 'package:finc/screens/AIChatScreen/AIChatScreen.dart';
 import 'package:finc/screens/add_expense/blocs/create_expense_bloc/create_expense_bloc.dart';
 import 'package:finc/screens/add_expense/views/add_expense_screen.dart';
 import 'package:finc/screens/add_income/blocs/create_expense_bloc/create_income_bloc.dart';
@@ -21,7 +22,6 @@ import 'package:finc/screens/transfer/transfer_screen.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 class AppRouter {
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -35,6 +35,11 @@ class AppRouter {
         final transactions = settings.arguments as List<Expense>;
         return MaterialPageRoute(
           builder: (_) => TransactionScreen(transactions: transactions),
+        );
+      case AppRoutes.aiChat:
+        final userId = settings.arguments as String;
+        return MaterialPageRoute(
+          builder: (_) => AIChatScreen(userId: userId),
         );
 
       case AppRoutes.home:

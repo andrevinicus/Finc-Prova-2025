@@ -12,7 +12,20 @@
           "package_name": "com.example.finc"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "777310051966-apqnj2tluqb35nqssis8265b6hl4ed38.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.finc",
+            "certificate_hash": "29c1ea06daf7459254c1067ba7472259f431060f"
+          }
+        },
+        {
+          "client_id": "777310051966-4rrn423ncl9o6cg31c2ugfh35dfisi08.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCEJyKnZ8JVy37zR0_poj_7EgMwJvUgnPA"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "777310051966-4rrn423ncl9o6cg31c2ugfh35dfisi08.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

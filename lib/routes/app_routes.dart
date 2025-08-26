@@ -10,4 +10,5 @@ class AppRoutes {
   static const String categoryOptionsIncome = '/categoryOptionsIncome';
   static const String addBanks = '/add-banks';
   static const String transfer = '/transfer';
+  static const aiChat = '/aiChat';
 }
