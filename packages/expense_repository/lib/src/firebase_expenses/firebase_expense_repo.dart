@@ -54,22 +54,30 @@ class FirebaseExpenseRepo implements ExpenseRepository {
     }
   }
 
-  @override
-  Future<List<ExpenseEntity>> getExpenses(String userId) async {
-    try {
-      final snapshot = await expenseCollection
-          .where('userId', isEqualTo: userId)
-          .get();
+@override
+Future<List<ExpenseEntity>> getExpenses(String userId) async {
+  try {
+    final snapshot = await expenseCollection
+        .where('userId', isEqualTo: userId)
+        .get();
 
-      if (snapshot.docs.isEmpty) return [];
+    log("=== Query Firestore para userId=$userId ===");
+    log("Documentos retornados: ${snapshot.docs.length}");
 
-      return snapshot.docs.map((doc) {
-        return ExpenseEntity.fromDocument(doc.data());
-      }).toList();
-    } catch (e) {
-      log('Erro ao buscar despesas: $e');
-      throw Exception('Erro ao buscar despesas');
+    if (snapshot.docs.isEmpty) return [];
+
+    for (var doc in snapshot.docs) {
+      log("Documento ID: ${doc.id}");
+      log("Dados: ${doc.data()}");
     }
+
+    return snapshot.docs.map((doc) {
+      return ExpenseEntity.fromDocument(doc.data());
+    }).toList();
+  } catch (e, st) {
+    log('Erro ao buscar despesas: $e\n$st');
+    throw Exception('Erro ao buscar despesas');
   }
-   
+}
+
 }

@@ -36,10 +36,13 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => TransactionScreen(transactions: transactions),
         );
+
       case AppRoutes.aiChat:
-        final userId = settings.arguments as String;
+        final args = settings.arguments as Map<String, String>;
+        final userId = args["userId"]!;
+        final userName = args["userName"]!;
         return MaterialPageRoute(
-          builder: (_) => AIChatScreen(userId: userId),
+          builder: (_) => AIChatScreen(userId: userId, userName: userName),
         );
 
       case AppRoutes.home:

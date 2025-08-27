@@ -3,11 +3,11 @@ import 'package:finc/screens/home/views/home_screen/home_bottom_navbar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import 'package:finc/screens/home/blocs/get_block_expense_income.dart';
 import 'package:finc/screens/transactions/transaction_screen.dart';
 import 'package:finc/screens/home/views/main_screen.dart';
 import 'package:finc/screens/stats/stats.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,6 +18,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   int index = 0;
+  String userName = '';
   late String userId;
   bool _hasFetchedData = false;
   bool showActionButtons = false;
@@ -39,19 +40,22 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_hasFetchedData) {
-      final args = ModalRoute.of(context)?.settings.arguments;
-      if (args is String && args.isNotEmpty) {
-        userId = args;
-        context.read<GetFinancialDataBloc>().add(GetFinancialData(userId));
-        _hasFetchedData = true;
-      } else {
-        userId = '';
-      }
+@override
+void didChangeDependencies() {
+  super.didChangeDependencies();
+  if (!_hasFetchedData) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      userId = user.uid;
+      userName = user.displayName ?? user.email ?? 'Usuário';
+      context.read<GetFinancialDataBloc>().add(GetFinancialData(userId));
+      _hasFetchedData = true;
+    } else {
+      userId = '';
+      userName = '';
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +80,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     currentIndex: index,
                     onTap: (value) {
                       if (value == 3) { // índice do botão de chat
-                        Navigator.pushNamed(context, '/aiChat', arguments: userId);
+                       Navigator.pushNamed(
+                          context,
+                          '/aiChat',
+                          arguments: {
+                            'userId': userId,
+                            'userName': userName, // aqui você precisa ter o userName disponível
+                          },
+                        );
                       } else {
                         setState(() => index = value);
                       }
