@@ -32,16 +32,16 @@ class CategoryEntity {
     };
   }
 
-  static CategoryEntity fromDocument(Map<String, dynamic> doc) {
-    return CategoryEntity(
-      categoryId: doc['categoryId'],
-      name: doc['name'],
-      totalExpenses: doc['totalExpenses'],
-      icon: doc['icon'],
-      color: doc['color'],
-      userId: doc['userId'],
-      type: doc['type'] ?? 'expense', // NOVO: fallback de segurança
-      createdAt: doc['createdAt'] ?? DateTime.now().toIso8601String(),  // Fallback para a data atual, caso não exista
-    );
-  }
+static CategoryEntity fromDocument(Map<String, dynamic> doc) {
+  return CategoryEntity(
+    categoryId: doc['categoryId'] as String,
+    name: doc['name'] as String,
+    totalExpenses: (doc['totalExpenses'] as num).toInt(), // converte double/int para int
+    icon: doc['icon'] as String,
+    color: (doc['color'] as num).toInt(), // converte double/int para int
+    userId: doc['userId'] as String?,
+    type: doc['type'] as String? ?? 'income',
+    createdAt: doc['createdAt'] as String? ?? DateTime.now().toIso8601String(),
+  );
+}
 }
