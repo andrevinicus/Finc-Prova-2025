@@ -8,7 +8,7 @@ import 'package:finc/screens/create_banks/constants/banks_colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:finc/screens/add_expense/views/teclado_numerico.dart';
+import 'package:finc/screens/add_expense/modals/teclado_numerico.dart';
 import 'package:finc/screens/create_banks/constants/banks_domains.dart';
 import 'package:flutter/material.dart';
 import 'package:finc/screens/create_banks/modal_banks/api_banks.dart';

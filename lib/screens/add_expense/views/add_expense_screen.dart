@@ -1,19 +1,16 @@
 import 'dart:io';
-import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:finc/screens/add_expense/blocs/create_expense_bloc/create_expense_bloc.dart';
-import 'package:finc/screens/add_expense/views/teclado_numerico.dart';
-import 'package:finc/screens/add_expense/views/upload_dir.dart';
-import 'package:finc/screens/category/modal%20category/option_category_expense.dart';
-import 'package:finc/screens/create_banks/blocs/get_bank/get_bank_bloc.dart';
-import 'package:finc/screens/create_banks/blocs/get_bank/get_bank_event.dart';
-import 'package:finc/screens/create_banks/modal_banks/created_baks_modal.dart';
+import 'package:finc/screens/add_expense/expenses/ExpenseAmountField.dart';
+import 'package:finc/screens/add_expense/expenses/ExpenseBankField.dart';
+import 'package:finc/screens/add_expense/expenses/ExpenseCategoryField.dart';
+import 'package:finc/screens/add_expense/expenses/ExpenseDescriptionField.dart';
+import 'package:finc/screens/add_expense/expenses/ExpenseImagePicker.dart';
+import 'package:finc/screens/add_expense/expenses/ExpenseSaveButton.dart';
+import 'package:finc/screens/add_expense/modals/upload_dir.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:expense_repository/expense_repository.dart';
-import 'package:uuid/uuid.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 
@@ -87,7 +84,6 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
 @override
 Widget build(BuildContext context) {
-  const Color topContainerColor = Colors.white; // White for the top container
   // Changed to a very light grey for the bottom container
   final Color bottomContainerColor = const Color.fromARGB(115, 206, 206, 206);
 
@@ -129,53 +125,13 @@ Widget build(BuildContext context) {
       body: Column(
         children: [
           // Top part with value
-          GestureDetector(
-            onTap: () async {
-              final result = await showModalBottomSheet<String>(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.grey[200], // Lighter background for the numeric keyboard modal
-                builder: (context) => FractionallySizedBox(
-                  child: TecladoNumerico(
-                    valorInicial: _amountController.text.isEmpty
-                        ? '0'
-                        : _amountController.text.replaceAll('.', ','),
-                  ),
-                ),
-              );
-              if (result != null &&
-                  double.tryParse(result.replaceAll(',', '.')) != null) {
-                _amountController.text = result.replaceAll(',', '.');
-                setState(() {});
-              }
+          ExpenseAmountField(
+            amount: _amountController.text,
+            onAmountChanged: (value) {
+              setState(() {
+                _amountController.text = value;
+              });
             },
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
-              color: topContainerColor, // White top container
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    'R\$ ${_amountController.text.isEmpty ? '0,00' : _amountController.text.replaceAll('.', ',')}',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 42,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black, // Black text
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    "Valor da Despesa", // Changed from "Valor da Receita"
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.black54, // Darker text
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ),
             Expanded(
               child: Container(
@@ -247,77 +203,15 @@ Widget build(BuildContext context) {
                           thickness: 0.8, // Slightly thinner divider
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 1, right: 1),
-                        child: ListTile(
-                          leading: const Icon(Icons.flag, color: Colors.grey, size: 24), // Grey icon
-                          title: _selectedCategory != null
-                              ? Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: Color(_selectedCategory!.color),
-                                      width: 1.5,
-                                    ),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Image.asset(
-                                        'assets/${_selectedCategory!.icon}.png',
-                                        width: 20,
-                                        height: 20,
-                                        color: Color(_selectedCategory!.color),
-                                        fit: BoxFit.contain,
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Flexible(
-                                        child: Text(
-                                          _selectedCategory!.name,
-                                          style: const TextStyle(color: Colors.black87), // Darker text
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              : Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: const Text(
-                                    'Opções de Categoria',
-                                    style: TextStyle(color: Colors.black54), // Darker text
-                                  ),
-                                ),
-                          trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey), // Grey icon
-                          onTap: () async {
-                            final resultado = await showModalBottomSheet<Category>(
-                              context: context,
-                              isScrollControlled: true,
-                              backgroundColor: Colors.transparent, // MUITO IMPORTANTE: Defina para transparente
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.vertical(top: Radius.circular(15)), // **AQUI DEVE ESTAR A BORDA**
-                              ),
-                              builder: (BuildContext context) {
-                                return ClipRRect(
-                                  borderRadius: const BorderRadius.vertical(top: Radius.circular(15)), // Mesma borda que o shape
-                                  child: CategoryOptionsModalExpense(userId: userId),
-                                );
-                              },
-                            );
-
-                            if (resultado != null) {
-                              setState(() {
-                                _selectedCategory = resultado;
-                              });
-                            }
-                          },
-                        ),
+                      ExpenseCategoryField(
+                        userId: userId,
+                        selectedCategory: _selectedCategory,
+                        onCategorySelected: (category) {
+                          setState(() {
+                            _selectedCategory = category;
+                          });
+                        },
                       ),
-
                       Container(
                         margin: const EdgeInsets.symmetric(horizontal: 10),
                         child: const Divider(
@@ -326,30 +220,7 @@ Widget build(BuildContext context) {
                           thickness: 0.8,
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 0, right: 9),
-                        child: TextFormField(
-                          controller: _descricaoController,
-                          style: const TextStyle(color: Colors.black87), // Darker text
-                          textCapitalization: TextCapitalization.words,
-                          cursorColor: Colors.blueAccent, // Blue cursor
-                          selectionControls: MaterialTextSelectionControls(),
-                          selectionHeightStyle: BoxHeightStyle.tight,
-                          selectionWidthStyle: BoxWidthStyle.tight,
-                          decoration: const InputDecoration(
-                            labelText: 'Descrição',
-                            labelStyle: TextStyle(color: Colors.black54), // Darker label
-                            prefixIcon: Padding(
-                              padding: EdgeInsets.only(left: 15, right: 23),
-                              child: Icon(Icons.description, color: Colors.grey), // Grey icon
-                            ),
-                            contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                            border: InputBorder.none,
-                          ),
-                          validator: (value) =>
-                              value == null || value.isEmpty ? 'Campo obrigatório' : null,
-                        ),
-                      ),
+                      ExpenseDescriptionField(controller: _descricaoController),
                       Container(
                         margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         child: const Divider(
@@ -358,78 +229,14 @@ Widget build(BuildContext context) {
                           thickness: 0.8,
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-                          leading: const Icon(Icons.account_balance, color: Colors.grey, size: 22), // Grey icon
-                          title: _selectedBank != null
-                              ? Padding(
-                                  padding: const EdgeInsets.only(left: 10),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        width: 35,
-                                        height: 35,
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(8),
-                                          border: Border.all(color: Colors.grey), // Grey border
-                                        ),
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(8),
-                                          child: Image.network(
-                                            _selectedBank!.logo!,
-                                            fit: BoxFit.cover,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Flexible(
-                                        child: Text(
-                                          _selectedBank!.bankName,
-                                          style: const TextStyle(color: Colors.black87), // Darker text
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              : Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 11),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: const Text(
-                                    'Selecione um banco',
-                                    style: TextStyle(color: Colors.black54), // Darker text
-                                  ),
-                                ),
-                          trailing: const Padding(
-                            padding: EdgeInsets.only(right: 12),
-                            child: Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey), // Grey icon
-                          ),
-                          onTap: () async {
-                            final resultado = await showModalBottomSheet<BankAccountEntity>(
-                              context: context,
-                              isScrollControlled: true,
-                              backgroundColor: Colors.grey[200], // Lighter background for bank options modal
-                              builder: (BuildContext context) {
-                                final bankRepository = RepositoryProvider.of<BankRepository>(context);
-
-                                return BlocProvider<GetBankBloc>(
-                                  create: (_) => GetBankBloc(bankRepository)..add(GetLoadBanks(userId)),
-                                  child: BankOptionsModal(userId: userId),
-                                );
-                              },
-                            );
-
-                            if (resultado != null) {
-                              setState(() {
-                                _selectedBank = resultado;
-                              });
-                            }
-                          },
-                        ),
+                      ExpenseBankField(
+                        userId: userId,
+                        selectedBank: _selectedBank,
+                        onBankSelected: (bank) {
+                          setState(() {
+                            _selectedBank = bank;
+                          });
+                        },
                       ),
                       Container(
                         margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
@@ -439,63 +246,16 @@ Widget build(BuildContext context) {
                           thickness: 0.8,
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 0, right: 9),
-                        child: InkWell(
-                          onTap: () async {
-                            final pickedFile = await showImagePickerModal(context);
-                            if (pickedFile != null) {
-                              setState(() {
-                                _selectedImage = pickedFile;
-                                _selectedImageName = pickedFile.path.split('/').last;
-                              });
-                            }
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                            decoration: const BoxDecoration(
-                              color: Colors.transparent,
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.image, color: Colors.grey), // Grey icon
-                                const SizedBox(width: 16),
-                                if (_selectedImage != null)
-                                  Container(
-                                    width: 35,
-                                    height: 35,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: Colors.grey), // Grey border
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: Image.file(
-                                        _selectedImage!,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  ),
-                                if (_selectedImage != null) const SizedBox(width: 16),
-                                Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(left: 10),
-                                    child: Text(
-                                      truncatedName(_selectedImageName),
-                                      style: const TextStyle(
-                                        color: Colors.black54, // Darker text
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                      textAlign: TextAlign.left,
-                                    ),
-                                  ),
-                                ),
-                                const Icon(Icons.cloud_upload_outlined, color: Colors.grey), // Grey icon
-                              ],
-                            ),
-                          ),
-                        ),
+                      ExpenseImagePicker(
+                        selectedImage: _selectedImage,
+                        selectedImageName: _selectedImageName,
+                        showImagePickerModal: showImagePickerModal,
+                        onImageSelected: (file) {
+                          setState(() {
+                            _selectedImage = file;
+                            _selectedImageName = file.path.split('/').last;
+                          });
+                        },
                       ),
                       Container(
                         margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
@@ -513,69 +273,14 @@ Widget build(BuildContext context) {
           ),
         ],
       ),
-      floatingActionButton: BlocConsumer<CreateExpenseBloc, CreateExpenseState>(
-        listener: (context, state) {
-          if (state is CreateExpenseSuccess) {
-            Navigator.pop(context);
-          } else if (state is CreateExpenseFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Erro ao salvar: ${state.message}')),
-            );
-          }
-        },
-        builder: (context, state) {
-          final isLoading = state is CreateExpenseLoading;
-
-          return FloatingActionButton(
-            onPressed: isLoading
-                ? null
-                : () async {
-                    if (_amountController.text.isEmpty ||
-                        double.tryParse(_amountController.text) == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Informe um valor válido.')),
-                      );
-                      return;
-                    }
-
-                    if (_selectedCategory == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Selecione uma categoria.')),
-                      );
-                      return;
-                    }
-
-                    if (_formKey.currentState!.validate()) {
-                      final uuid = Uuid();
-                      final userId = FirebaseAuth.instance.currentUser!.uid;
-
-                      String? imageId;
-
-                      if (_selectedImage != null) {
-                        imageId = await uploadImagemComUserIdERetornarId(_selectedImage!);
-                      }
-
-                      final expense = Expense(
-                        id: uuid.v4(),
-                        category: _selectedCategory!,
-                        amount: double.parse(_amountController.text),
-                        description: _descricaoController.text,
-                        date: _selectedDate,
-                        userId: userId,
-                        type: 'expense',
-                        bankId: _selectedBank?.id,
-                        imageId: imageId,
-                      );
-
-                      context.read<CreateExpenseBloc>().add(CreateExpenseSubmitted(expense));
-                    }
-                  },
-            backgroundColor: Colors.blueAccent, // Blue accent for the FAB
-            child: isLoading
-                ? const CircularProgressIndicator(color: Colors.white)
-                : const Icon(Icons.check, size: 30, color: Colors.white), // White icon
-          );
-        },
+      floatingActionButton: ExpenseSaveButton(
+        amountText: _amountController.text,
+        selectedBankId: _selectedBank?.id,
+        selectedCategory: _selectedCategory,
+        selectedDate: _selectedDate,
+        description: _descricaoController.text,
+        selectedImage: _selectedImage,
+        uploadImage: uploadImagemComUserIdERetornarId,
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     ),

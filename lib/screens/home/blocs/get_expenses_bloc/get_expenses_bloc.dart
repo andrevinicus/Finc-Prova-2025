@@ -10,12 +10,21 @@ class GetExpensesBloc extends Bloc<GetExpensesEvent, GetExpensesState> {
 
   GetExpensesBloc(this.expenseRepository) : super(GetExpensesInitial()) {
     on<GetExpenses>((event, emit) async {
+      print('GetExpensesBloc: Evento GetExpenses recebido para userId=${event.userId}');
+      
       emit(GetExpensesLoading());
       try {
         final entities = await expenseRepository.getExpenses(event.userId);
+        print('GetExpensesBloc: Recebido ${entities.length} despesas do repositório');
+
         final expenses = entities.map((e) => Expense.fromEntity(e)).toList();
+        print('GetExpensesBloc: Convertido para Expense, total=${expenses.length}');
+        
         emit(GetExpensesSuccess(expenses));
-      } catch (e) {
+        print('GetExpensesBloc: Emitido GetExpensesSuccess');
+      } catch (e, stackTrace) {
+        print('GetExpensesBloc: Erro ao buscar expenses -> $e');
+        print(stackTrace);
         emit(GetExpensesFailure());
       }
     });

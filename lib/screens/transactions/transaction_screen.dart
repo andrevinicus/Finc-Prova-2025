@@ -3,9 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class TransactionScreen extends StatefulWidget {
-  final List<Expense> transactions;
+  final List<dynamic> transactions; // Pode ser Expense ou Income
+  final Map<String, Category> categoryMap;
 
-  const TransactionScreen({super.key, required this.transactions});
+  const TransactionScreen({
+    super.key,
+    required this.transactions,
+    required this.categoryMap,
+  });
 
   @override
   State<TransactionScreen> createState() => _TransactionScreenState();
@@ -28,8 +33,8 @@ class _TransactionScreenState extends State<TransactionScreen> with SingleTicker
 
   @override
   Widget build(BuildContext context) {
-    final expenses = widget.transactions.where((t) => t.isExpense).toList();
-    final incomes = widget.transactions.where((t) => !t.isExpense).toList();
+    final expenses = widget.transactions.where((t) => (t.type == 'despesa')).toList();
+    final incomes = widget.transactions.where((t) => (t.type == 'income')).toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -56,7 +61,7 @@ class _TransactionScreenState extends State<TransactionScreen> with SingleTicker
     );
   }
 
-  Widget _buildTransactionList(BuildContext context, List<Expense> transactions) {
+  Widget _buildTransactionList(BuildContext context, List<dynamic> transactions) {
     if (transactions.isEmpty) {
       return Center(
         child: Column(
@@ -84,11 +89,14 @@ class _TransactionScreenState extends State<TransactionScreen> with SingleTicker
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final tx = transactions[index];
-        final isExpense = tx.isExpense;
+        final isExpense = tx.type == 'despesa';
         final amountPrefix = isExpense ? "- " : "+ ";
         final amountColor = isExpense
             ? Theme.of(context).colorScheme.tertiary
             : Theme.of(context).colorScheme.secondary;
+
+        // Buscar categoria pelo categoryId
+        final category = widget.categoryMap[tx.categoryId] ?? Category.empty;
 
         return Container(
           decoration: BoxDecoration(
@@ -98,7 +106,7 @@ class _TransactionScreenState extends State<TransactionScreen> with SingleTicker
               BoxShadow(
                 color: Colors.black12,
                 blurRadius: 4,
-                offset: Offset(0, 2),
+                offset: const Offset(0, 2),
               ),
             ],
           ),
@@ -110,7 +118,7 @@ class _TransactionScreenState extends State<TransactionScreen> with SingleTicker
               child: Icon(Icons.category, color: Theme.of(context).colorScheme.primary),
             ),
             title: Text(
-              tx.category.name,
+              category.name,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             subtitle: Text(

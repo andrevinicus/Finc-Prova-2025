@@ -2,8 +2,8 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expense_repository/expense_repository.dart';
-import 'package:finc/screens/add_expense/views/teclado_numerico.dart';
-import 'package:finc/screens/add_expense/views/upload_dir.dart';
+import 'package:finc/screens/add_expense/modals/teclado_numerico.dart';
+import 'package:finc/screens/add_expense/modals/upload_dir.dart';
 import 'package:finc/screens/add_income/blocs/create_expense_bloc/create_income_bloc.dart';
 import 'package:finc/screens/category/modal%20category/option_category_income.dart';
 import 'package:finc/screens/create_banks/blocs/get_bank/get_bank_bloc.dart';
@@ -578,7 +578,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
 
                         final income = Income(
                           id: uuid.v4(),
-                          category: _selectedCategory!,
+                          categoryId: _selectedCategory!.categoryId,
                           amount: double.parse(_amountController.text),
                           description: _descricaoController.text,
                           date: _selectedDate,

@@ -9,7 +9,14 @@ sealed class GetCategoriesState extends Equatable {
 
 final class GetCategoriesInitial extends GetCategoriesState {}
 
-final class GetCategoriesFailure extends GetCategoriesState {}
+final class GetCategoriesFailure extends GetCategoriesState {
+  final String message;
+
+  const GetCategoriesFailure(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
 
 final class GetCategoriesLoading extends GetCategoriesState {}
 

@@ -1,33 +1,32 @@
-import 'package:expense_repository/expense_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class IncomeEntity {
-  final String expenseId;
-  final Category category;
+  final String id; // Renomeado de expenseId para id
+  final String categoryId; // Armazenar só o ID da categoria
   final DateTime date;
-  final int amount;
+  final double amount; // Usar double
   final String userId;
   final String type; // 'despesa' ou 'receita'
   final String description;
   final String? bankId;
-  final String? imageId; // alterado de idImg para imageId
+  final String? imageId;
 
   IncomeEntity({
-    required this.expenseId,
-    required this.category,
+    required this.id,
+    required this.categoryId,
     required this.date,
     required this.amount,
     required this.userId,
     required this.type,
     required this.description,
-    required this.bankId,
+    this.bankId,
     this.imageId,
   });
 
   Map<String, Object?> toDocument() {
     return {
-      'expenseId': expenseId,
-      'category': category.toEntity().toDocument(),
+      'id': id,
+      'categoryId': categoryId,
       'date': Timestamp.fromDate(date),
       'amount': amount,
       'userId': userId,
@@ -40,15 +39,13 @@ class IncomeEntity {
 
   static IncomeEntity fromDocument(Map<String, dynamic> doc) {
     return IncomeEntity(
-      expenseId: doc['expenseId'] as String,
-      category: Category.fromEntity(
-        CategoryEntity.fromDocument(doc['category'] as Map<String, dynamic>),
-      ),
+      id: doc['id'] as String,
+      categoryId: doc['categoryId'] as String,
       date: (doc['date'] as Timestamp).toDate(),
-      amount: (doc['amount'] as num).toInt(),
+      amount: (doc['amount'] as num).toDouble(),
       userId: doc['userId'] as String,
-      type: doc['type'] ?? 'income',
-      description: doc['description'] ?? '',
+      type: doc['type'] as String? ?? 'income',
+      description: doc['description'] as String? ?? '',
       bankId: doc['bankId'] as String?,
       imageId: doc['imageId'] as String?,
     );

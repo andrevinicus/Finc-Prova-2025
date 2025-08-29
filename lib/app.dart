@@ -12,13 +12,17 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final expenseRepository = FirebaseExpenseRepo();
+    final incomeRepository = FirebaseIncomeRepo();
     final bankRepository = BankRepository();
-    final incomeRepository = FirebaseIncomeRepo(); 
+    final categoryRepository = FirebaseCategoryRepository(); // <-- Adicionado
+
     return MultiRepositoryProvider(
       providers: [
         RepositoryProvider<ExpenseRepository>.value(value: expenseRepository),
         RepositoryProvider<IncomeRepository>.value(value: incomeRepository),
         RepositoryProvider<BankRepository>.value(value: bankRepository),
+        RepositoryProvider<CategoryRepository>.value(value: categoryRepository),
+         // <-- Adicionado
       ],
       child: BlocProvider(
         create: (_) => AuthBloc(FirebaseAuth.instance)..add(AuthCheckRequested()),

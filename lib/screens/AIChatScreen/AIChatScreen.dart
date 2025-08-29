@@ -100,7 +100,8 @@ class _AIChatScreenState extends State<AIChatScreen> {
         }
 
         // Extrai os nomes das categorias como Strings
-        final categorias = lancamentos.map((l) => l.category.name).toSet().toList();
+        final categorias = lancamentos.map((l) => l.categoryId.toString()).toSet().toList();
+        print("Categorias únicas encontradas: $categorias");
 
         return SingleChildScrollView(
           scrollDirection: Axis.horizontal,
@@ -158,10 +159,10 @@ Future<String> _getTotalByCategory(String category) async {
     final lancamentos = await expenseRepo.getExpenses(widget.userId);
     print("Lançamentos recebidos do Firebase para ${widget.userId}:");
     for (var l in lancamentos) {
-      print("Categoria: ${l.category}, Valor: ${l.amount}");
+      print("Categoria: ${l.categoryId}, Valor: ${l.amount}");
     }
 
-    final despesasCategoria = lancamentos.where((l) => l.category == category).toList();
+    final despesasCategoria = lancamentos.where((l) => l.categoryId == category).toList();
     final total = despesasCategoria.fold<double>(0, (sum, l) => sum + (l.amount));
 
     print("Total para categoria '$category': $total");

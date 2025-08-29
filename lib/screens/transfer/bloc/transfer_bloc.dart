@@ -7,6 +7,7 @@ import 'package:finc/screens/transfer/bloc/transfer_state.dart'; // Seu reposit�
 
 
 class TransferBloc extends Bloc<TransferEvent, TransferState> {
+  // ignore: unused_field
   final ExpenseRepository _expenseRepository; // Supondo que a lógica de transferência esteja aqui
 
   TransferBloc({required ExpenseRepository expenseRepository})

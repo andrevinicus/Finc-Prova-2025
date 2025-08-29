@@ -8,12 +8,17 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:finc/screens/drawer/app_drawer.dart';
 
-
 class MainScreen extends StatefulWidget {
   final List<Expense> expenses;
   final List<Income> income;
+  final Map<String, Category> categoryMap; // Adicionado
 
-  const MainScreen(this.expenses, this.income, {super.key});
+  const MainScreen({
+    super.key,
+    required this.expenses,
+    required this.income,
+    required this.categoryMap, // Adicionado
+  });
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -58,30 +63,37 @@ class _MainScreenState extends State<MainScreen> {
         filteredMonthExpenses.fold<double>(0.0, (sum, e) => sum + e.amount);
     final balance = incomeTotal - expenseTotal;
 
-    // --- LISTA COMBINADA ---
-    List<DisplayListItem> transactionsForListView = [];
+   final transactionsForListView = [
+  // Despesas
+  ...filteredMonthExpenses.map((expense) {
+    final expenseCatId = expense.categoryId.toString().trim();
+    final category = widget.categoryMap[expenseCatId] ?? Category.empty;
 
-    for (var expense in filteredMonthExpenses) {
-      transactionsForListView.add(DisplayListItem(
-        date: expense.date,
-        amount: expense.amount,
-        title: expense.description,
-        iconName: expense.category.icon,
-        iconBackgroundColorValue: expense.category.color,
-        isExpense: true,
-      ));
-    }
+    return DisplayListItem(
+      date: expense.date,
+      amount: expense.amount,
+      title: expense.description,
+      iconName: category.icon,
+      iconBackgroundColorValue: category.color,
+      isExpense: true,
+    );
+  }),
+  // Receitas
+  ...filteredMonthIncome.map((incomeEntry) {
+    final incomeCatId = incomeEntry.categoryId.toString().trim();
+    final category = widget.categoryMap[incomeCatId] ?? Category.empty;
 
-    for (var incomeEntry in filteredMonthIncome) {
-      transactionsForListView.add(DisplayListItem(
-        date: incomeEntry.date,
-        amount: incomeEntry.amount,
-        title: incomeEntry.description,
-        iconName: incomeEntry.category.icon,
-        iconBackgroundColorValue: incomeEntry.category.color,
-        isExpense: false,
-      ));
-    }
+    return DisplayListItem(
+      date: incomeEntry.date,
+      amount: incomeEntry.amount,
+      title: incomeEntry.description,
+      iconName: category.icon,
+      iconBackgroundColorValue: category.color,
+      isExpense: false,
+    );
+  }),
+];
+
 
     transactionsForListView.sort((a, b) => b.date.compareTo(a.date));
 

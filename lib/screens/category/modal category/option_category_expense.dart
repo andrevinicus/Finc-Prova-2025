@@ -37,7 +37,7 @@ class _CategoryOptionsModalState extends State<CategoryOptionsModalExpense> {
     // Envolva o widget com BlocProvider aqui
     return BlocProvider<GetCategoriesBloc>(
       create: (_) => GetCategoriesBloc(
-        context.read<ExpenseRepository>(), // Passando o ExpenseRepository
+        categoryRepository: context.read<CategoryRepository>(),
       )..add(GetCategories(currentUserId)),
       child: Container(
         // **Fundo do modal para branco**
@@ -84,7 +84,7 @@ class _CategoryOptionsModalState extends State<CategoryOptionsModalExpense> {
                   ),
                 ),
               ),
-              BlocBuilder<GetCategoriesBloc, GetCategoriesState>(
+    BlocBuilder<GetCategoriesBloc, GetCategoriesState>(
                 builder: (context, state) {
                   if (state is GetCategoriesLoading) {
                     return const Padding(
@@ -92,11 +92,11 @@ class _CategoryOptionsModalState extends State<CategoryOptionsModalExpense> {
                       child: Center(child: CircularProgressIndicator()),
                     );
                   } else if (state is GetCategoriesSuccess) {
-                    // Filtra as categorias pelo nome e tipo 'expense', além de ordenar por data de criação.
+                    // Filtra as categorias pelo nome e tipo 'income', além de ordenar por data de criação.
                     final categories = state.categories
                         .where((category) =>
                             category.name.toLowerCase().contains(searchQuery) &&
-                            category.type == 'expense')
+                            category.type == 'expense') // Filtra por 'income'
                         .toList()
                       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
@@ -236,7 +236,7 @@ class _CategoryOptionsModalState extends State<CategoryOptionsModalExpense> {
                     builder: (BuildContext modalContext) {
                       return BlocProvider(
                         create: (_) => CreateCategoryBloc(
-                          expenseRepository: context.read<ExpenseRepository>(),
+                          categoryRepository: context.read<CategoryRepository>(),
                         ),
                         child: Container(
                           padding: const EdgeInsets.all(17),

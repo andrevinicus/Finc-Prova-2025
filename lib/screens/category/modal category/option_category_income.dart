@@ -37,7 +37,7 @@ class _CategoryOptionsModalState extends State<CategoryOptionsModalIncome> {
     // Envolva o widget com BlocProvider aqui
     return BlocProvider<GetCategoriesBloc>(
       create: (_) => GetCategoriesBloc(
-        context.read<ExpenseRepository>(), // Passando o ExpenseRepository
+        categoryRepository: context.read<CategoryRepository>(),
       )..add(GetCategories(currentUserId)),
       child: Container(
         // Fundo do modal para branco
@@ -236,8 +236,8 @@ class _CategoryOptionsModalState extends State<CategoryOptionsModalIncome> {
                     builder: (BuildContext modalContext) {
                       return BlocProvider(
                         create: (_) => CreateCategoryBloc(
-                          expenseRepository: context.read<ExpenseRepository>(),
-                        ),
+                        categoryRepository: context.read<CategoryRepository>(),
+                      ),
                         child: Container(
                           padding: const EdgeInsets.all(17),
                           height: MediaQuery.of(modalContext).size.height * 0.55,
