@@ -6,7 +6,15 @@ class GeminiService {
   final String baseUrl =
       "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
-  Future<String> sendMessage(String text) async {
+  /// Envia a mensagem do usuário para o Gemini, limitando a IA a assuntos financeiros
+  Future<String> sendMessage(String userText) async {
+    // Prompt que restringe a IA a finanças
+    final prompt = """
+Você é um consultor financeiro. Responda apenas sobre finanças pessoais, gastos, receitas, orçamento e investimentos.
+Não fale sobre nada que não seja relacionado a finanças.
+Usuário disse: "$userText"
+""";
+
     final response = await http.post(
       Uri.parse("$baseUrl?key=$apiKey"),
       headers: {"Content-Type": "application/json"},
@@ -14,7 +22,7 @@ class GeminiService {
         "contents": [
           {
             "parts": [
-              {"text": text}
+              {"text": prompt}
             ]
           }
         ]

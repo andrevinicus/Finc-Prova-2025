@@ -1,7 +1,7 @@
 import 'package:finc/screens/AIChatScreen/prompt/chat_prompts.dart';
 import 'package:flutter/material.dart';
 import 'package:expense_repository/expense_repository.dart';
-import '../action_bubble.dart';
+import 'action_bubble.dart';
 
 class ChatQuickActions extends StatelessWidget {
   final String userId;

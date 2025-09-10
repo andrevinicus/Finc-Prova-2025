@@ -1,4 +1,4 @@
-import 'package:expense_repository/src/entities/user_entity.dart';
+import 'package:expense_repository/src/user/user_entity.dart';
 
 class UserModel extends UserEntity {
   const UserModel({

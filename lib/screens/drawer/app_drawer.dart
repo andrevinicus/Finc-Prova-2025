@@ -57,17 +57,10 @@ Widget build(BuildContext context) {
   final screenWidth = MediaQuery.of(context).size.width; // Para calcular a largura do drawer
 
   return Drawer(
-    // AJUSTE 1: Remover bordas arredondadas (garantir cantos retos)
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.zero,
     ),
-
-    // AJUSTE 2: Diminuir o tamanho de abertura (largura)
-    // Experimente valores como 70% da tela (screenWidth * 0.7) ou um valor fixo.
-    // O padrão é aproximadamente 304dp.
-    width: screenWidth * 0.50, // Exemplo: 75% da largura da tela. Ajuste conforme necessário.
-    // Ou um valor fixo: width: 280,
-
+    width: screenWidth * 0.55, // Exemplo: 75% da largura da tela. Ajuste conforme necessário.
     child: Column(
       children: [
         UserAccountsDrawerHeader(

@@ -1,5 +1,7 @@
-export 'category_entity.dart';
-export 'expense_entity.dart';
-export 'user_entity.dart';
-export 'bank_entity.dart';
-export 'income_entity.dart';
+export '../firebase_category/category_entity.dart';
+export '../firebase_expenses/expense_entity.dart';
+export '../user/user_entity.dart';
+export '../bank/bank_entity.dart';
+export '../firebase_income/income_entity.dart';
+export '../FirebaseChatRepository/chat_message_entity.dart';
+
