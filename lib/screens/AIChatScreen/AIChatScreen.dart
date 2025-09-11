@@ -11,11 +11,15 @@ import 'bloc_chat/chat_bloc.dart';
 import 'bloc_chat/chat_event.dart';
 import 'bloc_chat/chat_state.dart';
 
-  class AIChatScreenWrapper extends StatelessWidget {
+class AIChatScreenWrapper extends StatelessWidget {
   final String userId;
   final String userName;
 
-  const AIChatScreenWrapper({super.key, required this.userId, required this.userName});
+  const AIChatScreenWrapper({
+    super.key,
+    required this.userId,
+    required this.userName,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +31,6 @@ import 'bloc_chat/chat_state.dart';
     );
   }
 }
-
 
 class AIChatScreen extends StatefulWidget {
   final String userId;
@@ -126,50 +129,72 @@ class _AIChatScreenState extends State<AIChatScreen>
     setState(() => isTyping = false);
   }
 
-  Future<bool> _onWillPop() async {
-    final result = await showDialog<String>(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text("Sair do chat"),
-            content: const Text("Deseja salvar este chat antes de sair?"),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop("no"),
-                child: const Text("Não"),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop("yes"),
-                child: const Text("Sim"),
-              ),
-            ],
-          ),
-    );
+Future<bool> _onWillPop() async {
+  final result = await showDialog<String>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text("Sair do chat"),
+      content: const Text("Deseja salvar este chat antes de sair?"),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop("no"),
+          child: const Text("Não"),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop("yes"),
+          child: const Text("Sim"),
+        ),
+      ],
+    ),
+  );
 
-    if (result == "yes") {
-      // Salva todas as mensagens no Firestore
-      final state = _chatBloc.state;
-      if (state is ChatLoaded) {
-        for (var message in state.messages) {
-          await _chatRepo.saveMessage(
-            widget.userId,
-            chatId,
-            message.toEntity(chatId: chatId),
-          );
-        }
+  if (result == "yes") {
+    final state = _chatBloc.state;
+    if (state is ChatLoaded) {
+      // Mostra modal de salvando
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const AlertDialog(
+          content: SizedBox(
+            height: 80,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text("Salvando chat..."),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      // Salva mensagens
+      for (var message in state.messages) {
+        await _chatRepo.saveMessage(
+          widget.userId,
+          chatId,
+          message.toEntity(chatId: chatId),
+        );
       }
+
+      // Fecha modal de salvando
+      Navigator.of(context, rootNavigator: true).pop();
 
       // Volta para a home
       Navigator.of(context).popUntil((route) => route.isFirst);
-      return false;
-    } else if (result == "no") {
-      // Apenas volta para a home sem salvar
-      Navigator.of(context).popUntil((route) => route.isFirst);
-      return false;
     }
-
+    return false;
+  } else if (result == "no") {
+    // Apenas volta para a home sem salvar
+    Navigator.of(context).popUntil((route) => route.isFirst);
     return false;
   }
+
+  return false;
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -179,27 +204,33 @@ class _AIChatScreenState extends State<AIChatScreen>
         onWillPop: _onWillPop,
         child: Scaffold(
           appBar: AppBar(
-          title: const Text("Assistente IA"),
-          centerTitle: true,
-          leading: const BackButton(),
-          actions: [
-Builder(
-  builder: (contextWithBloc) => IconButton(
-    icon: const Icon(Icons.history),
-    onPressed: () {
-      showChatHistoryModalBloc(
-        context: contextWithBloc,
-        chatBloc: _chatBloc, // <--- passa explicitamente
-        userId: widget.userId,
-        onChatSelected: (chatId) {
-          _chatBloc.add(LoadMessages(userId: widget.userId, chatId: chatId));
-        },
-      );
-    },
-  ),
-),
-          ],
-),
+            title: const Text("Assistente IA"),
+            centerTitle: true,
+            leading: const BackButton(),
+            actions: [
+              Builder(
+                builder:
+                    (contextWithBloc) => IconButton(
+                      icon: const Icon(Icons.history),
+                      onPressed: () {
+                        showChatHistoryModalBloc(
+                          context: contextWithBloc,
+                          chatBloc: _chatBloc, // <--- passa explicitamente
+                          userId: widget.userId,
+                          onChatSelected: (chatId) {
+                            _chatBloc.add(
+                              LoadMessages(
+                                userId: widget.userId,
+                                chatId: chatId,
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+              ),
+            ],
+          ),
           body: Column(
             children: [
               Expanded(
@@ -208,6 +239,17 @@ Builder(
                     if (state is ChatLoading) {
                       return const Center(child: CircularProgressIndicator());
                     } else if (state is ChatLoaded) {
+                      // Aguarda o frame ser renderizado antes de rolar
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (_scrollController.hasClients) {
+                          _scrollController.animateTo(
+                            _scrollController.position.maxScrollExtent,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeOut,
+                          );
+                        }
+                      });
+
                       return ChatMessageList(
                         messages:
                             state.messages
@@ -225,6 +267,7 @@ Builder(
                   },
                 ),
               ),
+
               FutureBuilder<List<Category>>(
                 future: FirebaseCategoryRepository().getCategories(
                   widget.userId,

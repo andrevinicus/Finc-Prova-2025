@@ -69,10 +69,7 @@ class _HomeScreenState extends State<HomeScreen>
               categoryMap: state.categoryMap,
             ),
             StatScreen(userId: userId),
-            TransactionScreen(
-              transactions: state.expenses,
-              categoryMap: state.categoryMap,
-            ),
+TransactionScreen(userId: userId),
           ];
 
           return Scaffold(

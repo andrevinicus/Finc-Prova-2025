@@ -110,13 +110,10 @@ class AppRouter {
 
       case AppRoutes.transaction:
         final args = settings.arguments as Map<String, dynamic>;
-        final transactions = args['transactions'] as List<Expense>;
-        final categories = args['categories'] as List<Category>;
-        final categoryMap = {for (var c in categories) c.categoryId: c};
+        final userId = args['userId'] as String; // pegando apenas o userId
         return MaterialPageRoute(
           builder: (_) => TransactionScreen(
-            transactions: transactions,
-            categoryMap: categoryMap,
+            userId: userId, // ✅ agora bate com o construtor
           ),
         );
 
