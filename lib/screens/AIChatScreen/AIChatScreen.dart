@@ -1,4 +1,4 @@
-import 'package:finc/screens/AIChatScreen/ChatDrawer/chat_drawer.dart';
+import 'package:finc/screens/AIChatScreen/ChatModal/chat_modal.dart';
 import 'package:finc/screens/AIChatScreen/prompt/chat_prompts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -129,72 +129,73 @@ class _AIChatScreenState extends State<AIChatScreen>
     setState(() => isTyping = false);
   }
 
-Future<bool> _onWillPop() async {
-  final result = await showDialog<String>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text("Sair do chat"),
-      content: const Text("Deseja salvar este chat antes de sair?"),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop("no"),
-          child: const Text("Não"),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop("yes"),
-          child: const Text("Sim"),
-        ),
-      ],
-    ),
-  );
-
-  if (result == "yes") {
-    final state = _chatBloc.state;
-    if (state is ChatLoaded) {
-      // Mostra modal de salvando
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) => const AlertDialog(
-          content: SizedBox(
-            height: 80,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text("Salvando chat..."),
-              ],
-            ),
+  Future<bool> _onWillPop() async {
+    final result = await showDialog<String>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text("Sair do chat"),
+            content: const Text("Deseja salvar este chat antes de sair?"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop("no"),
+                child: const Text("Não"),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop("yes"),
+                child: const Text("Sim"),
+              ),
+            ],
           ),
-        ),
-      );
+    );
 
-      // Salva mensagens
-      for (var message in state.messages) {
-        await _chatRepo.saveMessage(
-          widget.userId,
-          chatId,
-          message.toEntity(chatId: chatId),
+    if (result == "yes") {
+      final state = _chatBloc.state;
+      if (state is ChatLoaded) {
+        // Mostra modal de salvando
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder:
+              (_) => const AlertDialog(
+                content: SizedBox(
+                  height: 80,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 16),
+                      Text("Salvando chat..."),
+                    ],
+                  ),
+                ),
+              ),
         );
+
+        // Salva mensagens
+        for (var message in state.messages) {
+          await _chatRepo.saveMessage(
+            widget.userId,
+            chatId,
+            message.toEntity(chatId: chatId),
+          );
+        }
+
+        // Fecha modal de salvando
+        Navigator.of(context, rootNavigator: true).pop();
+
+        // Volta para a home
+        Navigator.of(context).popUntil((route) => route.isFirst);
       }
-
-      // Fecha modal de salvando
-      Navigator.of(context, rootNavigator: true).pop();
-
-      // Volta para a home
+      return false;
+    } else if (result == "no") {
+      // Apenas volta para a home sem salvar
       Navigator.of(context).popUntil((route) => route.isFirst);
+      return false;
     }
-    return false;
-  } else if (result == "no") {
-    // Apenas volta para a home sem salvar
-    Navigator.of(context).popUntil((route) => route.isFirst);
+
     return false;
   }
-
-  return false;
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -215,7 +216,7 @@ Future<bool> _onWillPop() async {
                       onPressed: () {
                         showChatHistoryModalBloc(
                           context: contextWithBloc,
-                          chatBloc: _chatBloc, // <--- passa explicitamente
+                          repository: _chatBloc.repository, // passa o repositório
                           userId: widget.userId,
                           onChatSelected: (chatId) {
                             _chatBloc.add(
@@ -231,123 +232,128 @@ Future<bool> _onWillPop() async {
               ),
             ],
           ),
-          body: Column(
-            children: [
-              Expanded(
-                child: BlocBuilder<ChatBloc, ChatState>(
-                  builder: (context, state) {
-                    if (state is ChatLoading) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (state is ChatLoaded) {
-                      // Aguarda o frame ser renderizado antes de rolar
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (_scrollController.hasClients) {
-                          _scrollController.animateTo(
-                            _scrollController.position.maxScrollExtent,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeOut,
-                          );
-                        }
-                      });
+          body: SafeArea(
+            child: Column(
+              children: [
+                Expanded(
+                  child: BlocBuilder<ChatBloc, ChatState>(
+                    builder: (context, state) {
+                      if (state is ChatLoading) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (state is ChatLoaded) {
+                        // Aguarda o frame ser renderizado antes de rolar
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (_scrollController.hasClients) {
+                            _scrollController.animateTo(
+                              _scrollController.position.maxScrollExtent,
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeOut,
+                            );
+                          }
+                        });
 
-                      return ChatMessageList(
-                        messages:
-                            state.messages
-                                .map(
-                                  (m) => {"sender": m.sender, "text": m.text},
-                                )
-                                .toList(),
-                        isTyping: isTyping,
-                        controller: _scrollController,
+                        return ChatMessageList(
+                          messages:
+                              state.messages
+                                  .map(
+                                    (m) => {"sender": m.sender, "text": m.text},
+                                  )
+                                  .toList(),
+                          isTyping: isTyping,
+                          controller: _scrollController,
+                        );
+                      } else if (state is ChatError) {
+                        return Center(child: Text(state.message));
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                ),
+
+                FutureBuilder<List<Category>>(
+                  future: FirebaseCategoryRepository().getCategories(
+                    widget.userId,
+                  ),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const SizedBox(
+                        height: 50,
+                        child: Center(child: CircularProgressIndicator()),
                       );
-                    } else if (state is ChatError) {
-                      return Center(child: Text(state.message));
                     }
-                    return const SizedBox.shrink();
+                    final categoryMap = {
+                      for (var c in snapshot.data!) c.categoryId.toString(): c,
+                    };
+                    return ChatQuickActions(
+                      userId: widget.userId,
+                      expenseRepo: expenseRepo,
+                      incomeRepo: incomeRepo,
+                      categoryMap: categoryMap,
+                      onMessageGenerated: (
+                        text, {
+                        String sender = "user",
+                      }) async {
+                        if (sender == "user") {
+                          final userMessage = ChatMessage(
+                            sender: "user",
+                            text: text,
+                            timestamp: DateTime.now(),
+                          );
+                          _chatBloc.add(
+                            SendMessage(
+                              userId: widget.userId,
+                              chatId: chatId,
+                              message: userMessage,
+                            ),
+                          );
+
+                          setState(() => isTyping = true);
+
+                          try {
+                            final aiPrompt = ChatPrompts.gastosPorCategoria(
+                              "Categoria Exemplo",
+                              100.0,
+                            );
+                            final aiResponse = await _geminiService.sendMessage(
+                              aiPrompt,
+                            );
+
+                            final aiMessage = ChatMessage(
+                              sender: "ai",
+                              text: aiResponse,
+                              timestamp: DateTime.now(),
+                            );
+                            _chatBloc.add(
+                              SendMessage(
+                                userId: widget.userId,
+                                chatId: chatId,
+                                message: aiMessage,
+                              ),
+                            );
+                          } catch (_) {
+                            final errorMessage = ChatMessage(
+                              sender: "ai",
+                              text: "Erro ao conectar com o Gemini.",
+                              timestamp: DateTime.now(),
+                            );
+                            _chatBloc.add(
+                              SendMessage(
+                                userId: widget.userId,
+                                chatId: chatId,
+                                message: errorMessage,
+                              ),
+                            );
+                          }
+
+                          setState(() => isTyping = false);
+                        }
+                      },
+                    );
                   },
                 ),
-              ),
-
-              FutureBuilder<List<Category>>(
-                future: FirebaseCategoryRepository().getCategories(
-                  widget.userId,
-                ),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return const SizedBox(
-                      height: 50,
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  }
-                  final categoryMap = {
-                    for (var c in snapshot.data!) c.categoryId.toString(): c,
-                  };
-                  return ChatQuickActions(
-                    userId: widget.userId,
-                    expenseRepo: expenseRepo,
-                    incomeRepo: incomeRepo,
-                    categoryMap: categoryMap,
-                    onMessageGenerated: (text, {String sender = "user"}) async {
-                      if (sender == "user") {
-                        final userMessage = ChatMessage(
-                          sender: "user",
-                          text: text,
-                          timestamp: DateTime.now(),
-                        );
-                        _chatBloc.add(
-                          SendMessage(
-                            userId: widget.userId,
-                            chatId: chatId,
-                            message: userMessage,
-                          ),
-                        );
-
-                        setState(() => isTyping = true);
-
-                        try {
-                          final aiPrompt = ChatPrompts.gastosPorCategoria(
-                            "Categoria Exemplo",
-                            100.0,
-                          );
-                          final aiResponse = await _geminiService.sendMessage(
-                            aiPrompt,
-                          );
-
-                          final aiMessage = ChatMessage(
-                            sender: "ai",
-                            text: aiResponse,
-                            timestamp: DateTime.now(),
-                          );
-                          _chatBloc.add(
-                            SendMessage(
-                              userId: widget.userId,
-                              chatId: chatId,
-                              message: aiMessage,
-                            ),
-                          );
-                        } catch (_) {
-                          final errorMessage = ChatMessage(
-                            sender: "ai",
-                            text: "Erro ao conectar com o Gemini.",
-                            timestamp: DateTime.now(),
-                          );
-                          _chatBloc.add(
-                            SendMessage(
-                              userId: widget.userId,
-                              chatId: chatId,
-                              message: errorMessage,
-                            ),
-                          );
-                        }
-
-                        setState(() => isTyping = false);
-                      }
-                    },
-                  );
-                },
-              ),
-              ChatInputBar(controller: _controller, onSend: sendMessage),
-            ],
+                ChatInputBar(controller: _controller, onSend: sendMessage),
+              ],
+            ),
           ),
         ),
       ),

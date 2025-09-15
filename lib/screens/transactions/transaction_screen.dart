@@ -21,8 +21,6 @@ class _TransactionScreenState extends State<TransactionScreen> with SingleTicker
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
 
-    // Carrega dados financeiros ao iniciar a tela
-
   }
 
   @override

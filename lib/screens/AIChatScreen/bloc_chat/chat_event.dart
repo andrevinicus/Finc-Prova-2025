@@ -33,3 +33,5 @@ class LoadUserChats extends ChatEvent {
   final String userId;
   LoadUserChats({required this.userId});
 }
+
+

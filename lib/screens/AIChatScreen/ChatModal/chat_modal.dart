@@ -3,16 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:finc/screens/AIChatScreen/bloc_chat/chat_bloc.dart';
 import 'package:finc/screens/AIChatScreen/bloc_chat/chat_event.dart';
 import 'package:finc/screens/AIChatScreen/bloc_chat/chat_state.dart';
+import 'package:expense_repository/expense_repository.dart';
 
 Future<void> showChatHistoryModalBloc({
   required BuildContext context,
-  required ChatBloc chatBloc,
+  required ChatRepository repository,
   required String userId,
   required void Function(String chatId) onChatSelected,
 }) async {
-  // Dispara o evento para carregar histórico
-  chatBloc.add(LoadUserChats(userId: userId));
-
   await showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -20,9 +18,10 @@ Future<void> showChatHistoryModalBloc({
       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
     ),
     builder: (modalContext) {
-      // Passa o bloc existente para dentro do modal
-      return BlocProvider.value(
-        value: chatBloc,
+      // Criar um bloc separado só para o modal
+      return BlocProvider(
+        create: (_) => ChatBloc(repository: repository)
+          ..add(LoadUserChats(userId: userId)),
         child: SizedBox(
           height: MediaQuery.of(modalContext).size.height * 0.5,
           child: BlocBuilder<ChatBloc, ChatState>(
@@ -54,8 +53,10 @@ Future<void> showChatHistoryModalBloc({
                   itemBuilder: (context, index) {
                     final chatId = chatIds[index];
                     return ListTile(
-                      leading: const Icon(Icons.chat_bubble_outline,
-                          color: Colors.blueAccent),
+                      leading: const Icon(
+                        Icons.chat_bubble_outline,
+                        color: Colors.blueAccent,
+                      ),
                       title: Text("Chat $chatId"),
                       onTap: () {
                         Navigator.of(context).pop(); // Fecha o modal

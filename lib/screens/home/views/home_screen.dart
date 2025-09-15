@@ -73,78 +73,80 @@ TransactionScreen(userId: userId),
           ];
 
           return Scaffold(
-            body: Stack(
-              children: [
-                // 🔹 RefreshIndicator para pull-to-refresh
-                RefreshIndicator(
-                  onRefresh: () async {
-                    context.read<GetFinancialDataBloc>().add(
-                      GetFinancialData(userId),
-                    );
-                  },
-                  child: IndexedStack(
-                    index: index,
-                    children:
-                        pages.map((page) {
-                          // Necessário colocar cada página em um scrollable para RefreshIndicator funcionar
-                          return SingleChildScrollView(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            child: SizedBox(
-                              height: MediaQuery.of(context).size.height,
-                              child: page,
-                            ),
-                          );
-                        }).toList(),
-                  ),
-                ),
-
-                // BottomNavigationBar
-                BottomNavBarWidget(
-                  currentIndex: index,
-                  onTap: (value) {
-                    if (value == 3) {
-                      Navigator.pushNamed(
-                        context,
-                        '/aiChat',
-                        arguments: {'userId': userId, 'userName': userName},
+            body: SafeArea(
+              child: Stack(
+                children: [
+                  // 🔹 RefreshIndicator para pull-to-refresh
+                  RefreshIndicator(
+                    onRefresh: () async {
+                      context.read<GetFinancialDataBloc>().add(
+                        GetFinancialData(userId),
                       );
-                    } else {
-                      setState(() => index = value);
-                    }
-                  },
-                ),
-
-                // Fundo escurecido e FloatingActionButtonsMenu permanecem iguais
-                if (showActionButtons)
-                  Positioned.fill(
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          showActionButtons = false;
-                          _controller.reverse();
-                        });
-                      },
-                      child: AnimatedOpacity(
-                        duration: const Duration(milliseconds: 300),
-                        opacity: 0.6,
-                        child: Container(color: Colors.black),
-                      ),
+                    },
+                    child: IndexedStack(
+                      index: index,
+                      children:
+                          pages.map((page) {
+                            // Necessário colocar cada página em um scrollable para RefreshIndicator funcionar
+                            return SingleChildScrollView(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              child: SizedBox(
+                                height: MediaQuery.of(context).size.height,
+                                child: page,
+                              ),
+                            );
+                          }).toList(),
                     ),
                   ),
-
-                FloatingActionButtonsMenu(
-                  showActionButtons: showActionButtons,
-                  controller: _controller,
-                  screenWidth: MediaQuery.of(context).size.width,
-                  userId: userId,
-                  onClose: () {
-                    setState(() {
-                      showActionButtons = false;
-                      _controller.reverse();
-                    });
-                  },
-                ),
-              ],
+              
+                  // BottomNavigationBar
+                  BottomNavBarWidget(
+                    currentIndex: index,
+                    onTap: (value) {
+                      if (value == 3) {
+                        Navigator.pushNamed(
+                          context,
+                          '/aiChat',
+                          arguments: {'userId': userId, 'userName': userName},
+                        );
+                      } else {
+                        setState(() => index = value);
+                      }
+                    },
+                  ),
+              
+                  // Fundo escurecido e FloatingActionButtonsMenu permanecem iguais
+                  if (showActionButtons)
+                    Positioned.fill(
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            showActionButtons = false;
+                            _controller.reverse();
+                          });
+                        },
+                        child: AnimatedOpacity(
+                          duration: const Duration(milliseconds: 300),
+                          opacity: 0.6,
+                          child: Container(color: Colors.black),
+                        ),
+                      ),
+                    ),
+              
+                  FloatingActionButtonsMenu(
+                    showActionButtons: showActionButtons,
+                    controller: _controller,
+                    screenWidth: MediaQuery.of(context).size.width,
+                    userId: userId,
+                    onClose: () {
+                      setState(() {
+                        showActionButtons = false;
+                        _controller.reverse();
+                      });
+                    },
+                  ),
+                ],
+              ),
             ),
 
             floatingActionButton: FloatingActionButton(
