@@ -14,7 +14,9 @@ class MyApp extends StatelessWidget {
     final expenseRepository = FirebaseExpenseRepo();
     final incomeRepository = FirebaseIncomeRepo();
     final bankRepository = BankRepository();
-    final categoryRepository = FirebaseCategoryRepository(); // <-- Adicionado
+    final categoryRepository = FirebaseCategoryRepository();
+    final goalRepository = FirebaseGoalRepository();
+     
 
     return MultiRepositoryProvider(
       providers: [
@@ -22,6 +24,7 @@ class MyApp extends StatelessWidget {
         RepositoryProvider<IncomeRepository>.value(value: incomeRepository),
         RepositoryProvider<BankRepository>.value(value: bankRepository),
         RepositoryProvider<CategoryRepository>.value(value: categoryRepository),
+        RepositoryProvider<IGoalRepository>.value(value: goalRepository), 
          // <-- Adicionado
       ],
       child: BlocProvider(

@@ -1,5 +1,5 @@
 import 'package:expense_repository/expense_repository.dart';
-import 'package:finc/screens/login/register/login_screen.dart'; // Certifique-se que o caminho está correto
+import 'package:finc/screens/login/register/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
@@ -8,10 +8,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 class AppDrawer extends StatefulWidget {
   final User? user;
 
-  const AppDrawer({
-    super.key,
-    required this.user,
-  });
+  const AppDrawer({super.key, required this.user});
 
   @override
   State<AppDrawer> createState() => _AppDrawerState();
@@ -45,99 +42,124 @@ class _AppDrawerState extends State<AppDrawer> {
         });
       }
     } catch (e) {
-      if (mounted) {
-        print("Erro ao carregar dados personalizados do usuário no AppDrawer: $e");
-      }
+      if (mounted) print("Erro ao carregar dados do usuário: $e");
     }
   }
 
- @override
-Widget build(BuildContext context) {
-  final theme = Theme.of(context);
-  final screenWidth = MediaQuery.of(context).size.width; // Para calcular a largura do drawer
+  @override
+  Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final theme = Theme.of(context);
 
-  return Drawer(
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.zero,
-    ),
-    width: screenWidth * 0.55, // Exemplo: 75% da largura da tela. Ajuste conforme necessário.
-    child: Column(
-      children: [
-        UserAccountsDrawerHeader(
-          decoration: BoxDecoration(
-            color: theme.colorScheme.primary,
+    // Altura do BottomNavigationBar (padrão Flutter)
+    final bottomNavBarHeight = kBottomNavigationBarHeight;
+
+    // Altura máxima disponível para o Drawer
+    final drawerMaxHeight = screenHeight - bottomNavBarHeight;
+
+    return Drawer(
+      width: screenWidth * 0.58,
+      child: SafeArea(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: drawerMaxHeight,
           ),
-          accountName: Text(
-            nome,
-            style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          accountEmail: Text(
-            email ?? '',
-            style: const TextStyle(color: Colors.white70),
-          ),
-          currentAccountPicture: CircleAvatar(
-            backgroundColor: theme.colorScheme.surface,
-            backgroundImage: photoUrl != null ? NetworkImage(photoUrl!) : null,
-            child: photoUrl == null
-                ? Icon(
-                    Icons.person,
-                    size: 40,
-                    color: theme.colorScheme.onSurface.withOpacity(0.6),
-                  )
-                : null,
-          ),
-          // Opcional: Para um header mais compacto, descomente a linha abaixo
-          // margin: EdgeInsets.zero,
-        ),
-        Expanded(
-          child: ListView(
-            padding: EdgeInsets.zero,
+          child: Column(
             children: [
-              ListTile(
-                leading: const Icon(Icons.settings_outlined),
-                title: const Text('Configurações'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  // TODO: Implementar navegação para tela de configurações
-                  // Navigator.of(context).pushNamed(AppRoutes.settings);
-                  print('Ir para Configurações');
-                },
+              // Header
+              UserAccountsDrawerHeader(
+                decoration: BoxDecoration(color: theme.colorScheme.primary),
+                accountName: Text(
+                  nome,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold),
+                ),
+                accountEmail:
+                    Text(email ?? '', style: const TextStyle(color: Colors.white70)),
+                currentAccountPicture: CircleAvatar(
+                  backgroundColor: theme.colorScheme.surface,
+                  backgroundImage:
+                      photoUrl != null ? NetworkImage(photoUrl!) : null,
+                  child: photoUrl == null
+                      ? Icon(Icons.person,
+                          size: 40,
+                          color: theme.colorScheme.onSurface.withOpacity(0.6))
+                      : null,
+                ),
               ),
-              // Adicione mais itens de menu aqui, se desejar
+
+              // Menu rolável
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.list_alt),
+                        title: const Text('Transações'),
+                        onTap: () {
+                          Navigator.of(context).pop();
+                          final userId = widget.user?.uid ?? '';
+                          if (userId.isNotEmpty) {
+                            Navigator.of(context).pushNamed(
+                              '/transaction',
+                              arguments: {'userId': userId},
+                            );
+                          }
+                        },
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.settings_outlined),
+                        title: const Text('Configurações'),
+                        onTap: () {
+                          Navigator.of(context).pop();
+                          print('Ir para Configurações');
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const Divider(height: 1),
+
+              // Rodapé fixo
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.logout, color: Colors.redAccent),
+                    title: const Text('Logout',
+                        style: TextStyle(color: Colors.redAccent)),
+                    onTap: () async {
+                      final googleSignIn = GoogleSignIn();
+                      try {
+                        await googleSignIn.signOut();
+                        await FirebaseAuth.instance.signOut();
+                      } catch (e) {
+                        print("Erro durante o logout: $e");
+                      }
+                      if (!mounted) return;
+                      Navigator.of(context).pop();
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (_) => const LoginScreen()),
+                        (route) => false,
+                      );
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.exit_to_app),
+                    title: const Text('Sair do app'),
+                    onTap: () => SystemNavigator.pop(),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
-        const Divider(height: 1),
-        ListTile(
-          leading: const Icon(Icons.logout, color: Colors.redAccent),
-          title: const Text('Logout', style: TextStyle(color: Colors.redAccent)),
-          onTap: () async {
-            final googleSignIn = GoogleSignIn();
-            try {
-              await googleSignIn.signOut();
-              await FirebaseAuth.instance.signOut();
-            } catch (e) {
-              print("Erro durante o logout: $e");
-            }
-
-            if (!mounted) return;
-            Navigator.of(context).pop();
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (_) => const LoginScreen()),
-              (route) => false,
-            );
-          },
-        ),
-        ListTile(
-          leading: const Icon(Icons.exit_to_app),
-          title: const Text('Sair do app'),
-          onTap: () {
-            SystemNavigator.pop();
-          },
-        ),
-        const SizedBox(height: 8),
-      ],
-    ),
-  );
-}
+      ),
+    );
+  }
 }

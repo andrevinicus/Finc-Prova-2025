@@ -11,4 +11,5 @@ class AppRoutes {
   static const String addBanks = '/add-banks';
   static const String transfer = '/transfer';
   static const aiChat = '/aiChat';
+  static const addGoal = '/addGoal';
 }

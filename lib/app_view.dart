@@ -1,3 +1,4 @@
+import 'package:finc/screens/goal_scream/bloc/events_goal.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -16,6 +17,7 @@ import 'package:finc/screens/create_banks/blocs/get_bank/get_bank_bloc.dart';
 import 'package:finc/screens/create_banks/blocs/get_bank/get_bank_event.dart';
 import 'package:finc/screens/home/blocs/get_block_expense_income.dart';
 import 'package:finc/screens/home/blocs/get_expenses_bloc/get_expenses_bloc.dart';
+import 'package:finc/screens/goal_scream/bloc/bloc_goal.dart';
 
 import 'package:finc/screens/home/views/home_screen.dart';
 import 'package:finc/screens/login/register/login_screen.dart';
@@ -28,6 +30,7 @@ void main() {
   final incomeRepository = FirebaseIncomeRepo();
   final bankRepository = BankRepository();
   final categoryRepository = FirebaseCategoryRepository();
+  final goalRepository = FirebaseGoalRepository();
 
   runApp(
     MultiRepositoryProvider(
@@ -36,9 +39,13 @@ void main() {
         RepositoryProvider<IncomeRepository>.value(value: incomeRepository),
         RepositoryProvider<BankRepository>.value(value: bankRepository),
         RepositoryProvider<CategoryRepository>.value(value: categoryRepository),
+        RepositoryProvider<IGoalRepository>.value(
+          value: goalRepository,
+        ), // <- adicionado
       ],
       child: BlocProvider(
-        create: (_) => AuthBloc(FirebaseAuth.instance)..add(AuthCheckRequested()),
+        create:
+            (_) => AuthBloc(FirebaseAuth.instance)..add(AuthCheckRequested()),
         child: const MyAppView(),
       ),
     ),
@@ -57,10 +64,7 @@ class MyAppView extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: const [
-        Locale('en', 'US'),
-        Locale('pt', 'BR'),
-      ],
+      supportedLocales: const [Locale('en', 'US'), Locale('pt', 'BR')],
       debugShowCheckedModeBanner: false,
       title: "Expense Tracker",
       theme: ThemeData(
@@ -84,26 +88,44 @@ class MyAppView extends StatelessWidget {
             return MultiBlocProvider(
               providers: [
                 BlocProvider(
-                  create: (context) => GetExpensesBloc(context.read<ExpenseRepository>())
-                    ..add(GetExpenses(userId)),
+                  create:
+                      (context) =>
+                          GetExpensesBloc(context.read<ExpenseRepository>())
+                            ..add(GetExpenses(userId)),
                 ),
                 BlocProvider(
-                  create: (context) => GetCategoriesBloc(categoryRepository: context.read<CategoryRepository>())
-                    ..add(GetCategories(userId)),
+                  create:
+                      (context) => GetCategoriesBloc(
+                        categoryRepository: context.read<CategoryRepository>(),
+                      )..add(GetCategories(userId)),
                 ),
                 BlocProvider(
-                  create: (context) => CreateCategoryBloc(categoryRepository: context.read<CategoryRepository>()),
+                  create:
+                      (context) => CreateCategoryBloc(
+                        categoryRepository: context.read<CategoryRepository>(),
+                      ),
                 ),
                 BlocProvider(
-                  create: (context) => GetBankBloc(context.read<BankRepository>())
-                    ..add(GetLoadBanks(userId)),
+                  create:
+                      (context) =>
+                          GetBankBloc(context.read<BankRepository>())
+                            ..add(GetLoadBanks(userId)),
                 ),
                 BlocProvider(
-                  create: (context) => GetFinancialDataBloc(
-                    expenseRepository: context.read<ExpenseRepository>(),
-                    incomeRepository: context.read<IncomeRepository>(),
-                    categoryRepository: context.read<CategoryRepository>(),
-                  )..add(GetFinancialData(userId)),
+                  create:
+                      (context) => GetFinancialDataBloc(
+                        expenseRepository: context.read<ExpenseRepository>(),
+                        incomeRepository: context.read<IncomeRepository>(),
+                        categoryRepository: context.read<CategoryRepository>(),
+                      )..add(GetFinancialData(userId)),
+                ),
+
+                /// 🚀 Adiciona aqui o GoalBloc
+                BlocProvider(
+                  create:
+                      (context) => GoalBloc(
+                        goalRepository: context.read<IGoalRepository>(),
+                      )..add(LoadGoals(userId)), // se tiver evento inicial
                 ),
               ],
               child: const HomeScreen(),

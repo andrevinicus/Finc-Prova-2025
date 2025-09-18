@@ -1,4 +1,4 @@
-import 'package:finc/screens/AIChatScreen/ChatModal/chat_modal.dart';
+import 'package:finc/screens/AIChatScreen/ChatModalHistorico/chat_modal.dart';
 import 'package:finc/screens/AIChatScreen/prompt/chat_prompts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -180,10 +180,8 @@ class _AIChatScreenState extends State<AIChatScreen>
             message.toEntity(chatId: chatId),
           );
         }
-
         // Fecha modal de salvando
         Navigator.of(context, rootNavigator: true).pop();
-
         // Volta para a home
         Navigator.of(context).popUntil((route) => route.isFirst);
       }

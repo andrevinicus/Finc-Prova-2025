@@ -40,16 +40,15 @@ class ChatQuickActions extends StatelessWidget {
               padding: const EdgeInsets.only(right: 8),
               child: ActionBubble(
                 label: "Gastos em ${cat.name}",
-                onTap: () async {
-                  // Mostra no chat como se fosse o usuário
-                  onMessageGenerated("Gastos em ${cat.name}", sender: "user");
+            onTap: () {
+              onMessageGenerated("Gastos em ${cat.name}", sender: "user");
+              Future.microtask(() async {
+                final total = await _getTotalByCategory(cat.categoryId.toString());
+                final enrichedPrompt = ChatPrompts.gastosPorCategoria(cat.name, total);
+                onMessageGenerated(enrichedPrompt, sender: "ai");
+              });
+            }
 
-                  // Calcula o total e envia prompt interno para IA
-                  final total = await _getTotalByCategory(cat.categoryId.toString());
-                  final enrichedPrompt = ChatPrompts.gastosPorCategoria(cat.name, total);
-
-                  onMessageGenerated(enrichedPrompt, sender: "ai");
-                },
               ),
             ),
           ),

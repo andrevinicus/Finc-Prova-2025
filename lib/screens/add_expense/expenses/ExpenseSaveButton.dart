@@ -106,7 +106,7 @@ class ExpenseSaveButton extends StatelessWidget {
                     // 🔹 Atualiza totalExpenses da categoria no Firestore
                     final categoryRef = FirebaseFirestore.instance
                         .collection("categories")
-                        .doc(category!.categoryId);
+                        .doc(category.categoryId);
 
                     await FirebaseFirestore.instance.runTransaction((
                       transaction,
