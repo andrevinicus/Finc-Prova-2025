@@ -21,7 +21,7 @@ class GoalCard extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: goal.color.withOpacity(0.3),
-            blurRadius: 8,
+            blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
@@ -41,19 +41,21 @@ class GoalCard extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             SizedBox(
-              height: 100, // menor que antes
+              height: 100,
               width: 100,
               child: Stack(
                 children: [
                   Center(
-                    child: CircularProgressIndicator(
-                      value: goal.progress,
-                      strokeWidth: 10,
-                      backgroundColor: Colors.white24,
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(Colors.white),
+                    child: Transform.scale(
+                      scale: 2.2, // aumenta o tamanho do círculo
+                      child: CircularProgressIndicator(
+                        value: goal.progress,
+                        strokeWidth: 8, // espessura da borda
+                        backgroundColor: Colors.white24,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
                     ),
                   ),
                   Center(
@@ -68,6 +70,7 @@ class GoalCard extends StatelessWidget {
                 ],
               ),
             ),
+
             const SizedBox(height: 8),
             Text(
               'R\$ ${goal.currentAmount.toStringAsFixed(0)} de R\$ ${goal.targetAmount.toStringAsFixed(0)}',

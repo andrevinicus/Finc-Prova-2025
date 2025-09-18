@@ -2,7 +2,6 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expense_repository/expense_repository.dart';
 
-
 class FirebaseGoalRepository implements IGoalRepository {
   final CollectionReference<Map<String, dynamic>> goalsCollection =
       FirebaseFirestore.instance.collection('goals');
@@ -43,14 +42,21 @@ class FirebaseGoalRepository implements IGoalRepository {
   @override
   Future<List<Goal>> getGoals(String userId) async {
     try {
+      // 🔹 Log antes de buscar
+      log('🔹 Buscando metas para userId: $userId');
+
+      // 🔹 Consulta no Firestore
       final snapshot = await goalsCollection
           .where('userId', isEqualTo: userId)
-          .orderBy('endDate')
+          .orderBy('endDate') // ⚠️ atenção: todos os docs precisam desse campo
           .get();
 
-      final goals = snapshot.docs
-          .map((doc) => Goal.fromMap(doc.data()))
-          .toList();
+      // 🔹 Log da quantidade de documentos retornados
+      log('🔹 Documentos encontrados: ${snapshot.docs.length}');
+
+      // 🔹 Converter documentos em objetos Goal
+      final goals =
+          snapshot.docs.map((doc) => Goal.fromMap(doc.data())).toList();
 
       log('✅ ${goals.length} metas carregadas para o userId: $userId');
       return goals;

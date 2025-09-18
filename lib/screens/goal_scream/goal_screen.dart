@@ -1,13 +1,12 @@
-
 import 'package:finc/screens/goal_scream/bloc/bloc_goal.dart';
 import 'package:finc/screens/goal_scream/bloc/events_goal.dart';
 import 'package:finc/screens/goal_scream/bloc/states_goal.dart';
+import 'package:finc/screens/goal_scream/widgets/animated_arrow.dart';
 import 'package:finc/screens/goal_scream/widgets/goal_card.dart';
 import 'package:finc/screens/goal_scream/widgets/goal_list_item.dart';
 import 'package:finc/screens/goal_scream/widgets/modal_add_goal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 
 class GoalScreen extends StatefulWidget {
   final String userId;
@@ -22,12 +21,15 @@ class _GoalScreenState extends State<GoalScreen> {
   int? _expandedIndex;
   final ScrollController _scrollController = ScrollController();
   final List<GlobalKey> _itemKeys = [];
+  bool _hasLoadedGoals = false;
 
   @override
-  void initState() {
-    super.initState();
-    // Dispara o carregamento inicial das metas
-    context.read<GoalBloc>().add(LoadGoals(widget.userId));
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_hasLoadedGoals) {
+      context.read<GoalBloc>().add(LoadGoals(widget.userId));
+      _hasLoadedGoals = true;
+    }
   }
 
   void _toggleExpand(int index) {
@@ -52,24 +54,22 @@ class _GoalScreenState extends State<GoalScreen> {
     });
   }
 
-void _showAddGoalModal() {
-  showDialog(
-    context: context,
-    barrierDismissible: true,
-    builder: (_) => MediaQuery.removeViewInsets(
+  void _showAddGoalModal() {
+    showDialog(
       context: context,
-      removeBottom: true, // 🔹 evita empurrar o modal para cima
-      child: AddGoalModal(
-        goalBloc: context.read<GoalBloc>(),
-        onAddGoal: (goal) {
-          print('Meta adicionada: ${goal.title}');
-        },
+      barrierDismissible: true,
+      builder: (_) => MediaQuery.removeViewInsets(
+        context: context,
+        removeBottom: true,
+        child: AddGoalModal(
+          goalBloc: context.read<GoalBloc>(),
+          onAddGoal: (goal) {
+            print('Meta adicionada: ${goal.title}');
+          },
+        ),
       ),
-    ),
-  );
-}
-
-
+    );
+  }
 
   @override
   void dispose() {
@@ -94,64 +94,88 @@ void _showAddGoalModal() {
           ),
         ],
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.only(bottom: bottomPadding),
-          child: BlocBuilder<GoalBloc, GoalState>(
-            builder: (context, state) {
-              if (state is GoalLoading) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (state is GoalLoaded) {
-                final goals = state.goals;
-                _itemKeys.clear();
-                _itemKeys.addAll(List.generate(goals.length, (_) => GlobalKey()));
+      body: Stack(
+        children: [
+          SafeArea(
+            child: Padding(
+              padding: EdgeInsets.only(bottom: bottomPadding),
+              child: BlocBuilder<GoalBloc, GoalState>(
+                builder: (context, state) {
+                  if (state is GoalLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (state is GoalLoaded) {
+                    final goals = state.goals;
 
-                return Column(
-                  children: [
-                    // Cards horizontais
-                    SizedBox(
-                      height: 215,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                        itemCount: goals.length,
-                        itemBuilder: (context, index) => Padding(
-                          padding: const EdgeInsets.only(right: 16.0),
-                          child: GestureDetector(
-                            onTap: () => _toggleExpand(index),
-                            child: GoalCard(goal: goals[index]),
+                    // 🔹 Se não houver metas, mostra apenas mensagem
+                    if (goals.isEmpty) {
+                      return Center(
+                        child: Text(
+                          'Clique no botão + para adicionar sua primeira meta!',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 16, color: Colors.black54),
+                        ),
+                      );
+                    }
+
+                    // 🔹 Caso haja metas, mantém o comportamento atual
+                    _itemKeys.clear();
+                    _itemKeys.addAll(List.generate(goals.length, (_) => GlobalKey()));
+
+                    return Column(
+                      children: [
+                        SizedBox(
+                          height: 215,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            itemCount: goals.length,
+                            itemBuilder: (context, index) => Padding(
+                              padding: const EdgeInsets.only(right: 16.0),
+                              child: GestureDetector(
+                                onTap: () => _toggleExpand(index),
+                                child: GoalCard(goal: goals[index]),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                    // Lista vertical detalhada
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        child: ListView.separated(
-                          controller: _scrollController,
-                          itemCount: goals.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 12),
-                          itemBuilder: (context, index) {
-                            return GoalListItem(
-                              key: _itemKeys[index],
-                              goal: goals[index],
-                              isExpanded: _expandedIndex == index,
-                              onTap: () => _toggleExpand(index),
-                            );
-                          },
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            child: ListView.separated(
+                              controller: _scrollController,
+                              itemCount: goals.length,
+                              separatorBuilder: (_, __) => const SizedBox(height: 12),
+                              itemBuilder: (context, index) {
+                                return GoalListItem(
+                                  key: _itemKeys[index],
+                                  goal: goals[index],
+                                  isExpanded: _expandedIndex == index,
+                                  onTap: () => _toggleExpand(index),
+                                );
+                              },
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  ],
-                );
-              } else if (state is GoalError) {
-                return Center(child: Text('Erro: ${state.message}'));
+                      ],
+                    );
+                  } else if (state is GoalError) {
+                    return Center(child: Text('Erro: ${state.message}'));
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
+            ),
+          ),
+          // 🔹 Seta animada visível apenas se não houver metas
+          BlocBuilder<GoalBloc, GoalState>(
+            builder: (context, state) {
+              if (state is GoalLoaded && state.goals.isEmpty) {
+                return  AnimatedArrow();
               }
               return const SizedBox.shrink();
             },
           ),
-        ),
+        ],
       ),
     );
   }

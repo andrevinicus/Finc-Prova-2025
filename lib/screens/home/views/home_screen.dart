@@ -84,11 +84,25 @@ class _HomeScreenState extends State<HomeScreen>
                         GetFinancialData(userId),
                       );
                     },
-IndexedStack(
-  index: index,
-  children: pages, // 📌 apenas renderiza as páginas normalmente
-),
+                    child: IndexedStack(
+                      index: index,
+                      children: pages.map((page) {
+                        return LayoutBuilder(
+                          builder: (context, constraints) {
+                            final availableHeight = constraints.maxHeight - kBottomNavigationBarHeight;
 
+                            return SingleChildScrollView(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              child: SizedBox(
+                                height: availableHeight,
+                                child: page,
+                              ),
+                            );
+                          },
+                        );
+                      }).toList(),
+                    ),
+                  ),
 
                   // BottomNavigationBar
                   Positioned(
