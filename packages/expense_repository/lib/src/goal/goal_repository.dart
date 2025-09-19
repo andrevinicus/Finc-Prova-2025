@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expense_repository/expense_repository.dart';
 
+
 class FirebaseGoalRepository implements IGoalRepository {
   final CollectionReference<Map<String, dynamic>> goalsCollection =
       FirebaseFirestore.instance.collection('goals');
@@ -42,19 +43,15 @@ class FirebaseGoalRepository implements IGoalRepository {
   @override
   Future<List<Goal>> getGoals(String userId) async {
     try {
-      // 🔹 Log antes de buscar
       log('🔹 Buscando metas para userId: $userId');
 
-      // 🔹 Consulta no Firestore
       final snapshot = await goalsCollection
           .where('userId', isEqualTo: userId)
-          .orderBy('endDate') // ⚠️ atenção: todos os docs precisam desse campo
+          .orderBy('endDate')
           .get();
 
-      // 🔹 Log da quantidade de documentos retornados
       log('🔹 Documentos encontrados: ${snapshot.docs.length}');
 
-      // 🔹 Converter documentos em objetos Goal
       final goals =
           snapshot.docs.map((doc) => Goal.fromMap(doc.data())).toList();
 
@@ -63,6 +60,51 @@ class FirebaseGoalRepository implements IGoalRepository {
     } catch (e, st) {
       log('❌ Erro ao buscar metas', error: e, stackTrace: st);
       throw Exception('Erro ao buscar metas');
+    }
+  }
+
+  // =============================
+  // 🔹 NOVO: Transações da meta
+  // =============================
+
+  Future<void> addTransaction(String goalId, GoalTransaction tx) async {
+    try {
+      final goalRef = goalsCollection.doc(goalId);
+
+      final batch = FirebaseFirestore.instance.batch();
+
+      // Salva transação na subcoleção
+      final txRef = goalRef.collection('transactions').doc(tx.id);
+      batch.set(txRef, tx.toMap());
+
+      // Atualiza o saldo da meta
+      batch.update(goalRef, {
+        'currentAmount': FieldValue.increment(tx.amount),
+      });
+
+      await batch.commit();
+
+      log('✅ Transação adicionada: ${tx.amount} (meta $goalId)');
+    } catch (e, st) {
+      log('❌ Erro ao adicionar transação', error: e, stackTrace: st);
+      throw Exception('Erro ao adicionar transação');
+    }
+  }
+
+  Future<List<GoalTransaction>> getTransactions(String goalId) async {
+    try {
+      final snapshot = await goalsCollection
+          .doc(goalId)
+          .collection('transactions')
+          .orderBy('date', descending: true)
+          .get();
+
+      return snapshot.docs
+          .map((doc) => GoalTransaction.fromMap(doc.data()))
+          .toList();
+    } catch (e, st) {
+      log('❌ Erro ao buscar transações', error: e, stackTrace: st);
+      throw Exception('Erro ao buscar transações');
     }
   }
 }

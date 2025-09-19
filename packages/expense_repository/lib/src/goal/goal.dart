@@ -31,6 +31,31 @@ class Goal {
     return p > 1 ? 1 : p;
   }
 
+  /// Cria uma cópia da meta alterando apenas os campos informados
+  Goal copyWith({
+    String? id,
+    String? userId,
+    String? title,
+    double? targetAmount,
+    double? currentAmount,
+    Color? color,
+    String? description,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) {
+    return Goal(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      title: title ?? this.title,
+      targetAmount: targetAmount ?? this.targetAmount,
+      currentAmount: currentAmount ?? this.currentAmount,
+      color: color ?? this.color,
+      description: description ?? this.description,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'id': id,

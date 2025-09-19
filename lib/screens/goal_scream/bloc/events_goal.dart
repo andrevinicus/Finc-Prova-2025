@@ -1,13 +1,16 @@
 import 'package:equatable/equatable.dart';
 import 'package:expense_repository/expense_repository.dart';
 
-
 abstract class GoalEvent extends Equatable {
   const GoalEvent();
 
   @override
   List<Object?> get props => [];
 }
+
+// ========================
+// 🔹 Metas
+// ========================
 
 class LoadGoals extends GoalEvent {
   final String userId;
@@ -35,8 +38,39 @@ class UpdateGoal extends GoalEvent {
 
 class DeleteGoal extends GoalEvent {
   final String goalId;
-  const DeleteGoal(this.goalId);
+  final String userId; // necessário para recarregar a lista
+  const DeleteGoal(this.goalId, this.userId);
+
+  @override
+  List<Object?> get props => [goalId, userId];
+}
+
+// ========================
+// 🔹 Transações
+// ========================
+
+class LoadTransactions extends GoalEvent {
+  final String goalId;
+  const LoadTransactions(this.goalId);
 
   @override
   List<Object?> get props => [goalId];
+}
+
+class AddTransaction extends GoalEvent {
+  final Goal goal;
+  final GoalTransaction transaction;
+  const AddTransaction(this.goal, this.transaction);
+
+  @override
+  List<Object?> get props => [goal, transaction];
+}
+
+class DeleteTransaction extends GoalEvent {
+  final Goal goal;
+  final GoalTransaction transaction;
+  const DeleteTransaction(this.goal, this.transaction);
+
+  @override
+  List<Object?> get props => [goal, transaction];
 }

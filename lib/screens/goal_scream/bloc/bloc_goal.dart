@@ -11,6 +11,10 @@ class GoalBloc extends Bloc<GoalEvent, GoalState> {
     on<AddGoal>(_onAddGoal);
     on<UpdateGoal>(_onUpdateGoal);
     on<DeleteGoal>(_onDeleteGoal);
+
+    // Eventos de lançamentos
+    on<AddTransaction>(_onAddTransaction);
+    on<DeleteTransaction>(_onDeleteTransaction);
   }
 
   Future<void> _onLoadGoals(
@@ -22,9 +26,6 @@ class GoalBloc extends Bloc<GoalEvent, GoalState> {
     try {
       final goals = await goalRepository.getGoals(event.userId);
       print('[GoalBloc] Goals carregados: ${goals.length}');
-      for (var g in goals) {
-        print('[GoalBloc] Meta: ${g.title}, ${g.currentAmount}/${g.targetAmount}');
-      }
       emit(GoalLoaded(goals));
     } catch (e, s) {
       print('[GoalBloc] Erro ao carregar goals: $e');
@@ -37,15 +38,10 @@ class GoalBloc extends Bloc<GoalEvent, GoalState> {
     AddGoal event,
     Emitter<GoalState> emit,
   ) async {
-    print('[GoalBloc] _onAddGoal chamado: ${event.goal.title}');
     try {
       await goalRepository.createGoal(event.goal);
-      print('[GoalBloc] Meta adicionada com sucesso');
-      // Atualiza a lista após adicionar
       add(LoadGoals(event.goal.userId));
-    } catch (e, s) {
-      print('[GoalBloc] Erro ao adicionar goal: $e');
-      print(s);
+    } catch (e) {
       emit(GoalError(e.toString()));
     }
   }
@@ -54,33 +50,85 @@ class GoalBloc extends Bloc<GoalEvent, GoalState> {
     UpdateGoal event,
     Emitter<GoalState> emit,
   ) async {
-    print('[GoalBloc] _onUpdateGoal chamado: ${event.goal.title}');
     try {
       await goalRepository.updateGoal(event.goal);
-      print('[GoalBloc] Meta atualizada com sucesso');
       add(LoadGoals(event.goal.userId));
-    } catch (e, s) {
-      print('[GoalBloc] Erro ao atualizar goal: $e');
-      print(s);
+    } catch (e) {
       emit(GoalError(e.toString()));
     }
   }
 
-  Future<void> _onDeleteGoal(
-    DeleteGoal event,
-    Emitter<GoalState> emit,
-  ) async {
-    print('[GoalBloc] _onDeleteGoal chamado: ${event.goalId}');
-    try {
-      await goalRepository.deleteGoal(event.goalId);
-      print('[GoalBloc] Meta deletada com sucesso');
-      // Aqui você precisa passar o userId correto, se disponível
-      // Se tiver uma variável goalId → pegue o userId do contexto ou evento
-      // add(LoadGoals(userId));
-    } catch (e, s) {
-      print('[GoalBloc] Erro ao deletar goal: $e');
-      print(s);
-      emit(GoalError(e.toString()));
-    }
+Future<void> _onDeleteGoal(
+  DeleteGoal event,
+  Emitter<GoalState> emit,
+) async {
+  try {
+    await goalRepository.deleteGoal(event.goalId);
+
+    // 🔹 Recarrega automaticamente a lista usando o userId
+    add(LoadGoals(event.userId));
+  } catch (e) {
+    emit(GoalError(e.toString()));
   }
+}
+
+  // Novo: adicionar lançamento
+Future<void> _onAddTransaction(
+  AddTransaction event,
+  Emitter<GoalState> emit,
+) async {
+  try {
+    // Salva a transação no Firestore
+    if (goalRepository is FirebaseGoalRepository) {
+      await (goalRepository as FirebaseGoalRepository)
+          .addTransaction(event.goal.id, event.transaction);
+    }
+
+    // Atualiza o estado local do Goal
+    final updatedGoal = event.goal.copyWith(
+      currentAmount: event.goal.currentAmount + event.transaction.amount,
+    );
+
+    // Atualiza meta no Firestore
+    await goalRepository.updateGoal(updatedGoal);
+
+    // Recarrega lista
+    add(LoadGoals(event.goal.userId));
+  } catch (e) {
+    emit(GoalError(e.toString()));
+  }
+}
+
+
+  // Novo: excluir lançamento
+Future<void> _onDeleteTransaction(
+  DeleteTransaction event,
+  Emitter<GoalState> emit,
+) async {
+  try {
+    if (goalRepository is FirebaseGoalRepository) {
+      final goalRepo = goalRepository as FirebaseGoalRepository;
+
+      // Deleta a transação da subcoleção
+      final txRef = goalRepo.goalsCollection
+          .doc(event.goal.id)
+          .collection('transactions')
+          .doc(event.transaction.id);
+      await txRef.delete();
+    }
+
+    // Atualiza meta localmente
+    final updatedGoal = event.goal.copyWith(
+      currentAmount: event.goal.currentAmount - event.transaction.amount,
+    );
+
+    await goalRepository.updateGoal(updatedGoal);
+
+    // Recarrega lista
+    add(LoadGoals(event.goal.userId));
+  } catch (e) {
+    emit(GoalError(e.toString()));
+  }
+}
+
 }

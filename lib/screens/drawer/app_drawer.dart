@@ -1,8 +1,11 @@
 import 'package:expense_repository/expense_repository.dart';
+import 'package:finc/screens/home/blocs/get_block_expense_income.dart';
 import 'package:finc/screens/login/register/login_screen.dart';
+import 'package:finc/screens/transactions/transaction_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class AppDrawer extends StatefulWidget {
@@ -62,9 +65,7 @@ class _AppDrawerState extends State<AppDrawer> {
       width: screenWidth * 0.58,
       child: SafeArea(
         child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxHeight: drawerMaxHeight,
-          ),
+          constraints: BoxConstraints(maxHeight: drawerMaxHeight),
           child: Column(
             children: [
               // Header
@@ -73,21 +74,27 @@ class _AppDrawerState extends State<AppDrawer> {
                 accountName: Text(
                   nome,
                   style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold),
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                accountEmail:
-                    Text(email ?? '', style: const TextStyle(color: Colors.white70)),
+                accountEmail: Text(
+                  email ?? '',
+                  style: const TextStyle(color: Colors.white70),
+                ),
                 currentAccountPicture: CircleAvatar(
                   backgroundColor: theme.colorScheme.surface,
                   backgroundImage:
                       photoUrl != null ? NetworkImage(photoUrl!) : null,
-                  child: photoUrl == null
-                      ? Icon(Icons.person,
-                          size: 40,
-                          color: theme.colorScheme.onSurface.withOpacity(0.6))
-                      : null,
+                  child:
+                      photoUrl == null
+                          ? Icon(
+                            Icons.person,
+                            size: 40,
+                            color: theme.colorScheme.onSurface.withOpacity(0.6),
+                          )
+                          : null,
                 ),
               ),
 
@@ -103,13 +110,23 @@ class _AppDrawerState extends State<AppDrawer> {
                           Navigator.of(context).pop();
                           final userId = widget.user?.uid ?? '';
                           if (userId.isNotEmpty) {
-                            Navigator.of(context).pushNamed(
-                              '/transaction',
-                              arguments: {'userId': userId},
+                            // Passa a instância existente do GetFinancialDataBloc
+                            final financialBloc =
+                                context.read<GetFinancialDataBloc>();
+
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder:
+                                    (_) => BlocProvider.value(
+                                      value: financialBloc,
+                                      child: TransactionScreen(userId: userId),
+                                    ),
+                              ),
                             );
                           }
                         },
                       ),
+
                       ListTile(
                         leading: const Icon(Icons.settings_outlined),
                         title: const Text('Configurações'),
@@ -131,8 +148,10 @@ class _AppDrawerState extends State<AppDrawer> {
                 children: [
                   ListTile(
                     leading: const Icon(Icons.logout, color: Colors.redAccent),
-                    title: const Text('Logout',
-                        style: TextStyle(color: Colors.redAccent)),
+                    title: const Text(
+                      'Logout',
+                      style: TextStyle(color: Colors.redAccent),
+                    ),
                     onTap: () async {
                       final googleSignIn = GoogleSignIn();
                       try {

@@ -12,4 +12,15 @@ abstract class IGoalRepository {
 
   /// Retorna todas as metas de um usuário, ordenadas pela data final
   Future<List<Goal>> getGoals(String userId);
+
+  // ========================================
+  // 🔹 NOVOS MÉTODOS PARA TRANSAÇÕES
+  // ========================================
+
+  /// Adiciona uma transação (depósito) a uma meta
+  /// e atualiza automaticamente o [currentAmount].
+  Future<void> addTransaction(String goalId, GoalTransaction transaction);
+
+  /// Busca todas as transações de uma meta específica
+  Future<List<GoalTransaction>> getTransactions(String goalId);
 }

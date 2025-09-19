@@ -1,8 +1,10 @@
 import 'package:finc/screens/home/blocs/get_block_expense_income.dart';
+import 'package:finc/screens/transactions/email_csv.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:expense_repository/expense_repository.dart';
+
 
 class TransactionScreen extends StatefulWidget {
   final String userId;
@@ -13,14 +15,15 @@ class TransactionScreen extends StatefulWidget {
   State<TransactionScreen> createState() => _TransactionScreenState();
 }
 
-class _TransactionScreenState extends State<TransactionScreen> with SingleTickerProviderStateMixin {
+class _TransactionScreenState extends State<TransactionScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  int selectedYear = DateTime.now().year;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-
   }
 
   @override
@@ -29,9 +32,20 @@ class _TransactionScreenState extends State<TransactionScreen> with SingleTicker
     super.dispose();
   }
 
+  List<dynamic> _filterTransactionsByYear(
+    List<dynamic> transactions,
+    int year,
+  ) {
+    return transactions.where((tx) => tx.date.year == year).toList();
+  }
+
+
   @override
   Widget build(BuildContext context) {
-    final currencyFormatter = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+    final currencyFormatter = NumberFormat.currency(
+      locale: 'pt_BR',
+      symbol: 'R\$',
+    );
 
     return BlocBuilder<GetFinancialDataBloc, GetFinancialDataState>(
       builder: (context, state) {
@@ -42,32 +56,80 @@ class _TransactionScreenState extends State<TransactionScreen> with SingleTicker
         }
 
         if (state is GetFinancialDataFailure) {
-          return Scaffold(
-            body: Center(child: Text(state.message)),
-          );
+          return Scaffold(body: Center(child: Text(state.message)));
         }
 
         if (state is GetFinancialDataSuccess) {
-          final expenses = state.expenses;
-          final incomes = state.income;
+          final filteredExpenses = _filterTransactionsByYear(
+            state.expenses,
+            selectedYear,
+          );
+          final filteredIncomes = _filterTransactionsByYear(
+            state.income,
+            selectedYear,
+          );
           final categoryMap = state.categoryMap;
 
           return Scaffold(
             appBar: AppBar(
               title: const Text('Transações'),
               bottom: TabBar(
-                controller: _tabController, // usa o TabController criado
-                tabs: const [
-                  Tab(text: 'Despesas'),
-                  Tab(text: 'Receitas'),
-                ],
+                controller: _tabController,
+                tabs: const [Tab(text: 'Despesas'), Tab(text: 'Receitas')],
               ),
+              actions: [
+                DropdownButton<int>(
+                  value: selectedYear,
+                  items:
+                      List.generate(10, (i) => DateTime.now().year - i)
+                          .map(
+                            (year) => DropdownMenuItem(
+                              value: year,
+                              child: Text(
+                                '$year',
+                                style: const TextStyle(color: Colors.black),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() {
+                        selectedYear = value;
+                      });
+                    }
+                  },
+                  underline: const SizedBox(),
+                  iconEnabledColor: Colors.white,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.download),
+                  onPressed:
+                      () => exportAndShareCsv(
+                        filteredExpenses,
+                        filteredIncomes,
+                        categoryMap,
+                        selectedYear, // <-- passe o ano atual selecionado
+                      ),
+                  tooltip: 'Exportar e compartilhar CSV',
+                ),
+              ],
             ),
             body: TabBarView(
-              controller: _tabController, // conecta ao mesmo TabController
+              controller: _tabController,
               children: [
-                _buildTransactionList(expenses, categoryMap, currencyFormatter, isExpense: true),
-                _buildTransactionList(incomes, categoryMap, currencyFormatter, isExpense: false),
+                _buildTransactionList(
+                  filteredExpenses,
+                  categoryMap,
+                  currencyFormatter,
+                  isExpense: true,
+                ),
+                _buildTransactionList(
+                  filteredIncomes,
+                  categoryMap,
+                  currencyFormatter,
+                  isExpense: false,
+                ),
               ],
             ),
           );
@@ -114,15 +176,26 @@ class _TransactionScreenState extends State<TransactionScreen> with SingleTicker
               ],
             ),
             child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 10,
+              ),
               leading: CircleAvatar(
                 radius: 22,
-                backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                child: Icon(Icons.category, color: Theme.of(context).colorScheme.primary),
+                backgroundColor: Theme.of(
+                  context,
+                ).colorScheme.primary.withOpacity(0.1),
+                child: Icon(
+                  Icons.category,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
               title: Text(
                 category.name,
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               subtitle: Text(
                 DateFormat('dd/MM/yyyy').format(tx.date),

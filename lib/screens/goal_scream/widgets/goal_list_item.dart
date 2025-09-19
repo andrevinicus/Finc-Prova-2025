@@ -2,13 +2,17 @@ import 'package:expense_repository/expense_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:pie_chart/pie_chart.dart';
 
-
 class GoalListItem extends StatefulWidget {
   final Goal goal;
   final bool isExpanded;
   final VoidCallback onTap;
 
-  const GoalListItem({super.key, required this.goal, required this.isExpanded, required this.onTap});
+  const GoalListItem({
+    super.key,
+    required this.goal,
+    required this.isExpanded,
+    required this.onTap,
+  });
 
   @override
   State<GoalListItem> createState() => _GoalListItemState();
@@ -43,9 +47,13 @@ class _GoalListItemState extends State<GoalListItem> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    // Limita o progresso de 0 a 1
+    final progress = (widget.goal.currentAmount / widget.goal.targetAmount).clamp(0.0, 1.0);
+
+    // Dados para o PieChart
     final dataMap = {
-      "Concluído": widget.goal.currentAmount,
-      "Restante": widget.goal.targetAmount - widget.goal.currentAmount,
+      "Concluído": progress * widget.goal.targetAmount,
+      "Restante": widget.goal.targetAmount - (progress * widget.goal.targetAmount),
     };
 
     return Container(
@@ -61,12 +69,18 @@ class _GoalListItemState extends State<GoalListItem> with SingleTickerProviderSt
             leading: CircleAvatar(
               backgroundColor: widget.goal.color,
               child: Text(
-                '${(widget.goal.progress * 100).toStringAsFixed(0)}%',
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                '${(progress * 100).toStringAsFixed(0)}%',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
               ),
             ),
             title: Text(widget.goal.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text('R\$ ${widget.goal.currentAmount.toStringAsFixed(0)} de R\$ ${widget.goal.targetAmount.toStringAsFixed(0)}'),
+            subtitle: Text(
+              'R\$ ${widget.goal.currentAmount.toStringAsFixed(0)} de R\$ ${widget.goal.targetAmount.toStringAsFixed(0)}',
+            ),
             trailing: RotationTransition(
               turns: _arrowAnimation,
               child: const Icon(Icons.arrow_drop_down, color: Colors.grey),

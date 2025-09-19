@@ -50,7 +50,7 @@ class _AnimatedArrowState extends State<AnimatedArrow>
       children: [
         // "+" grande e transparente
         Positioned(
-          top: plusY + -110,
+          top: plusY + -60,
           left: plusX,
           child: Icon(
             Icons.add,
@@ -60,8 +60,8 @@ class _AnimatedArrowState extends State<AnimatedArrow>
         ),
         // seta animada
         Positioned(
-          top: buttonY,
-          left: plusX + 80,
+          top: buttonY + 60,
+          left: plusX + 90,
           child: SizedBox(
             width: arrowWidth,
             height: arrowHeight,

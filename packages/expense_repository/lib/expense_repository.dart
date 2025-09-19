@@ -13,7 +13,7 @@ export 'src/FirebaseChatRepository/chat_message.dart';
 export 'src/FirebaseChatRepository/FirebaseChatRepository.dart';
 export 'src/goal/i_goal_repository.dart';
 export 'src/goal/goal_repository.dart';
-
+export 'src/goal/goal_transaction.dart';
 
 
 
