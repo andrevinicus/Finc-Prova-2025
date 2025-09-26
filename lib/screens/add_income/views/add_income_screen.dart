@@ -105,92 +105,94 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
   Widget build(BuildContext context) {
     const bottomContainerColor = Color.fromARGB(115, 206, 206, 206);
 
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        backgroundColor: Colors.white,
-        appBar: AppBar(
+    return SafeArea(
+      child: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Scaffold(
+          resizeToAvoidBottomInset: false,
           backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
-          elevation: 0,
-          automaticallyImplyLeading: false,
-          title: Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.arrow_back, size: 26, color: Colors.black),
-                onPressed: () => Navigator.pop(context),
-              ),
-              const SizedBox(width: 2),
-              const Text(
-                "Nova Receita",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            foregroundColor: Colors.black,
+            elevation: 0,
+            automaticallyImplyLeading: false,
+            title: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back, size: 26, color: Colors.black),
+                  onPressed: () => Navigator.pop(context),
                 ),
-              ),
-            ],
-          ),
-        ),
-        body: Column(
-          children: [
-            IncomeAmountField(
-              controller: _amountController,
-              onChanged: () => setState(() {}),
-            ),
-            Expanded(
-              child: Container(
-                decoration: const BoxDecoration(
-                  color: bottomContainerColor,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(25),
-                    topRight: Radius.circular(25),
+                const SizedBox(width: 2),
+                const Text(
+                  "Nova Receita",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
                   ),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 16),
-                        _buildDateRow(context),
-                        const Divider(color: Colors.grey, height: 10, thickness: 0.8),
-                        IncomeCategoryField(
-                          userId: userId,
-                          selectedCategory: _selectedCategory,
-                          onCategorySelected: (cat) => setState(() => _selectedCategory = cat),
-                        ),
-                        const Divider(color: Colors.grey, height: 10, thickness: 0.8),
-                        IncomeDescriptionField(controller: _descricaoController),
-                        const Divider(color: Colors.grey, height: 10, thickness: 0.8),
-                        ExpenseBankField(
-                          userId: userId,
-                          selectedBank: _selectedBank,
-                          onBankSelected: (bank) => setState(() => _selectedBank = bank),
-                        ),
-                        const Divider(color: Colors.grey, height: 6, thickness: 0.8),
-                        _buildImagePicker(),
-                        const Divider(color: Colors.grey, height: 6, thickness: 0.8),
-                      ],
+              ],
+            ),
+          ),
+          body: Column(
+            children: [
+              IncomeAmountField(
+                controller: _amountController,
+                onChanged: () => setState(() {}),
+              ),
+              Expanded(
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: bottomContainerColor,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(25),
+                      topRight: Radius.circular(25),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 16),
+                          _buildDateRow(context),
+                          const Divider(color: Colors.grey, height: 10, thickness: 0.8),
+                          IncomeCategoryField(
+                            userId: userId,
+                            selectedCategory: _selectedCategory,
+                            onCategorySelected: (cat) => setState(() => _selectedCategory = cat),
+                          ),
+                          const Divider(color: Colors.grey, height: 10, thickness: 0.8),
+                          IncomeDescriptionField(controller: _descricaoController),
+                          const Divider(color: Colors.grey, height: 10, thickness: 0.8),
+                          ExpenseBankField(
+                            userId: userId,
+                            selectedBank: _selectedBank,
+                            onBankSelected: (bank) => setState(() => _selectedBank = bank),
+                          ),
+                          const Divider(color: Colors.grey, height: 6, thickness: 0.8),
+                          _buildImagePicker(),
+                          const Divider(color: Colors.grey, height: 6, thickness: 0.8),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
+          floatingActionButton: IncomeSaveButton(
+            amountText: _amountController.text,
+            selectedCategory: _selectedCategory,
+            selectedDate: _selectedDate,
+            description: _descricaoController.text,
+            selectedBankId: _selectedBank?.id,
+            selectedImage: _selectedImage,
+            uploadImage: uploadImagemComUserIdERetornarId,
+          ),
+          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         ),
-        floatingActionButton: IncomeSaveButton(
-          amountText: _amountController.text,
-          selectedCategory: _selectedCategory,
-          selectedDate: _selectedDate,
-          description: _descricaoController.text,
-          selectedBankId: _selectedBank?.id,
-          selectedImage: _selectedImage,
-          uploadImage: uploadImagemComUserIdERetornarId,
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       ),
     );
   }

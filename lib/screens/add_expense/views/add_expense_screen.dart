@@ -109,7 +109,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 builder: (context, child) {
                   return Theme(
                     data: Theme.of(context).copyWith(
-                      colorScheme: ColorScheme.light(
+                      colorScheme: const ColorScheme.light(
                         primary: Colors.blueAccent,
                         onPrimary: Colors.white,
                         surface: Colors.white,
@@ -166,7 +166,10 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 padding: const EdgeInsets.only(left: 10),
                 child: Text(
                   truncatedName(_selectedImageName),
-                  style: const TextStyle(color: Colors.black54, fontSize: 16, fontWeight: FontWeight.w500),
+                  style: const TextStyle(
+                      color: Colors.black54,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500),
                 ),
               ),
             ),
@@ -200,64 +203,83 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
               const SizedBox(width: 2),
               const Text(
                 "Nova Despesa",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black),
               ),
             ],
           ),
         ),
-        body: Column(
-          children: [
-            ExpenseAmountField(
-              amount: _amountController.text,
-              onAmountChanged: (value) => setState(() => _amountController.text = value),
-            ),
-            Expanded(
-              child: Container(
-                decoration: const BoxDecoration(
-                  color: bottomContainerColor,
-                  borderRadius: BorderRadius.only(topLeft: Radius.circular(25), topRight: Radius.circular(25)),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 16),
-                        _buildDateRow(context),
-                        const Divider(height: 10, thickness: 0.8, color: Colors.grey),
-                        ExpenseCategoryField(
-                          userId: userId,
-                          selectedCategory: _selectedCategory,
-                          onCategorySelected: (cat) => setState(() => _selectedCategory = cat),
-                        ),
-                        const Divider(height: 10, thickness: 0.8, color: Colors.grey),
-                        ExpenseDescriptionField(controller: _descricaoController),
-                        const Divider(height: 10, thickness: 0.8, color: Colors.grey),
-                        ExpenseBankField(
-                          userId: userId,
-                          selectedBank: _selectedBank,
-                          onBankSelected: (bank) => setState(() => _selectedBank = bank),
-                        ),
-                        const Divider(height: 6, thickness: 0.8, color: Colors.grey),
-                        _buildImagePicker(),
-                        const Divider(height: 6, thickness: 0.8, color: Colors.grey),
-                      ],
+        body: SafeArea( // <<<<<< aqui corrige a sobreposição
+          child: Column(
+            children: [
+              ExpenseAmountField(
+                amount: _amountController.text,
+                onAmountChanged: (value) =>
+                    setState(() => _amountController.text = value),
+              ),
+              Expanded(
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: bottomContainerColor,
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(25),
+                        topRight: Radius.circular(25)),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 16),
+                          _buildDateRow(context),
+                          const Divider(
+                              height: 10, thickness: 0.8, color: Colors.grey),
+                          ExpenseCategoryField(
+                            userId: userId,
+                            selectedCategory: _selectedCategory,
+                            onCategorySelected: (cat) =>
+                                setState(() => _selectedCategory = cat),
+                          ),
+                          const Divider(
+                              height: 10, thickness: 0.8, color: Colors.grey),
+                          ExpenseDescriptionField(
+                              controller: _descricaoController),
+                          const Divider(
+                              height: 10, thickness: 0.8, color: Colors.grey),
+                          ExpenseBankField(
+                            userId: userId,
+                            selectedBank: _selectedBank,
+                            onBankSelected: (bank) =>
+                                setState(() => _selectedBank = bank),
+                          ),
+                          const Divider(
+                              height: 6, thickness: 0.8, color: Colors.grey),
+                          _buildImagePicker(),
+                          const Divider(
+                              height: 6, thickness: 0.8, color: Colors.grey),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-        floatingActionButton: ExpenseSaveButton(
-          amountText: _amountController.text,
-          selectedBankId: _selectedBank?.id,
-          selectedCategory: _selectedCategory,
-          selectedDate: _selectedDate,
-          description: _descricaoController.text,
-          selectedImage: _selectedImage,
-          uploadImage: uploadImagemComUserIdERetornarId,
+        floatingActionButton: Padding(
+          padding: const EdgeInsets.only(bottom: 12), // espaço extra para não grudar no botão Home
+          child: ExpenseSaveButton(
+            amountText: _amountController.text,
+            selectedBankId: _selectedBank?.id,
+            selectedCategory: _selectedCategory,
+            selectedDate: _selectedDate,
+            description: _descricaoController.text,
+            selectedImage: _selectedImage,
+            uploadImage: uploadImagemComUserIdERetornarId,
+          ),
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       ),
