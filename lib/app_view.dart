@@ -1,4 +1,5 @@
-import 'package:finc/screens/goal_scream/bloc/events_goal.dart';
+import 'package:finc/screens/whatsapp_flow/bloc/analise_lancamento_bloc.dart';
+import 'package:finc/screens/whatsapp_flow/bloc/analise_lancamento_event.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,14 +19,18 @@ import 'package:finc/screens/create_banks/blocs/get_bank/get_bank_event.dart';
 import 'package:finc/screens/home/blocs/get_block_expense_income.dart';
 import 'package:finc/screens/home/blocs/get_expenses_bloc/get_expenses_bloc.dart';
 import 'package:finc/screens/goal_scream/bloc/bloc_goal.dart';
+import 'package:finc/screens/goal_scream/bloc/events_goal.dart';
 
+// Views
 import 'package:finc/screens/home/views/home_screen.dart';
 import 'package:finc/screens/login/register/login_screen.dart';
 
+// Rotas
 import 'routes/app_router.dart';
 import 'routes/app_routes.dart';
 
 void main() {
+  // Inicializa os repositórios
   final expenseRepository = FirebaseExpenseRepo();
   final incomeRepository = FirebaseIncomeRepo();
   final bankRepository = BankRepository();
@@ -39,9 +44,7 @@ void main() {
         RepositoryProvider<IncomeRepository>.value(value: incomeRepository),
         RepositoryProvider<BankRepository>.value(value: bankRepository),
         RepositoryProvider<CategoryRepository>.value(value: categoryRepository),
-        RepositoryProvider<IGoalRepository>.value(
-          value: goalRepository,
-        ), // <- adicionado
+        RepositoryProvider<IGoalRepository>.value(value: goalRepository),
       ],
       child: BlocProvider(
         create:
@@ -119,13 +122,19 @@ class MyAppView extends StatelessWidget {
                         categoryRepository: context.read<CategoryRepository>(),
                       )..add(GetFinancialData(userId)),
                 ),
-
-                /// 🚀 Adiciona aqui o GoalBloc
                 BlocProvider(
                   create:
                       (context) => GoalBloc(
                         goalRepository: context.read<IGoalRepository>(),
-                      )..add(LoadGoals(userId)), // se tiver evento inicial
+                      )..add(LoadGoals(userId)),
+                ),
+                // ✅ Adiciona aqui o AnaliseLancamentoBloc
+                BlocProvider(
+                  create:
+                      (context) => AnaliseLancamentoBloc(
+                        repository:
+                            context.read<IAnaliseLancamentoRepository>(),
+                      )..add(LoadLancamentos(userId)),
                 ),
               ],
               child: const HomeScreen(),

@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
     final bankRepository = BankRepository();
     final categoryRepository = FirebaseCategoryRepository();
     final goalRepository = FirebaseGoalRepository();
-     
+    final analiseLancamentoRepository = FirebaseAnaliseLancamentoRepository();
 
     return MultiRepositoryProvider(
       providers: [
@@ -24,11 +24,14 @@ class MyApp extends StatelessWidget {
         RepositoryProvider<IncomeRepository>.value(value: incomeRepository),
         RepositoryProvider<BankRepository>.value(value: bankRepository),
         RepositoryProvider<CategoryRepository>.value(value: categoryRepository),
-        RepositoryProvider<IGoalRepository>.value(value: goalRepository), 
-         // <-- Adicionado
+        RepositoryProvider<IGoalRepository>.value(value: goalRepository),
+        RepositoryProvider<IAnaliseLancamentoRepository>.value(
+          value: analiseLancamentoRepository,
+        ),
       ],
       child: BlocProvider(
-        create: (_) => AuthBloc(FirebaseAuth.instance)..add(AuthCheckRequested()),
+        create: (_) =>
+            AuthBloc(FirebaseAuth.instance)..add(AuthCheckRequested()),
         child: const MyAppView(),
       ),
     );

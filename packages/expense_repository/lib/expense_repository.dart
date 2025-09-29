@@ -14,6 +14,11 @@ export 'src/FirebaseChatRepository/FirebaseChatRepository.dart';
 export 'src/goal/i_goal_repository.dart';
 export 'src/goal/goal_repository.dart';
 export 'src/goal/goal_transaction.dart';
+export 'src/n8n-analise-lancamento/n8n-analise-lancamento.dart';
+export 'src/n8n-analise-lancamento/i_analise_lancamento_epository.dart';
+export 'src/n8n-analise-lancamento/n8n-analise-lancamento_repo.dart';
+
+
 
 
 

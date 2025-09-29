@@ -5,3 +5,6 @@ export '../bank/bank_model.dart';
 export '../firebase_income/income.dart';
 export 'display_list_item.dart';
 export '../goal/goal.dart';
+export '../n8n-analise-lancamento/n8n-analise-lancamento.dart';
+export '../FirebaseChatRepository/chat_message.dart';
+export '../goal/goal_transaction.dart';

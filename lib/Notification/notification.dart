@@ -121,7 +121,7 @@ class _NotificationBellState extends State<NotificationBell>
       ),
     );
 
-    overlay?.insert(_overlayEntry!);
+    overlay.insert(_overlayEntry!);
     _controller.forward();
   }
 

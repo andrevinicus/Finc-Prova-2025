@@ -2,10 +2,12 @@ import 'package:expense_repository/expense_repository.dart';
 import 'package:finc/screens/home/blocs/get_block_expense_income.dart';
 import 'package:finc/screens/login/register/login_screen.dart';
 import 'package:finc/screens/transactions/transaction_screen.dart';
+import 'package:finc/screens/whatsapp_flow/wpp_pendencia.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:finc/screens/whatsapp_flow/bloc/analise_lancamento_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class AppDrawer extends StatefulWidget {
@@ -49,16 +51,19 @@ class _AppDrawerState extends State<AppDrawer> {
     }
   }
 
+  /// Apenas visual: sinal vermelho se houver pendências para lançar
+  bool _hasPendenciasParaLancar() {
+    // Aqui você pode substituir por dados reais
+    return true; // sempre mostra o sinal como exemplo
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     final theme = Theme.of(context);
 
-    // Altura do BottomNavigationBar (padrão Flutter)
     final bottomNavBarHeight = kBottomNavigationBarHeight;
-
-    // Altura máxima disponível para o Drawer
     final drawerMaxHeight = screenHeight - bottomNavBarHeight;
 
     return Drawer(
@@ -85,16 +90,14 @@ class _AppDrawerState extends State<AppDrawer> {
                 ),
                 currentAccountPicture: CircleAvatar(
                   backgroundColor: theme.colorScheme.surface,
-                  backgroundImage:
-                      photoUrl != null ? NetworkImage(photoUrl!) : null,
-                  child:
-                      photoUrl == null
-                          ? Icon(
-                            Icons.person,
-                            size: 40,
-                            color: theme.colorScheme.onSurface.withOpacity(0.6),
-                          )
-                          : null,
+                  backgroundImage: photoUrl != null ? NetworkImage(photoUrl!) : null,
+                  child: photoUrl == null
+                      ? Icon(
+                          Icons.person,
+                          size: 40,
+                          color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        )
+                      : null,
                 ),
               ),
 
@@ -110,17 +113,50 @@ class _AppDrawerState extends State<AppDrawer> {
                           Navigator.of(context).pop();
                           final userId = widget.user?.uid ?? '';
                           if (userId.isNotEmpty) {
-                            // Passa a instância existente do GetFinancialDataBloc
-                            final financialBloc =
-                                context.read<GetFinancialDataBloc>();
-
+                            final financialBloc = context.read<GetFinancialDataBloc>();
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder:
-                                    (_) => BlocProvider.value(
-                                      value: financialBloc,
-                                      child: TransactionScreen(userId: userId),
-                                    ),
+                                builder: (_) => BlocProvider.value(
+                                  value: financialBloc,
+                                  child: TransactionScreen(userId: userId),
+                                ),
+                              ),
+                            );
+                          }
+                        },
+                      ),
+
+                      // Pendências Financeiras com sinal
+                      ListTile(
+                        leading: const Icon(Icons.pending_actions),
+                        title: const Text('Pendências Financeiras'),
+                        trailing: _hasPendenciasParaLancar()
+                            ? Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Colors.redAccent,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Text(
+                                  '!',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              )
+                            : null,
+                        onTap: () {
+                          Navigator.of(context).pop();
+                          final userId = widget.user?.uid ?? '';
+                          if (userId.isNotEmpty) {
+                            final lancamentoBloc = context.read<AnaliseLancamentoBloc>();
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => BlocProvider.value(
+                                  value: lancamentoBloc,
+                                  child: PendenciasScreen(userId: userId),
+                                ),
                               ),
                             );
                           }
