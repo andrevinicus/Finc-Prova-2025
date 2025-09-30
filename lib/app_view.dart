@@ -134,6 +134,7 @@ class MyAppView extends StatelessWidget {
                       (context) => AnaliseLancamentoBloc(
                         repository:
                             context.read<IAnaliseLancamentoRepository>(),
+                            
                       )..add(LoadLancamentos(userId)),
                 ),
               ],

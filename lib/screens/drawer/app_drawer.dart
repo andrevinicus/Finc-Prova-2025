@@ -1,4 +1,5 @@
 import 'package:expense_repository/expense_repository.dart';
+import 'package:finc/screens/category/blocs/get_categories_bloc/get_categories_bloc.dart';
 import 'package:finc/screens/home/blocs/get_block_expense_income.dart';
 import 'package:finc/screens/login/register/login_screen.dart';
 import 'package:finc/screens/transactions/transaction_screen.dart';
@@ -90,14 +91,16 @@ class _AppDrawerState extends State<AppDrawer> {
                 ),
                 currentAccountPicture: CircleAvatar(
                   backgroundColor: theme.colorScheme.surface,
-                  backgroundImage: photoUrl != null ? NetworkImage(photoUrl!) : null,
-                  child: photoUrl == null
-                      ? Icon(
-                          Icons.person,
-                          size: 40,
-                          color: theme.colorScheme.onSurface.withOpacity(0.6),
-                        )
-                      : null,
+                  backgroundImage:
+                      photoUrl != null ? NetworkImage(photoUrl!) : null,
+                  child:
+                      photoUrl == null
+                          ? Icon(
+                            Icons.person,
+                            size: 40,
+                            color: theme.colorScheme.onSurface.withOpacity(0.6),
+                          )
+                          : null,
                 ),
               ),
 
@@ -113,13 +116,15 @@ class _AppDrawerState extends State<AppDrawer> {
                           Navigator.of(context).pop();
                           final userId = widget.user?.uid ?? '';
                           if (userId.isNotEmpty) {
-                            final financialBloc = context.read<GetFinancialDataBloc>();
+                            final financialBloc =
+                                context.read<GetFinancialDataBloc>();
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (_) => BlocProvider.value(
-                                  value: financialBloc,
-                                  child: TransactionScreen(userId: userId),
-                                ),
+                                builder:
+                                    (_) => BlocProvider.value(
+                                      value: financialBloc,
+                                      child: TransactionScreen(userId: userId),
+                                    ),
                               ),
                             );
                           }
@@ -130,33 +135,51 @@ class _AppDrawerState extends State<AppDrawer> {
                       ListTile(
                         leading: const Icon(Icons.pending_actions),
                         title: const Text('Pendências Financeiras'),
-                        trailing: _hasPendenciasParaLancar()
-                            ? Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: Colors.redAccent,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Text(
-                                  '!',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
+                        trailing:
+                            _hasPendenciasParaLancar()
+                                ? Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
                                   ),
-                                ),
-                              )
-                            : null,
+                                  decoration: BoxDecoration(
+                                    color: Colors.redAccent,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Text(
+                                    '!',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                )
+                                : null,
                         onTap: () {
                           Navigator.of(context).pop();
                           final userId = widget.user?.uid ?? '';
                           if (userId.isNotEmpty) {
-                            final lancamentoBloc = context.read<AnaliseLancamentoBloc>();
+                            // Pega os blocos já existentes
+                            final lancamentoBloc =
+                                context.read<AnaliseLancamentoBloc>();
+                            final categoriesBloc =
+                                context.read<GetCategoriesBloc>();
+
+                            // Passa ambos os blocos via MultiBlocProvider
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (_) => BlocProvider.value(
-                                  value: lancamentoBloc,
-                                  child: PendenciasScreen(userId: userId),
-                                ),
+                                builder:
+                                    (_) => MultiBlocProvider(
+                                      providers: [
+                                        BlocProvider.value(
+                                          value: lancamentoBloc,
+                                        ),
+                                        BlocProvider.value(
+                                          value: categoriesBloc,
+                                        ),
+                                      ],
+                                      child: PendenciasScreen(userId: userId),
+                                    ),
                               ),
                             );
                           }
