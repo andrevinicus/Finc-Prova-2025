@@ -9,6 +9,8 @@ import 'package:finc/screens/whatsapp_flow/widgets/pendencia_card.dart';
 import 'package:finc/screens/whatsapp_flow/widgets/saldo_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:finc/screens/add_expense/blocs/create_expense_bloc/create_expense_bloc.dart';
+import 'package:finc/screens/add_income/blocs/create_expense_bloc/create_income_bloc.dart';
 
 class PendenciasScreen extends StatefulWidget {
   final String userId;
@@ -20,13 +22,13 @@ class PendenciasScreen extends StatefulWidget {
 }
 
 class _PendenciasScreenState extends State<PendenciasScreen> {
-@override
-void initState() {
-  super.initState();
-  context.read<AnaliseLancamentoBloc>().add(LoadLancamentos(widget.userId));
-  context.read<GetCategoriesBloc>().add(GetCategories(widget.userId)); // 👈 aqui
-}
-
+  @override
+  void initState() {
+    super.initState();
+    // Carrega os lançamentos e categorias
+    context.read<AnaliseLancamentoBloc>().add(LoadLancamentos(widget.userId));
+    context.read<GetCategoriesBloc>().add(GetCategories(widget.userId));
+  }
 
   void _toggleExpanded(AnaliseLancamento lancamento) {
     setState(() {
@@ -36,110 +38,127 @@ void initState() {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Pendências Financeiras'),
-          centerTitle: true,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<CreateExpenseBloc>(
+          create: (context) => CreateExpenseBloc(context.read<ExpenseRepository>()),
         ),
-        body: BlocBuilder<AnaliseLancamentoBloc, AnaliseLancamentoState>(
-          builder: (context, state) {
-            if (state is AnaliseLancamentoLoading) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (state is AnaliseLancamentoLoaded) {
-              final saldo = state.lancamentos.fold<double>(
-                0.0,
-                (prev, element) => element.tipo.toLowerCase() == 'receita'
-                    ? prev + element.valorTotal
-                    : prev - element.valorTotal,
-              );
+        BlocProvider<CreateIncomeBloc>(
+          create: (context) => CreateIncomeBloc(context.read<IncomeRepository>()),
+        ),
+      ],
+      child: SafeArea(
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text('Pendências Financeiras'),
+            centerTitle: true,
+          ),
+          body: BlocBuilder<AnaliseLancamentoBloc, AnaliseLancamentoState>(
+            builder: (context, state) {
+              if (state is AnaliseLancamentoLoading) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (state is AnaliseLancamentoLoaded) {
+                // Filtra apenas lançamentos que NÃO estão pendentes
+                final lancamentosConfirmados =
+                    state.lancamentos.where((l) => !l.isPending).toList();
 
-              return Column(
-                children: [
-                  SaldoCard(saldo: saldo),
-                  const SizedBox(height: 8),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: state.lancamentos.length,
-                      itemBuilder: (context, index) {
-                        final lanc = state.lancamentos[index];
-                        return PendenciaCard(
-                          lancamento: lanc,
-                          onTap: () => _toggleExpanded(lanc),
-                          onLongPressStart: (details) async {
-                            final overlay =
-                                Overlay.of(context).context.findRenderObject()
-                                    as RenderBox;
+                final saldo = lancamentosConfirmados.fold<double>(
+                  0.0,
+                  (prev, element) =>
+                      element.tipo.toLowerCase() == 'receita'
+                          ? prev + element.valorTotal
+                          : prev - element.valorTotal,
+                );
 
-                            final action = await showMenu<String>(
-                              context: context,
-                              position: RelativeRect.fromRect(
-                                details.globalPosition & const Size(40, 40),
-                                Offset.zero & overlay.size,
-                              ),
-                              items: const [
-                                PopupMenuItem(value: 'lancar', child: Text('Lançar')),
-                                PopupMenuItem(value: 'editar', child: Text('Editar')),
-                                PopupMenuItem(value: 'excluir', child: Text('Excluir')),
-                              ],
-                            );
+                return Column(
+                  children: [
+                    SaldoCard(saldo: saldo),
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: lancamentosConfirmados.length,
+                        itemBuilder: (context, index) {
+                          final lanc = lancamentosConfirmados[index];
+                          return PendenciaCard(
+                            lancamento: lanc,
+                            onTap: () => _toggleExpanded(lanc),
+                            onLongPressStart: (details) async {
+                              final overlay =
+                                  Overlay.of(context).context.findRenderObject() as RenderBox;
 
-                            switch (action) {
-                              case 'lancar':
-                                DialogHelper.showInfo(context, 'Lançar', lanc.detalhes);
-                                break;
-                              case 'editar':
-                              final categoryState = context.read<GetCategoriesBloc>().state;
+                              final action = await showMenu<String>(
+                                context: context,
+                                position: RelativeRect.fromRect(
+                                  details.globalPosition & const Size(40, 40),
+                                  Offset.zero & overlay.size,
+                                ),
+                                items: const [
+                                  PopupMenuItem(value: 'lancar', child: Text('Lançar')),
+                                  PopupMenuItem(value: 'editar', child: Text('Editar')),
+                                  PopupMenuItem(value: 'excluir', child: Text('Excluir')),
+                                ],
+                              );
 
-                              if (categoryState is GetCategoriesSuccess) {
-                                final categorias = categoryState.categories;
+                              switch (action) {
+                                case 'lancar':
+                                  DialogHelper.showInfo(context, 'Lançar', lanc.detalhes);
+                                  break;
+                                case 'editar':
+                                  final categoryState =
+                                      context.read<GetCategoriesBloc>().state;
 
-                                final updated = await showDialog<AnaliseLancamento>(
-                                  context: context,
-                                  builder: (_) => LancamentoEditDialog(
-                                    lancamento: lanc,
-                                    categorias: categorias, // ✅ obrigatório
-                                  ),
-                                );
+                                  if (categoryState is GetCategoriesSuccess) {
+                                    final categorias = categoryState.categories;
 
-                                if (updated != null) {
-                                  context.read<AnaliseLancamentoBloc>().add(
-                                        UpdateLancamento(
-                                          lancamento: updated,
-                                          userId: widget.userId,
-                                        ),
-                                      );
-                                }
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Categorias ainda não carregadas')),
-                                );
+                                    final updated =
+                                        await showDialog<AnaliseLancamento>(
+                                      context: context,
+                                      builder: (_) => LancamentoEditDialog(
+                                        lancamento: lanc,
+                                        categorias: categorias,
+                                      ),
+                                    );
+
+                                    if (updated != null) {
+                                      context
+                                          .read<AnaliseLancamentoBloc>()
+                                          .add(UpdateLancamento(
+                                            lancamento: updated,
+                                            userId: widget.userId,
+                                          ));
+                                    }
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content: Text('Categorias ainda não carregadas')),
+                                    );
+                                  }
+                                  break;
+                                case 'excluir':
+                                  DialogHelper.showExcluir(context, lanc, () {
+                                    context.read<AnaliseLancamentoBloc>().add(
+                                          DeleteLancamento(
+                                            lancamentoId: lanc.id,
+                                            userId: widget.userId,
+                                          ),
+                                        );
+                                  });
+                                  break;
                               }
-                              break;
-                              case 'excluir':
-                                DialogHelper.showExcluir(context, lanc, () {
-                                  context.read<AnaliseLancamentoBloc>().add(
-                                        DeleteLancamento(
-                                          lancamentoId: lanc.id,
-                                          userId: widget.userId,
-                                        ),
-                                      );
-                                });
-                                break;
-                            }
-                          },
-                        );
-                      },
+                            },
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                ],
-              );
-            } else if (state is AnaliseLancamentoError) {
-              return Center(child: Text('Erro: ${state.message}'));
-            } else {
-              return const SizedBox.shrink();
-            }
-          },
+                  ],
+                );
+              } else if (state is AnaliseLancamentoError) {
+                return Center(child: Text('Erro: ${state.message}'));
+              } else {
+                return const SizedBox.shrink();
+              }
+            },
+          ),
         ),
       ),
     );

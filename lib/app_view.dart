@@ -1,5 +1,3 @@
-import 'package:finc/screens/whatsapp_flow/bloc/analise_lancamento_bloc.dart';
-import 'package:finc/screens/whatsapp_flow/bloc/analise_lancamento_event.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -20,6 +18,8 @@ import 'package:finc/screens/home/blocs/get_block_expense_income.dart';
 import 'package:finc/screens/home/blocs/get_expenses_bloc/get_expenses_bloc.dart';
 import 'package:finc/screens/goal_scream/bloc/bloc_goal.dart';
 import 'package:finc/screens/goal_scream/bloc/events_goal.dart';
+import 'package:finc/screens/whatsapp_flow/bloc/analise_lancamento_bloc.dart';
+import 'package:finc/screens/whatsapp_flow/bloc/analise_lancamento_event.dart';
 
 // Views
 import 'package:finc/screens/home/views/home_screen.dart';
@@ -36,6 +36,7 @@ void main() {
   final bankRepository = BankRepository();
   final categoryRepository = FirebaseCategoryRepository();
   final goalRepository = FirebaseGoalRepository();
+  final analiseLancamentoRepository = FirebaseAnaliseLancamentoRepository();
 
   runApp(
     MultiRepositoryProvider(
@@ -45,6 +46,9 @@ void main() {
         RepositoryProvider<BankRepository>.value(value: bankRepository),
         RepositoryProvider<CategoryRepository>.value(value: categoryRepository),
         RepositoryProvider<IGoalRepository>.value(value: goalRepository),
+        RepositoryProvider<IAnaliseLancamentoRepository>.value(
+          value: analiseLancamentoRepository,
+        ),
       ],
       child: BlocProvider(
         create:
@@ -91,50 +95,41 @@ class MyAppView extends StatelessWidget {
             return MultiBlocProvider(
               providers: [
                 BlocProvider(
-                  create:
-                      (context) =>
-                          GetExpensesBloc(context.read<ExpenseRepository>())
-                            ..add(GetExpenses(userId)),
+                  create: (context) =>
+                      GetExpensesBloc(context.read<ExpenseRepository>())
+                        ..add(GetExpenses(userId)),
                 ),
                 BlocProvider(
-                  create:
-                      (context) => GetCategoriesBloc(
+                  create: (context) => GetCategoriesBloc(
                         categoryRepository: context.read<CategoryRepository>(),
                       )..add(GetCategories(userId)),
                 ),
                 BlocProvider(
-                  create:
-                      (context) => CreateCategoryBloc(
+                  create: (context) => CreateCategoryBloc(
                         categoryRepository: context.read<CategoryRepository>(),
                       ),
                 ),
                 BlocProvider(
-                  create:
-                      (context) =>
-                          GetBankBloc(context.read<BankRepository>())
-                            ..add(GetLoadBanks(userId)),
+                  create: (context) =>
+                      GetBankBloc(context.read<BankRepository>())
+                        ..add(GetLoadBanks(userId)),
                 ),
                 BlocProvider(
-                  create:
-                      (context) => GetFinancialDataBloc(
+                  create: (context) => GetFinancialDataBloc(
                         expenseRepository: context.read<ExpenseRepository>(),
                         incomeRepository: context.read<IncomeRepository>(),
                         categoryRepository: context.read<CategoryRepository>(),
                       )..add(GetFinancialData(userId)),
                 ),
                 BlocProvider(
-                  create:
-                      (context) => GoalBloc(
-                        goalRepository: context.read<IGoalRepository>(),
-                      )..add(LoadGoals(userId)),
+                  create: (context) =>
+                      GoalBloc(goalRepository: context.read<IGoalRepository>())
+                        ..add(LoadGoals(userId)),
                 ),
-                // ✅ Adiciona aqui o AnaliseLancamentoBloc
                 BlocProvider(
-                  create:
-                      (context) => AnaliseLancamentoBloc(
+                  create: (context) => AnaliseLancamentoBloc(
                         repository:
                             context.read<IAnaliseLancamentoRepository>(),
-                            
                       )..add(LoadLancamentos(userId)),
                 ),
               ],

@@ -1,5 +1,12 @@
 import 'package:expense_repository/expense_repository.dart';
+import 'package:finc/auth/auth_bloc.dart';
+import 'package:finc/auth/auth_state.dart';
+import 'package:finc/screens/whatsapp_flow/bloc/analise_lancamento_bloc.dart';
+import 'package:finc/screens/whatsapp_flow/bloc/analise_lancamento_event.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:finc/screens/add_expense/blocs/create_expense_bloc/create_expense_bloc.dart';
+import 'package:finc/screens/add_income/blocs/create_expense_bloc/create_income_bloc.dart';
 
 class PendenciaCard extends StatelessWidget {
   final AnaliseLancamento lancamento;
@@ -19,9 +26,74 @@ class PendenciaCard extends StatelessWidget {
     if (lancamento.valorTotal == 0) missing.add('Valor');
     if (lancamento.chatId.isEmpty) missing.add('Chat ID');
     if (lancamento.categoria.isEmpty) missing.add('Categoria');
+    if (lancamento.categoryId.isEmpty) missing.add('Categoria ID');
     if (lancamento.tipo.isEmpty) missing.add('Tipo');
     return missing;
   }
+
+void _lancar(BuildContext context) {
+  final authState = context.read<AuthBloc>().state;
+
+  if (authState is! Authenticated) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Usuário não logado')),
+    );
+    return;
+  }
+
+  final userId = authState.user.uid;
+
+  final isReceita = lancamento.tipo.toLowerCase() == 'receita';
+  final amountValue = lancamento.valorTotal;
+
+  final updatedLancamento = lancamento.copyWith(
+    isPending: true, // garante que seja o usuário logado
+  );
+
+  if (isReceita) {
+    final income = Income(
+      id: updatedLancamento.id,
+      categoryId: updatedLancamento.categoryId,
+      amount: amountValue,
+      date: updatedLancamento.data,
+      userId: userId,
+      type: 'income',
+      description: updatedLancamento.detalhes,
+      bankId: null,
+      imageId: null,
+    );
+
+    context.read<CreateIncomeBloc>().add(CreateIncomeSubmitted(income));
+  } else {
+    final expense = Expense(
+      id: updatedLancamento.id,
+      categoryId: updatedLancamento.categoryId,
+      amount: amountValue,
+      date: updatedLancamento.data,
+      userId: userId,
+      type: 'expense',
+      description: updatedLancamento.detalhes,
+      bankId: null,
+    );
+
+    context.read<CreateExpenseBloc>().add(CreateExpenseSubmitted(expense));
+  }
+
+  context.read<AnaliseLancamentoBloc>().add(
+        UpdateLancamento(
+          lancamento: updatedLancamento,
+          userId: userId,
+        ),
+      );
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text('Lançamento "${updatedLancamento.detalhes}" atualizado como pendente!'),
+    ),
+  );
+}
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -116,8 +188,7 @@ class PendenciaCard extends StatelessWidget {
               firstChild: const SizedBox.shrink(),
               secondChild: Container(
                 width: double.infinity,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 color: hasMissing ? Colors.red.shade50 : Colors.green.shade50,
                 child: hasMissing
                     ? Column(
@@ -141,9 +212,26 @@ class PendenciaCard extends StatelessWidget {
                             )
                             .toList(),
                       )
-                    : const Text(
-                        'Sem pendências',
-                        style: TextStyle(color: Colors.green),
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Sem pendências',
+                            style: TextStyle(color: Colors.green),
+                          ),
+                          TextButton(
+                            style: TextButton.styleFrom(
+                              minimumSize: const Size(70, 27),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
+                              backgroundColor: Colors.green,
+                              foregroundColor: Colors.white,
+                              textStyle: const TextStyle(fontSize: 12),
+                            ),
+                            onPressed: () => _lancar(context),
+                            child: const Text('Lançar'),
+                          ),
+                        ],
                       ),
               ),
               crossFadeState: lancamento.expanded

@@ -27,19 +27,36 @@ class _LancamentoEditDialogState extends State<LancamentoEditDialog> {
   final _formKey = GlobalKey<FormState>();
 
   @override
+  @override
   void initState() {
     super.initState();
-    _detalhesController = TextEditingController(text: widget.lancamento.detalhes);
-    _valorController = TextEditingController(text: widget.lancamento.valorTotal.toString());
+    _detalhesController = TextEditingController(
+      text: widget.lancamento.detalhes,
+    );
+    _valorController = TextEditingController(
+      text: widget.lancamento.valorTotal.toString(),
+    );
     _chatIdController = TextEditingController(text: widget.lancamento.chatId);
-    _tipo = widget.lancamento.tipo.toLowerCase() == 'receita' ? 'Receita' : 'Despesa';
+    _tipo =
+        widget.lancamento.tipo.toLowerCase() == 'receita'
+            ? 'Receita'
+            : 'Despesa';
     _data = widget.lancamento.data;
 
-    // Seleciona a categoria pelo ID, se existir
-    if (widget.categorias.isNotEmpty && widget.lancamento.categoryId.isNotEmpty) {
-      _selectedCategory = widget.categorias.firstWhere(
+    // Filtra categorias de acordo com o tipo
+    final filtered =
+        widget.categorias.where((c) {
+          return (_tipo.toLowerCase() == 'receita' &&
+                  c.type.toLowerCase() == 'income') ||
+              (_tipo.toLowerCase() == 'despesa' &&
+                  c.type.toLowerCase() == 'expense');
+        }).toList();
+
+    // Seleciona a categoria pelo ID se existir
+    if (filtered.isNotEmpty && widget.lancamento.categoryId.isNotEmpty) {
+      _selectedCategory = filtered.firstWhere(
         (c) => c.categoryId == widget.lancamento.categoryId.toString(),
-        orElse: () => widget.categorias.first,
+        orElse: () => filtered.first,
       );
     } else {
       _selectedCategory = null;
@@ -117,8 +134,11 @@ class _LancamentoEditDialogState extends State<LancamentoEditDialog> {
                         decoration: const InputDecoration(
                           labelText: 'Detalhes',
                         ),
-                        validator: (v) =>
-                            v == null || v.isEmpty ? 'Informe detalhes' : null,
+                        validator:
+                            (v) =>
+                                v == null || v.isEmpty
+                                    ? 'Informe detalhes'
+                                    : null,
                       ),
                       const SizedBox(height: 12),
 
@@ -129,55 +149,72 @@ class _LancamentoEditDialogState extends State<LancamentoEditDialog> {
                           labelText: 'Valor Total',
                         ),
                         keyboardType: TextInputType.number,
-                        validator: (v) =>
-                            v == null || v.isEmpty ? 'Informe o valor' : null,
+                        validator:
+                            (v) =>
+                                v == null || v.isEmpty
+                                    ? 'Informe o valor'
+                                    : null,
                       ),
                       const SizedBox(height: 12),
 
                       // Categoria Dropdown
                       DropdownButtonFormField<Category>(
                         value: _selectedCategory,
-                        items: widget.categorias.map((c) {
-                          return DropdownMenuItem(
-                            value: c,
-                            child: Row(
-                              children: [
-                                Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    Container(
-                                      width: 30,
-                                      height: 30,
-                                      decoration: BoxDecoration(
-                                        color: Color(c.color),
-                                        shape: BoxShape.circle,
-                                      ),
+                        items:
+                            widget.categorias
+                                .where(
+                                  (c) =>
+                                      (_tipo.toLowerCase() == 'receita' &&
+                                          c.type.toLowerCase() == 'income') ||
+                                      (_tipo.toLowerCase() == 'despesa' &&
+                                          c.type.toLowerCase() == 'expense'),
+                                )
+                                .map((c) {
+                                  return DropdownMenuItem(
+                                    value: c,
+                                    child: Row(
+                                      children: [
+                                        Stack(
+                                          alignment: Alignment.center,
+                                          children: [
+                                            Container(
+                                              width: 30,
+                                              height: 30,
+                                              decoration: BoxDecoration(
+                                                color: Color(c.color),
+                                                shape: BoxShape.circle,
+                                              ),
+                                            ),
+                                            if (c.icon.isNotEmpty)
+                                              Image.asset(
+                                                'assets/${c.icon}.png',
+                                                width: 16,
+                                                height: 16,
+                                                color: Colors.white,
+                                              )
+                                            else
+                                              const Icon(
+                                                Icons.category,
+                                                color: Colors.white,
+                                                size: 16,
+                                              ),
+                                          ],
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(c.name),
+                                      ],
                                     ),
-                                    if (c.icon.isNotEmpty)
-                                      Image.asset(
-                                        'assets/${c.icon}.png',
-                                        width: 16,
-                                        height: 16,
-                                        color: Colors.white,
-                                      )
-                                    else
-                                      const Icon(
-                                        Icons.category,
-                                        color: Colors.white,
-                                        size: 16,
-                                      ),
-                                  ],
-                                ),
-                                const SizedBox(width: 8),
-                                Text(c.name),
-                              ],
-                            ),
-                          );
-                        }).toList(),
+                                  );
+                                })
+                                .toList(),
                         onChanged: (v) => setState(() => _selectedCategory = v),
-                        decoration: const InputDecoration(labelText: 'Categoria'),
-                        validator: (v) => v == null ? 'Selecione uma categoria' : null,
+                        decoration: const InputDecoration(
+                          labelText: 'Categoria',
+                        ),
+                        validator:
+                            (v) => v == null ? 'Selecione uma categoria' : null,
                       ),
+
                       const SizedBox(height: 12),
 
                       // Chat ID (não editável)
@@ -192,20 +229,31 @@ class _LancamentoEditDialogState extends State<LancamentoEditDialog> {
                       DropdownButtonFormField<String>(
                         value: _tipo,
                         items: const [
-                          DropdownMenuItem(
-                            value: 'Despesa',
-                            child: Text('Despesa'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Receita',
-                            child: Text('Receita'),
-                          ),
+                          DropdownMenuItem(value: 'Despesa', child: Text('Despesa')),
+                          DropdownMenuItem(value: 'Receita', child: Text('Receita')),
                         ],
                         onChanged: (v) {
-                          if (v != null) setState(() => _tipo = v);
+                          if (v != null) {
+                            setState(() {
+                              _tipo = v;
+
+                              // Resetar categoria selecionada se não estiver mais na lista filtrada
+                              final filtered = widget.categorias.where((c) {
+                                return (_tipo.toLowerCase() == 'receita' && c.type.toLowerCase() == 'income') ||
+                                      (_tipo.toLowerCase() == 'despesa' && c.type.toLowerCase() == 'expense');
+                              }).toList();
+
+                              // Se a categoria atual não está na lista filtrada, seleciona a primeira ou null
+                              if (_selectedCategory == null ||
+                                  !filtered.contains(_selectedCategory)) {
+                                _selectedCategory = filtered.isNotEmpty ? filtered.first : null;
+                              }
+                            });
+                          }
                         },
                         decoration: const InputDecoration(labelText: 'Tipo'),
                       ),
+
                       const SizedBox(height: 12),
 
                       // Data

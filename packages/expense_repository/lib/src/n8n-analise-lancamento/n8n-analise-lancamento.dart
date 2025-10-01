@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AnaliseLancamento {
-  final String id; // ID do documento no Firestore
+  final String id;
   final String userId;
   final String categoria;
   final String chatId;
@@ -12,7 +12,8 @@ class AnaliseLancamento {
   final String tipo; // "despesa" ou "receita"
   final double valorTotal;
   bool expanded;
-  bool notificar; // Novo campo para notificações
+  bool notificado; // renomeado
+  bool isPending;  // campo real de pendência
 
   AnaliseLancamento({
     required this.id,
@@ -26,7 +27,8 @@ class AnaliseLancamento {
     required this.tipo,
     required this.valorTotal,
     this.expanded = false,
-    this.notificar = false, // default false
+    this.notificado = false,
+    this.isPending = true, // default true
   });
 
   /// Converte para Map para salvar no Firestore
@@ -41,7 +43,8 @@ class AnaliseLancamento {
       'estabelecimento': estabelecimento,
       'tipo': tipo,
       'valorTotal': valorTotal,
-      'notificar': notificar, // adiciona no Firestore
+      'notificado': notificado,
+      'isPending': isPending,
     };
   }
 
@@ -62,11 +65,11 @@ class AnaliseLancamento {
       valorTotal: map['valorTotal'] != null
           ? (map['valorTotal'] as num).toDouble()
           : 0.0,
-      notificar: map['notificar'] ?? false, // pega do Firestore
+      notificado: map['notificado'] ?? false,
+      isPending: map['isPending'] ?? true,
     );
   }
 
-  /// copyWith atualizado
   AnaliseLancamento copyWith({
     String? categoria,
     String? categoryId,
@@ -77,7 +80,8 @@ class AnaliseLancamento {
     String? tipo,
     double? valorTotal,
     bool? expanded,
-    bool? notificar, // Novo campo para copyWith
+    bool? notificado,
+    bool? isPending,
   }) {
     return AnaliseLancamento(
       id: id,
@@ -91,7 +95,8 @@ class AnaliseLancamento {
       tipo: tipo ?? this.tipo,
       valorTotal: valorTotal ?? this.valorTotal,
       expanded: expanded ?? this.expanded,
-      notificar: notificar ?? this.notificar,
+      notificado: notificado ?? this.notificado,
+      isPending: isPending ?? this.isPending,
     );
   }
 }
