@@ -18,4 +18,7 @@ abstract class IAnaliseLancamentoRepository {
 
   /// Stream em tempo real de lançamentos do usuário
   Stream<List<AnaliseLancamento>> streamLancamentos(String userId);
+
+  /// Marca um lançamento como notificado
+  Future<void> markAsNotified(String lancamentoId);
 }

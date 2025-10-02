@@ -101,4 +101,17 @@ class FirebaseAnaliseLancamentoRepository implements IAnaliseLancamentoRepositor
       throw Exception('Erro ao verificar pendências');
     }
   }
+    @override
+  Future<void> markAsNotified(String lancamentoId) async {
+    try {
+      await lancamentosCollection.doc(lancamentoId).update({'notificado': true});
+      log('✅ Lançamento marcado como notificado (ID: $lancamentoId)');
+    } catch (e, st) {
+      log('❌ Erro ao marcar lançamento como notificado', error: e, stackTrace: st);
+      throw Exception('Erro ao marcar lançamento como notificado');
+    }
+  }
 }
+
+
+  

@@ -12,6 +12,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:finc/screens/add_expense/blocs/create_expense_bloc/create_expense_bloc.dart';
 import 'package:finc/screens/add_income/blocs/create_expense_bloc/create_income_bloc.dart';
 
+
 class PendenciasScreen extends StatefulWidget {
   final String userId;
 
@@ -93,7 +94,6 @@ class _PendenciasScreenState extends State<PendenciasScreen> {
                                   Offset.zero & overlay.size,
                                 ),
                                 items: const [
-                                  PopupMenuItem(value: 'lancar', child: Text('Lançar')),
                                   PopupMenuItem(value: 'editar', child: Text('Editar')),
                                   PopupMenuItem(value: 'excluir', child: Text('Excluir')),
                                 ],

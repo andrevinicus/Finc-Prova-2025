@@ -45,6 +45,7 @@ dependencies:
   smooth_page_indicator: ^1.1.0
   pie_chart: 5.4.0
   share_plus: ^10.0.0
+  flutter_local_notifications: ^17.1.2
 
 
     

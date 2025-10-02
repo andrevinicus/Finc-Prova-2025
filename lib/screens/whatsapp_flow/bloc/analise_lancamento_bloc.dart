@@ -1,3 +1,4 @@
+import 'package:finc/Notification/service_notifica.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:expense_repository/expense_repository.dart';
 import 'analise_lancamento_event.dart';
@@ -7,49 +8,69 @@ class AnaliseLancamentoBloc
     extends Bloc<AnaliseLancamentoEvent, AnaliseLancamentoState> {
   final IAnaliseLancamentoRepository repository;
 
-  AnaliseLancamentoBloc({required this.repository})
-      : super(AnaliseLancamentoInitial()) {
+  AnaliseLancamentoBloc(lancamentoRepository, {required this.repository})
+    : super(AnaliseLancamentoInitial()) {
     on<LoadLancamentos>(_onLoadLancamentos);
     on<AddLancamento>(_onAddLancamento);
     on<UpdateLancamento>(_onUpdateLancamento);
     on<DeleteLancamento>(_onDeleteLancamento);
     on<CheckPendencias>(_onCheckPendencias);
+    on<MarkLancamentoNotificado>(_onMarkNotificado);
   }
 
   // -------------------------
   // Carrega e escuta lançamentos usando emit.forEach
   // -------------------------
-  Future<void> _onLoadLancamentos(
-      LoadLancamentos event, Emitter<AnaliseLancamentoState> emit) async {
-    emit(AnaliseLancamentoLoading());
-    try {
-      await emit.forEach<List<AnaliseLancamento>>(
-        repository.streamLancamentos(event.userId),
-        onData: (lancamentos) {
-          print('[Bloc] Recebido ${lancamentos.length} lançamentos');
-          return AnaliseLancamentoLoaded(lancamentos);
-        },
-        onError: (error, stackTrace) {
-          print('[Bloc] Erro na stream: $error');
-          return AnaliseLancamentoError(error.toString());
-        },
-      );
-    } catch (e, s) {
-      print('[Bloc] Erro ao iniciar stream: $e');
-      print(s);
-      emit(AnaliseLancamentoError(e.toString()));
-    }
+Future<void> _onLoadLancamentos(
+  LoadLancamentos event,
+  Emitter<AnaliseLancamentoState> emit,
+) async {
+  emit(AnaliseLancamentoLoading());
+
+  try {
+    await emit.forEach<List<AnaliseLancamento>>(
+      repository.streamLancamentos(event.userId),
+      onData: (lancamentos) {
+        print('[Bloc] Recebido ${lancamentos.length} lançamentos');
+
+        // Filtra lançamentos novos que ainda não foram notificados
+        final novos = lancamentos.where((l) => !l.notificado).toList();
+
+        for (var lanc in novos) {
+          LocalNotificationService.showNotification(
+            id: lanc.id.hashCode, // id único por lançamento
+            title: "Novo lançamento",
+            body: "${lanc.detalhes} - R\$ ${lanc.valorTotal.toStringAsFixed(2)}",
+          );
+
+          print('[Bloc] Notificação lançada para ID=${lanc.id}');
+        }
+
+        // Retorna estado atualizado
+        return AnaliseLancamentoLoaded(lancamentos);
+      },
+      onError: (error, stackTrace) {
+        print('[Bloc] Erro na stream: $error');
+        return AnaliseLancamentoError(error.toString());
+      },
+    );
+  } catch (e, s) {
+    print('[Bloc] Erro ao iniciar stream: $e');
+    print(s);
+    emit(AnaliseLancamentoError(e.toString()));
   }
+}
 
   // -------------------------
   // Adiciona um lançamento
   // -------------------------
   Future<void> _onAddLancamento(
-      AddLancamento event, Emitter<AnaliseLancamentoState> emit) async {
+    AddLancamento event,
+    Emitter<AnaliseLancamentoState> emit,
+  ) async {
     try {
       await repository.createLancamento(event.lancamento);
       print('[Bloc] Lancamento adicionado: ${event.lancamento.id}');
-      // A stream já atualiza automaticamente, não precisa reload
     } catch (e, s) {
       print('[Bloc] Erro ao adicionar lançamento: $e');
       print(s);
@@ -61,7 +82,9 @@ class AnaliseLancamentoBloc
   // Atualiza um lançamento
   // -------------------------
   Future<void> _onUpdateLancamento(
-      UpdateLancamento event, Emitter<AnaliseLancamentoState> emit) async {
+    UpdateLancamento event,
+    Emitter<AnaliseLancamentoState> emit,
+  ) async {
     try {
       await repository.updateLancamento(event.lancamento);
       print('[Bloc] Lancamento atualizado: ${event.lancamento.id}');
@@ -76,7 +99,9 @@ class AnaliseLancamentoBloc
   // Deleta um lançamento
   // -------------------------
   Future<void> _onDeleteLancamento(
-      DeleteLancamento event, Emitter<AnaliseLancamentoState> emit) async {
+    DeleteLancamento event,
+    Emitter<AnaliseLancamentoState> emit,
+  ) async {
     try {
       await repository.deleteLancamento(event.lancamentoId);
       print('[Bloc] Lancamento deletado: ${event.lancamentoId}');
@@ -91,7 +116,9 @@ class AnaliseLancamentoBloc
   // Checa se há pendências
   // -------------------------
   Future<void> _onCheckPendencias(
-      CheckPendencias event, Emitter<AnaliseLancamentoState> emit) async {
+    CheckPendencias event,
+    Emitter<AnaliseLancamentoState> emit,
+  ) async {
     try {
       final hasPendencias = await repository.hasPendencias(event.userId);
       print('[Bloc] Pendências encontradas: $hasPendencias');
@@ -100,6 +127,55 @@ class AnaliseLancamentoBloc
       print('[Bloc] Erro ao checar pendências: $e');
       print(s);
       emit(AnaliseLancamentoError(e.toString()));
+    }
+  }
+
+  // -------------------------
+  // Marca um lançamento como notificado
+  // -------------------------
+  Future<void> _onMarkNotificado(
+    MarkLancamentoNotificado event,
+    Emitter<AnaliseLancamentoState> emit,
+  ) async {
+    print(
+      '[Bloc] Evento MarkLancamentoNotificado recebido: ${event.lancamentoId}',
+    );
+
+    if (state is AnaliseLancamentoLoaded) {
+      final loadedState = state as AnaliseLancamentoLoaded;
+
+      // Atualiza localmente
+      final updatedList =
+          loadedState.lancamentos.map((lanc) {
+            if (lanc.id == event.lancamentoId) {
+              print(
+                '[Bloc] Atualizando lançamento localmente para notificado: ${lanc.id}',
+              );
+              return lanc.copyWith(notificado: true);
+            }
+            return lanc;
+          }).toList();
+
+      emit(AnaliseLancamentoLoaded(updatedList));
+      print('[Bloc] Estado emitido com notificado=true localmente');
+
+      // Atualiza no Firestore
+      try {
+        await repository.markAsNotified(event.lancamentoId);
+        print(
+          '[Bloc] Lançamento marcado como notificado no Firestore: ${event.lancamentoId}',
+        );
+      } catch (e, s) {
+        print(
+          '[Bloc] Erro ao marcar lançamento como notificado no Firestore: $e',
+        );
+        print(s);
+        emit(AnaliseLancamentoError(e.toString()));
+      }
+    } else {
+      print(
+        '[Bloc] Estado atual não é AnaliseLancamentoLoaded, não é possível marcar como notificado',
+      );
     }
   }
 }

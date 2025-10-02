@@ -13,10 +13,13 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+
+        jvmTarget = "11"
+        freeCompilerArgs += listOf("-Xlint:-options")
     }
 
     defaultConfig {
@@ -37,6 +40,12 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+}
+dependencies {
+    // Habilita desugaring do core library
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
+    
+    // Suas outras dependências Flutter
 }
 
 flutter {

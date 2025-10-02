@@ -4,16 +4,16 @@ class AnaliseLancamento {
   final String id;
   final String userId;
   final String categoria;
+  final String categoryId;
   final String chatId;
   final DateTime data;
   final String detalhes;
-  final String categoryId;
   final String estabelecimento;
   final String tipo; // "despesa" ou "receita"
   final double valorTotal;
   bool expanded;
-  bool notificado; // renomeado
-  bool isPending;  // campo real de pendência
+  bool notificado;
+  bool isPending;
 
   AnaliseLancamento({
     required this.id,
@@ -28,8 +28,51 @@ class AnaliseLancamento {
     required this.valorTotal,
     this.expanded = false,
     this.notificado = false,
-    this.isPending = true, // default true
+    this.isPending = true,
   });
+
+  /// Conversões seguras para diferentes tipos
+  static String safeString(dynamic value) {
+    if (value == null) return '';
+    return value.toString();
+  }
+
+  static double safeDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
+
+  static bool safeBool(dynamic value, {bool defaultValue = false}) {
+    if (value == null) return defaultValue;
+    if (value is bool) return value;
+    if (value is num) return value != 0;
+    if (value is String) {
+      final lower = value.toLowerCase();
+      return lower == 'true' || lower == '1';
+    }
+    return defaultValue;
+  }
+
+  static DateTime safeDateTime(dynamic value) {
+    if (value == null) return DateTime.now();
+
+    if (value is Timestamp) return value.toDate();
+    if (value is DateTime) return value;
+    if (value is int) return DateTime.fromMillisecondsSinceEpoch(value);
+    if (value is double) return DateTime.fromMillisecondsSinceEpoch(value.toInt());
+
+    if (value is String) {
+      final parsed = DateTime.tryParse(value);
+      if (parsed != null) return parsed;
+
+      final millis = int.tryParse(value);
+      if (millis != null) return DateTime.fromMillisecondsSinceEpoch(millis);
+    }
+
+    return DateTime.now();
+  }
 
   /// Converte para Map para salvar no Firestore
   Map<String, dynamic> toMap() {
@@ -48,25 +91,21 @@ class AnaliseLancamento {
     };
   }
 
-  /// Cria a instância a partir de Map do Firestore
+  /// Cria instância a partir de Map do Firestore
   factory AnaliseLancamento.fromMap(Map<String, dynamic> map, String documentId) {
     return AnaliseLancamento(
       id: documentId,
-      userId: map['userId'] ?? '',
-      categoria: map['categoria'] ?? '',
-      categoryId: map['categoryId']?.toString() ?? '',
-      chatId: map['chatid'] ?? '',
-      data: map['data'] != null
-          ? (map['data'] as Timestamp).toDate()
-          : DateTime.now(),
-      detalhes: map['detalhes'] ?? '',
-      estabelecimento: map['estabelecimento'] ?? '',
-      tipo: map['tipo'] ?? '',
-      valorTotal: map['valorTotal'] != null
-          ? (map['valorTotal'] as num).toDouble()
-          : 0.0,
-      notificado: map['notificado'] ?? false,
-      isPending: map['isPending'] ?? true,
+      userId: safeString(map['userId']),
+      categoria: safeString(map['categoria']),
+      categoryId: safeString(map['categoryId']),
+      chatId: safeString(map['chatid']),
+      data: safeDateTime(map['data']),
+      detalhes: safeString(map['detalhes']),
+      estabelecimento: safeString(map['estabelecimento']),
+      tipo: safeString(map['tipo']),
+      valorTotal: safeDouble(map['valorTotal']),
+      notificado: safeBool(map['notificado']),
+      isPending: safeBool(map['isPending'], defaultValue: true),
     );
   }
 

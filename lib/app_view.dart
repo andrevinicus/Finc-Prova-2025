@@ -95,39 +95,47 @@ class MyAppView extends StatelessWidget {
             return MultiBlocProvider(
               providers: [
                 BlocProvider(
-                  create: (context) =>
-                      GetExpensesBloc(context.read<ExpenseRepository>())
-                        ..add(GetExpenses(userId)),
+                  create:
+                      (context) =>
+                          GetExpensesBloc(context.read<ExpenseRepository>())
+                            ..add(GetExpenses(userId)),
                 ),
                 BlocProvider(
-                  create: (context) => GetCategoriesBloc(
+                  create:
+                      (context) => GetCategoriesBloc(
                         categoryRepository: context.read<CategoryRepository>(),
                       )..add(GetCategories(userId)),
                 ),
                 BlocProvider(
-                  create: (context) => CreateCategoryBloc(
+                  create:
+                      (context) => CreateCategoryBloc(
                         categoryRepository: context.read<CategoryRepository>(),
                       ),
                 ),
                 BlocProvider(
-                  create: (context) =>
-                      GetBankBloc(context.read<BankRepository>())
-                        ..add(GetLoadBanks(userId)),
+                  create:
+                      (context) =>
+                          GetBankBloc(context.read<BankRepository>())
+                            ..add(GetLoadBanks(userId)),
                 ),
                 BlocProvider(
-                  create: (context) => GetFinancialDataBloc(
+                  create:
+                      (context) => GetFinancialDataBloc(
                         expenseRepository: context.read<ExpenseRepository>(),
                         incomeRepository: context.read<IncomeRepository>(),
                         categoryRepository: context.read<CategoryRepository>(),
                       )..add(GetFinancialData(userId)),
                 ),
                 BlocProvider(
-                  create: (context) =>
-                      GoalBloc(goalRepository: context.read<IGoalRepository>())
-                        ..add(LoadGoals(userId)),
+                  create:
+                      (context) => GoalBloc(
+                        goalRepository: context.read<IGoalRepository>(),
+                      )..add(LoadGoals(userId)),
                 ),
                 BlocProvider(
-                  create: (context) => AnaliseLancamentoBloc(
+                  create:
+                      (context) => AnaliseLancamentoBloc(
+                        null, // 👈 argumento posicional obrigatório
                         repository:
                             context.read<IAnaliseLancamentoRepository>(),
                       )..add(LoadLancamentos(userId)),

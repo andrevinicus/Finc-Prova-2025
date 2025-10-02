@@ -1,6 +1,9 @@
+import 'package:expense_repository/expense_repository.dart';
 import 'package:finc/screens/goal_scream/goal_screen.dart';
 import 'package:finc/screens/home/views/home_screen/floating_action_buttons_menu.dart';
 import 'package:finc/screens/home/views/home_screen/home_bottom_navbar.dart';
+import 'package:finc/screens/whatsapp_flow/bloc/analise_lancamento_bloc.dart';
+import 'package:finc/screens/whatsapp_flow/bloc/analise_lancamento_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:finc/screens/home/blocs/get_block_expense_income.dart';
@@ -61,16 +64,22 @@ class _HomeScreenState extends State<HomeScreen>
     return BlocBuilder<GetFinancialDataBloc, GetFinancialDataState>(
       builder: (context, state) {
         if (state is GetFinancialDataSuccess) {
-          final pages = [
-            MainScreen(
-              expenses: state.expenses,
-              income: state.income,
-              categoryMap: state.categoryMap,
-            ),
-            StatScreen(userId: userId),
-            GoalScreen(userId: userId),
+final pages = [
+  BlocProvider(
+    create: (context) => AnaliseLancamentoBloc(
+      null, // argumento posicional obrigatório
+      repository: FirebaseAnaliseLancamentoRepository(), // nomeado obrigatório
+    )..add(LoadLancamentos(userId)),
+    child: MainScreen(
+      expenses: state.expenses,
+      income: state.income,
+      categoryMap: state.categoryMap,
+    ),
+  ),
+  StatScreen(userId: userId),
+  GoalScreen(userId: userId),
+];
 
-          ];
 
           return Scaffold(
             resizeToAvoidBottomInset: false,
@@ -86,21 +95,25 @@ class _HomeScreenState extends State<HomeScreen>
                     },
                     child: IndexedStack(
                       index: index,
-                      children: pages.map((page) {
-                        return LayoutBuilder(
-                          builder: (context, constraints) {
-                            final availableHeight = constraints.maxHeight - kBottomNavigationBarHeight;
+                      children:
+                          pages.map((page) {
+                            return LayoutBuilder(
+                              builder: (context, constraints) {
+                                final availableHeight =
+                                    constraints.maxHeight -
+                                    kBottomNavigationBarHeight;
 
-                            return SingleChildScrollView(
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              child: SizedBox(
-                                height: availableHeight,
-                                child: page,
-                              ),
+                                return SingleChildScrollView(
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
+                                  child: SizedBox(
+                                    height: availableHeight,
+                                    child: page,
+                                  ),
+                                );
+                              },
                             );
-                          },
-                        );
-                      }).toList(),
+                          }).toList(),
                     ),
                   ),
 
@@ -176,8 +189,9 @@ class _HomeScreenState extends State<HomeScreen>
                 turns: Tween(begin: 0.0, end: 0.5).animate(_controller),
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
-                  transitionBuilder: (child, animation) =>
-                      ScaleTransition(scale: animation, child: child),
+                  transitionBuilder:
+                      (child, animation) =>
+                          ScaleTransition(scale: animation, child: child),
                   child: Icon(
                     showActionButtons ? Icons.close : Icons.add,
                     key: ValueKey<bool>(showActionButtons),

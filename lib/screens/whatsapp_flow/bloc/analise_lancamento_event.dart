@@ -55,3 +55,11 @@ class CheckPendencias extends AnaliseLancamentoEvent {
   @override
   List<Object?> get props => [userId];
 }
+class MarkLancamentoNotificado extends AnaliseLancamentoEvent {
+  final String lancamentoId;
+
+  const MarkLancamentoNotificado({required this.lancamentoId});
+
+  @override
+  List<Object?> get props => [lancamentoId];
+}
