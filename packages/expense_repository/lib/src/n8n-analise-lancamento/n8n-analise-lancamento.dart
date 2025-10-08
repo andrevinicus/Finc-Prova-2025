@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AnaliseLancamento {
   final String id;
-  final String userId;
   final String categoria;
   final String categoryId;
   final String chatId;
@@ -17,7 +16,6 @@ class AnaliseLancamento {
 
   AnaliseLancamento({
     required this.id,
-    required this.userId,
     required this.categoria,
     required this.categoryId,
     required this.chatId,
@@ -77,7 +75,6 @@ class AnaliseLancamento {
   /// Converte para Map para salvar no Firestore
   Map<String, dynamic> toMap() {
     return {
-      'userId': userId,
       'categoria': categoria,
       'categoryId': categoryId,
       'chatid': chatId,
@@ -95,7 +92,6 @@ class AnaliseLancamento {
   factory AnaliseLancamento.fromMap(Map<String, dynamic> map, String documentId) {
     return AnaliseLancamento(
       id: documentId,
-      userId: safeString(map['userId']),
       categoria: safeString(map['categoria']),
       categoryId: safeString(map['categoryId']),
       chatId: safeString(map['chatid']),
@@ -124,7 +120,6 @@ class AnaliseLancamento {
   }) {
     return AnaliseLancamento(
       id: id,
-      userId: userId,
       categoria: categoria ?? this.categoria,
       categoryId: categoryId ?? this.categoryId,
       chatId: chatId ?? this.chatId,

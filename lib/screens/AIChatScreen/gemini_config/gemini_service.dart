@@ -1,12 +1,11 @@
 import 'dart:convert';
 import 'dart:developer' as developer;
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class GeminiService {
-  final String apiKey =
-      "AIzaSyBmIuBJrRHuOVCeF6cAioynweUT6gpa1dI"; // substitua pela sua
-  final String baseUrl =
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+  final String apiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
+  final String baseUrl = dotenv.env['GEMINI_BASE_URL'] ?? '';
 
   /// Envia a mensagem do usuário para o Gemini, limitando a IA a assuntos financeiros
   Future<String> sendMessage(String prompt) async {
