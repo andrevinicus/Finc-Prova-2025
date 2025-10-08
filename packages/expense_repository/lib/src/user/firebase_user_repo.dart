@@ -59,4 +59,7 @@ class FirebaseUserRepo {
       await _firestore.collection('users').doc(firebaseUser.uid).set(userModel.toMap());
     }
   }
+    Future<void> updateUser(UserModel user) async {
+    await _firestore.collection('users').doc(user.uid).update(user.toMap());
+  }
 }

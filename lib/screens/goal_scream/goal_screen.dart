@@ -140,106 +140,108 @@ void _deleteGoal(Goal goal) {
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        title: const Text('Metas Financeiras'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            tooltip: 'Adicionar Meta',
-            onPressed: () => _showAddGoalModal(),
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.only(bottom: bottomPadding),
-          child: BlocBuilder<GoalBloc, GoalState>(
-            builder: (context, state) {
-              if (state is GoalLoading) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (state is GoalLoaded) {
-                final goals = state.goals;
-
-                if (goals.isEmpty) {
-                  return const Center(
-                    child: Text(
-                      'Clique no botão + para adicionar sua primeira meta!',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16, color: Colors.black54),
-                    ),
-                  );
-                }
-
-                if (_itemKeys.length != goals.length) {
-                  _itemKeys.clear();
-                  _itemKeys.addAll(List.generate(goals.length, (_) => GlobalKey()));
-                }
-
-                return Column(
-                  children: [
-                    SizedBox(
-                      height: 215,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                        itemCount: goals.length,
-                        itemBuilder: (context, index) {
-                          final goal = goals[index];
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 16.0),
-                            child: GestureDetector(
+    return SizedBox(
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        backgroundColor: Colors.grey[100],
+        appBar: AppBar(
+          title: const Text('Metas Financeiras'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.add),
+              tooltip: 'Adicionar Meta',
+              onPressed: () => _showAddGoalModal(),
+            ),
+          ],
+        ),
+        body: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.only(bottom: bottomPadding),
+            child: BlocBuilder<GoalBloc, GoalState>(
+              builder: (context, state) {
+                if (state is GoalLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (state is GoalLoaded) {
+                  final goals = state.goals;
+      
+                  if (goals.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        'Clique no botão + para adicionar sua primeira meta!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 16, color: Colors.black54),
+                      ),
+                    );
+                  }
+      
+                  if (_itemKeys.length != goals.length) {
+                    _itemKeys.clear();
+                    _itemKeys.addAll(List.generate(goals.length, (_) => GlobalKey()));
+                  }
+      
+                  return Column(
+                    children: [
+                      SizedBox(
+                        height: 215,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                          itemCount: goals.length,
+                          itemBuilder: (context, index) {
+                            final goal = goals[index];
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 16.0),
+                              child: GestureDetector(
+                                onTap: () => _toggleExpand(index),
+                                onLongPressStart: (details) {
+                                  _showGoalOptions(context, details.globalPosition, goal);
+                                },
+                                child: GoalCard(goal: goal),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      Expanded(
+                        child: ListView.separated(
+                          controller: _scrollController,
+                          itemCount: goals.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 12),
+                          itemBuilder: (context, index) {
+                            final goal = goals[index];
+                            return GestureDetector(
                               onTap: () => _toggleExpand(index),
                               onLongPressStart: (details) {
                                 _showGoalOptions(context, details.globalPosition, goal);
                               },
-                              child: GoalCard(goal: goal),
-                            ),
-                          );
-                        },
+                              child: GoalListItem(
+                                key: _itemKeys[index],
+                                goal: goal,
+                                isExpanded: _expandedIndex == index,
+                                onTap: () => _toggleExpand(index),
+                              ),
+                            );
+                          },
+                        ),
                       ),
-                    ),
-                    Expanded(
-                      child: ListView.separated(
-                        controller: _scrollController,
-                        itemCount: goals.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 12),
-                        itemBuilder: (context, index) {
-                          final goal = goals[index];
-                          return GestureDetector(
-                            onTap: () => _toggleExpand(index),
-                            onLongPressStart: (details) {
-                              _showGoalOptions(context, details.globalPosition, goal);
-                            },
-                            child: GoalListItem(
-                              key: _itemKeys[index],
-                              goal: goal,
-                              isExpanded: _expandedIndex == index,
-                              onTap: () => _toggleExpand(index),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                );
-              } else if (state is GoalError) {
-                return Center(child: Text('Erro: ${state.message}'));
-              }
-              return const SizedBox.shrink();
-            },
+                    ],
+                  );
+                } else if (state is GoalError) {
+                  return Center(child: Text('Erro: ${state.message}'));
+                }
+                return const SizedBox.shrink();
+              },
+            ),
           ),
         ),
-      ),
-      floatingActionButton: BlocBuilder<GoalBloc, GoalState>(
-        builder: (context, state) {
-          if (state is GoalLoaded && state.goals.isEmpty) {
-            return AnimatedArrow();
-          }
-          return const SizedBox.shrink();
-        },
+        floatingActionButton: BlocBuilder<GoalBloc, GoalState>(
+          builder: (context, state) {
+            if (state is GoalLoaded && state.goals.isEmpty) {
+              return AnimatedArrow();
+            }
+            return const SizedBox.shrink();
+          },
+        ),
       ),
     );
   }

@@ -17,11 +17,11 @@ class UserModel extends UserEntity {
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
-      uid: map['uid'],
-      name: map['name'],
-      email: map['email'],
+      uid: map['uid'] ?? '',
+      name: map['name'] ?? '',
+      email: map['email'] ?? '',
       photoUrl: map['photoUrl'],
-      telefone: map['telefone'],
+      telefone: map['telefone'] ?? '',
     );
   }
 
@@ -46,4 +46,26 @@ class UserModel extends UserEntity {
   }
 
   UserEntity toEntity() => this;
+
+  /// ✅ Método útil para atualizações parciais no Bloc
+  UserModel copyWith({
+    String? uid,
+    String? name,
+    String? email,
+    String? photoUrl,
+    String? telefone,
+  }) {
+    return UserModel(
+      uid: uid ?? this.uid,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      photoUrl: photoUrl ?? this.photoUrl,
+      telefone: telefone ?? this.telefone,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'UserModel(uid: $uid, name: $name, email: $email, telefone: $telefone, photoUrl: $photoUrl)';
+  }
 }

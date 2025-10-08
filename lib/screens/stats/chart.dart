@@ -21,7 +21,13 @@ class MyChart extends StatefulWidget {
 class _MyChartState extends State<MyChart> {
   final _pageController = PageController();
   int _currentPageIndex = 0;
-  final List<String> _chartTitles = ["Valores por Dia", "Tendência da Semana"];
+final List<String> _chartTitles = [
+  "Valores por Dia",
+  "Tendência da Semana",
+  "Distribuição Total",
+  "Acumulado Diário",
+  "Tendência Acumulada"
+];
 
   late List<double> expensesPerDay;
   late List<double> incomesPerDay;
@@ -215,6 +221,88 @@ class _MyChartState extends State<MyChart> {
       ),
     );
   }
+  Widget _buildPieChartPage() {
+  final double totalExpenses = expensesPerDay.fold(0, (a, b) => a + b);
+  final double totalIncomes = incomesPerDay.fold(0, (a, b) => a + b);
+
+  return Padding(
+    padding: const EdgeInsets.all(16.0),
+    child: PieChart(
+      PieChartData(
+        sectionsSpace: 2,
+        centerSpaceRadius: 40,
+        sections: [
+          PieChartSectionData(
+            color: Colors.redAccent,
+            value: totalExpenses,
+            title: 'Despesa\n${totalExpenses.toStringAsFixed(2)}',
+            radius: 60,
+            titleStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+          ),
+          PieChartSectionData(
+            color: Colors.greenAccent,
+            value: totalIncomes,
+            title: 'Receita\n${totalIncomes.toStringAsFixed(2)}',
+            radius: 60,
+            titleStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget _buildAreaChartPage() {
+  final List<FlSpot> expenseSpots = List.generate(7, (i) => FlSpot(i.toDouble(), expensesPerDay[i] / 1000));
+  final List<FlSpot> incomeSpots = List.generate(7, (i) => FlSpot(i.toDouble(), incomesPerDay[i] / 1000));
+
+  return Padding(
+    padding: const EdgeInsets.only(right: 18.0),
+    child: LineChart(
+      LineChartData(
+        maxY: maxY,
+        minY: 0,
+        gridData: FlGridData(show: true, horizontalInterval: yInterval, drawVerticalLine: false),
+        borderData: FlBorderData(show: false),
+        titlesData: FlTitlesData(
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 30,
+              getTitlesWidget: (value, meta) => SideTitleWidget(
+                axisSide: meta.axisSide,
+                child: Text(dayLabels[value.toInt()]),
+              ),
+            ),
+          ),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 40,
+              interval: yInterval,
+              getTitlesWidget: (value, meta) => Text('${value.toInt()}K'),
+            ),
+          ),
+        ),
+        lineBarsData: [
+          LineChartBarData(
+            spots: expenseSpots,
+            isCurved: true,
+            color: Colors.redAccent.withOpacity(0.6),
+            belowBarData: BarAreaData(show: true, color: Colors.redAccent.withOpacity(0.3)),
+          ),
+          LineChartBarData(
+            spots: incomeSpots,
+            isCurved: true,
+            color: Colors.greenAccent.withOpacity(0.6),
+            belowBarData: BarAreaData(show: true, color: Colors.greenAccent.withOpacity(0.3)),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 
   Widget _buildLineChartPage() {
     final List<FlSpot> expenseSpots = List.generate(
@@ -378,13 +466,15 @@ class _MyChartState extends State<MyChart> {
                       children: [
                         _buildBarChartPage(),
                         _buildLineChartPage(),
+                        _buildPieChartPage(),
+                        _buildAreaChartPage(),
                       ],
                     ),
                   ),
                   const SizedBox(height: 5),
                   SmoothPageIndicator(
                     controller: _pageController,
-                    count: 2,
+                    count: 5,
                     effect: ExpandingDotsEffect(
                       activeDotColor: Theme.of(context).colorScheme.primary,
                       dotColor: Colors.grey.shade300,
