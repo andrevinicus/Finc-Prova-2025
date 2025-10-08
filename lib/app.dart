@@ -5,6 +5,7 @@ import 'package:expense_repository/expense_repository.dart';
 import 'package:finc/auth/auth_bloc.dart';
 import 'package:finc/auth/auth_event.dart';
 import 'package:finc/app_view.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -27,6 +28,9 @@ class MyApp extends StatelessWidget {
         RepositoryProvider<IGoalRepository>.value(value: goalRepository),
         RepositoryProvider<IAnaliseLancamentoRepository>.value(
           value: analiseLancamentoRepository,
+        ),
+        RepositoryProvider<FlutterLocalNotificationsPlugin>(
+          create: (_) => FlutterLocalNotificationsPlugin(),
         ),
       ],
       child: BlocProvider(

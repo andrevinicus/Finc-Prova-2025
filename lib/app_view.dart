@@ -1,6 +1,9 @@
+import 'package:finc/Notification/bloc_notifica/notification_bloc.dart' show NotificationBloc;
+import 'package:finc/Notification/bloc_notifica/notification_event.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 // Repositórios
@@ -48,6 +51,9 @@ void main() {
         RepositoryProvider<IGoalRepository>.value(value: goalRepository),
         RepositoryProvider<IAnaliseLancamentoRepository>.value(
           value: analiseLancamentoRepository,
+        ),
+        RepositoryProvider<FlutterLocalNotificationsPlugin>(
+          create: (_) => FlutterLocalNotificationsPlugin(),
         ),
       ],
       child: BlocProvider(
@@ -135,10 +141,24 @@ class MyAppView extends StatelessWidget {
                 BlocProvider(
                   create:
                       (context) => AnaliseLancamentoBloc(
-                        null, // 👈 argumento posicional obrigatório
                         repository:
                             context.read<IAnaliseLancamentoRepository>(),
                       )..add(LoadLancamentos(userId)),
+                ),
+                BlocProvider(
+                  create: (context) {
+                    final repository =
+                        NotificationRepository(); // seu repositório de notificações
+                    final localNotifications =
+                        FlutterLocalNotificationsPlugin();
+                    return NotificationBloc(
+                      repository: repository,
+                      localNotifications: localNotifications,
+                      idApp: userId,
+                    )..add(
+                      LoadNotifications(userId),
+                    ); // carrega notificações na inicialização
+                  },
                 ),
               ],
               child: const HomeScreen(),

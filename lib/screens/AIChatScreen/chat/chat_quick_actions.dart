@@ -1,3 +1,4 @@
+import 'package:finc/screens/AIChatScreen/gemini_config/gemini_service.dart';
 import 'package:finc/screens/AIChatScreen/prompt/chat_prompts.dart';
 import 'package:flutter/material.dart';
 import 'package:expense_repository/expense_repository.dart';
@@ -9,14 +10,16 @@ class ChatQuickActions extends StatelessWidget {
   final FirebaseExpenseRepo expenseRepo;
   final FirebaseIncomeRepo incomeRepo;
   final Map<String, Category> categoryMap;
+  final GeminiService geminiService; // agora obrigatório
 
-  const ChatQuickActions({
+  ChatQuickActions({
     super.key,
     required this.userId,
     required this.onMessageGenerated,
     required this.expenseRepo,
     required this.incomeRepo,
     required this.categoryMap,
+    required this.geminiService, // recebe do pai
   });
 
   @override
@@ -35,23 +38,33 @@ class ChatQuickActions extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
         children: [
+          // Bolhas de categoria
           ...categories.map(
             (cat) => Padding(
               padding: const EdgeInsets.only(right: 8),
               child: ActionBubble(
                 label: "Gastos em ${cat.name}",
-            onTap: () {
-              onMessageGenerated("Gastos em ${cat.name}", sender: "user");
-              Future.microtask(() async {
-                final total = await _getTotalByCategory(cat.categoryId.toString());
-                final enrichedPrompt = ChatPrompts.gastosPorCategoria(cat.name, total);
-                onMessageGenerated(enrichedPrompt, sender: "ai");
-              });
-            }
+                onTap: () async {
+                  final expenses = await _getExpensesByCategory(cat.categoryId.toString());
 
+                  // Gera prompt detalhado com gastos
+                  final enrichedPrompt = ChatPrompts.gastosDetalhadosPorCategoria(cat.name, expenses);
+                  debugPrint("Prompt enviado para Gemini: $enrichedPrompt");
+
+                  // Mostra no chat a mensagem do usuário (opcional)
+                  onMessageGenerated("Gastos em ${cat.name}", sender: "user");
+
+                  try {
+                    final geminiResponse = await geminiService.sendMessage(enrichedPrompt);
+                    onMessageGenerated(geminiResponse, sender: "ai");
+                  } catch (e) {
+                    onMessageGenerated("Erro ao conectar com o Gemini.", sender: "ai");
+                  }
+                },
               ),
             ),
           ),
+          // Bolha de receita total
           ActionBubble(
             label: "Receita Total",
             onTap: () async {
@@ -60,7 +73,12 @@ class ChatQuickActions extends StatelessWidget {
               final total = await _getTotalReceita();
               final enrichedPrompt = ChatPrompts.receitaTotal(total);
 
-              onMessageGenerated(enrichedPrompt, sender: "ai");
+              try {
+                final geminiResponse = await geminiService.sendMessage(enrichedPrompt);
+                onMessageGenerated(geminiResponse, sender: "ai");
+              } catch (e) {
+                onMessageGenerated("Erro ao conectar com o Gemini.", sender: "ai");
+              }
             },
           ),
         ],
@@ -68,16 +86,29 @@ class ChatQuickActions extends StatelessWidget {
     );
   }
 
-  Future<double> _getTotalByCategory(String categoryId) async {
+  // Pega todos os lançamentos de uma categoria
+  Future<List<Expense>> _getExpensesByCategory(String categoryId) async {
     try {
-      final expenses = await expenseRepo.getExpenses(userId);
-      final filtered = expenses.where((e) => e.categoryId.toString() == categoryId).toList();
-      return filtered.fold<double>(0, (sum, e) => sum + e.amount);
+      final expenseEntities = await expenseRepo.getExpenses(userId);
+
+      return expenseEntities
+          .where((e) => e.categoryId.toString() == categoryId)
+          .map((e) => Expense(
+                id: e.expenseId.toString(),
+                type: e.type,
+                userId: e.userId,
+                amount: e.amount.toDouble(),
+                description: e.description,
+                categoryId: e.categoryId,
+                date: e.date,
+              ))
+          .toList();
     } catch (_) {
-      return 0.0;
+      return [];
     }
   }
 
+  // Pega o total de receita
   Future<double> _getTotalReceita() async {
     try {
       final incomes = await incomeRepo.getIncomes(userId);

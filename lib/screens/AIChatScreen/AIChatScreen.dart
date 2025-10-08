@@ -1,5 +1,4 @@
 import 'package:finc/screens/AIChatScreen/ChatModalHistorico/chat_modal.dart';
-import 'package:finc/screens/AIChatScreen/prompt/chat_prompts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:expense_repository/expense_repository.dart';
@@ -54,18 +53,16 @@ class _AIChatScreenState extends State<AIChatScreen>
   late final String chatId;
   final FirebaseChatRepository _chatRepo = FirebaseChatRepository();
 
+
   bool isTyping = false;
 
   @override
   void initState() {
     super.initState();
     _chatBloc = ChatBloc(repository: _chatRepo);
-
-    // Inicializa o estado com lista vazia
     // ignore: invalid_use_of_visible_for_testing_member
     _chatBloc.emit(ChatLoaded([]));
     chatId = DateTime.now().millisecondsSinceEpoch.toString();
-    // Adiciona a mensagem de boas-vindas
     _addWelcomeMessage();
   }
 
@@ -85,43 +82,71 @@ class _AIChatScreenState extends State<AIChatScreen>
     );
   }
 
+  void _log(String message) {
+    final time = DateTime.now().toIso8601String();
+    debugPrint("[$time] $message");
+  }
+
   Future<void> sendMessage() async {
     final text = _controller.text.trim();
     if (text.isEmpty || isTyping) return;
 
-    final message = ChatMessage(
+    final userMessage = ChatMessage(
       sender: "user",
       text: text,
       timestamp: DateTime.now(),
     );
 
+    _log("Usuário enviou: $text");
+
     _chatBloc.add(
-      SendMessage(userId: widget.userId, chatId: chatId, message: message),
+      SendMessage(
+        userId: widget.userId,
+        chatId: chatId,
+        message: userMessage,
+        source: "InputBar",
+      ),
     );
+    
+
     _controller.clear();
     setState(() => isTyping = true);
 
     try {
+      _log("Enviando para Gemini...");
       final aiResponseText = await _geminiService.sendMessage(text);
+      _log("Resposta do Gemini recebida: $aiResponseText");
+
       final aiMessage = ChatMessage(
         sender: "ai",
         text: aiResponseText,
         timestamp: DateTime.now(),
       );
+
       _chatBloc.add(
-        SendMessage(userId: widget.userId, chatId: chatId, message: aiMessage),
+        SendMessage(
+          userId: widget.userId,
+          chatId: chatId,
+          message: aiMessage,
+          source: "Gemini",
+        ),
       );
-    } catch (_) {
+    } catch (e, st) {
+      _log("❌ Erro ao conectar com Gemini: $e");
+      _log(st.toString());
+
       final errorMessage = ChatMessage(
         sender: "ai",
-        text: "Erro ao conectar com o Gemini.",
+        text: "Erro ao conectar com o Gemini: ${e.toString()}",
         timestamp: DateTime.now(),
       );
+
       _chatBloc.add(
         SendMessage(
           userId: widget.userId,
           chatId: chatId,
           message: errorMessage,
+          source: "Gemini",
         ),
       );
     }
@@ -154,6 +179,7 @@ class _AIChatScreenState extends State<AIChatScreen>
       if (state is ChatLoaded) {
         // Mostra modal de salvando
         showDialog(
+          // ignore: use_build_context_synchronously
           context: context,
           barrierDismissible: false,
           builder:
@@ -214,7 +240,8 @@ class _AIChatScreenState extends State<AIChatScreen>
                       onPressed: () {
                         showChatHistoryModalBloc(
                           context: contextWithBloc,
-                          repository: _chatBloc.repository, // passa o repositório
+                          repository:
+                              _chatBloc.repository, // passa o repositório
                           userId: widget.userId,
                           onChatSelected: (chatId) {
                             _chatBloc.add(
@@ -287,6 +314,7 @@ class _AIChatScreenState extends State<AIChatScreen>
                       expenseRepo: expenseRepo,
                       incomeRepo: incomeRepo,
                       categoryMap: categoryMap,
+                      geminiService: _geminiService, // <-- adicione isso
                       onMessageGenerated: (
                         text, {
                         String sender = "user",
@@ -308,12 +336,8 @@ class _AIChatScreenState extends State<AIChatScreen>
                           setState(() => isTyping = true);
 
                           try {
-                            final aiPrompt = ChatPrompts.gastosPorCategoria(
-                              "Categoria Exemplo",
-                              100.0,
-                            );
                             final aiResponse = await _geminiService.sendMessage(
-                              aiPrompt,
+                              text,
                             );
 
                             final aiMessage = ChatMessage(

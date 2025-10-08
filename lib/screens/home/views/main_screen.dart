@@ -1,16 +1,15 @@
+import 'package:finc/Notification/bloc_notifica/notification_bloc.dart';
+import 'package:finc/Notification/bloc_notifica/notification_event.dart';
 import 'package:finc/Notification/notification.dart';
 import 'package:finc/screens/home/views/main_screen/balance_cards.dart';
 import 'package:finc/screens/home/views/main_screen/transaction_list.dart';
 import 'package:finc/screens/home/views/main_screen/user_header.dart';
 import 'package:finc/multi_selector_date/multi_selector_date.dart';
-import 'package:finc/screens/whatsapp_flow/bloc/analise_lancamento_bloc.dart'
-    show AnaliseLancamentoBloc;
-import 'package:finc/screens/whatsapp_flow/bloc/analise_lancamento_event.dart';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:expense_repository/expense_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
 import 'package:finc/screens/drawer/app_drawer.dart';
 
@@ -130,18 +129,23 @@ class _MainScreenState extends State<MainScreen> {
                   ),
                   BlocProvider(
                     create: (context) {
-                      final repository = FirebaseAnaliseLancamentoRepository();
-                      return AnaliseLancamentoBloc(
-                        uid ?? '', // userId
+                      final repository = NotificationRepository();
+                      final localNotifications =
+                          FlutterLocalNotificationsPlugin();
+                      final String idApp =
+                          uid ?? ''; // 🔹 aqui você passa o userId
+                      return NotificationBloc(
                         repository: repository,
-                      )..add(LoadLancamentos(uid ?? ''));
+                        localNotifications: localNotifications,
+                        idApp: idApp, // obrigatório agora
+                      )..add(
+                        LoadNotifications(idApp),
+                      ); // já dispara o carregamento
                     },
                     child: Builder(
                       builder: (context) {
-                        final bloc = context.read<AnaliseLancamentoBloc>();
-                        return NotificationBell(
-                          bloc: bloc,
-                        ); // ✅ passa o bloc aqui
+                        final bloc = context.read<NotificationBloc>();
+                        return NotificationBell(bloc: bloc);
                       },
                     ),
                   ),

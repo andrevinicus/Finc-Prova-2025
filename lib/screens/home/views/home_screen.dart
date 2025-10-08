@@ -67,7 +67,6 @@ class _HomeScreenState extends State<HomeScreen>
 final pages = [
   BlocProvider(
     create: (context) => AnaliseLancamentoBloc(
-      null, // argumento posicional obrigatório
       repository: FirebaseAnaliseLancamentoRepository(), // nomeado obrigatório
     )..add(LoadLancamentos(userId)),
     child: MainScreen(

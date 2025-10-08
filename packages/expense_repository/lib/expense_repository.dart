@@ -17,6 +17,9 @@ export 'src/goal/goal_transaction.dart';
 export 'src/n8n-analise-lancamento/n8n-analise-lancamento.dart';
 export 'src/n8n-analise-lancamento/i_analise_lancamento_epository.dart';
 export 'src/n8n-analise-lancamento/n8n-analise-lancamento_repo.dart';
+export 'src/notifications/notification_repository.dart';
+export 'src/notifications/notification_model.dart';
+export 'src/notifications/inotification_repository.dart';
 
 
 
