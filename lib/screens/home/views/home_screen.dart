@@ -1,4 +1,6 @@
 import 'package:expense_repository/expense_repository.dart';
+import 'package:finc/screens/AIChatScreen/AIChatScreen.dart';
+import 'package:finc/screens/AIChatScreen/bloc_chat/chat_bloc.dart';
 import 'package:finc/screens/goal_scream/goal_screen.dart';
 import 'package:finc/screens/home/views/home_screen/floating_action_buttons_menu.dart';
 import 'package:finc/screens/home/views/home_screen/home_bottom_navbar.dart';
@@ -64,21 +66,22 @@ class _HomeScreenState extends State<HomeScreen>
     return BlocBuilder<GetFinancialDataBloc, GetFinancialDataState>(
       builder: (context, state) {
         if (state is GetFinancialDataSuccess) {
-final pages = [
-  BlocProvider(
-    create: (context) => AnaliseLancamentoBloc(
-      repository: FirebaseAnaliseLancamentoRepository(), // nomeado obrigatório
-    )..add(LoadLancamentos(userId)),
-    child: MainScreen(
-      expenses: state.expenses,
-      income: state.income,
-      categoryMap: state.categoryMap,
-    ),
-  ),
-  StatScreen(userId: userId),
-  GoalScreen(userId: userId),
-];
-
+          final pages = [
+            BlocProvider(
+              create:
+                  (context) => AnaliseLancamentoBloc(
+                    repository:
+                        FirebaseAnaliseLancamentoRepository(), // nomeado obrigatório
+                  )..add(LoadLancamentos(userId)),
+              child: MainScreen(
+                expenses: state.expenses,
+                income: state.income,
+                categoryMap: state.categoryMap,
+              ),
+            ),
+            StatScreen(userId: userId),
+            GoalScreen(userId: userId),
+          ];
 
           return Scaffold(
             resizeToAvoidBottomInset: false,
@@ -125,10 +128,21 @@ final pages = [
                       currentIndex: index,
                       onTap: (value) {
                         if (value == 3) {
-                          Navigator.pushNamed(
+                          Navigator.push(
                             context,
-                            '/aiChat',
-                            arguments: {'userId': userId, 'userName': userName},
+                            MaterialPageRoute(
+                              builder:
+                                  (_) => BlocProvider(
+                                    create:
+                                        (_) => ChatBloc(
+                                          repository: FirebaseChatRepository(),
+                                        ),
+                                    child: AIChatScreenWrapper(
+                                      userId: userId,
+                                      userName: userName,
+                                    ),
+                                  ),
+                            ),
                           );
                         } else {
                           setState(() => index = value);

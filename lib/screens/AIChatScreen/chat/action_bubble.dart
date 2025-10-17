@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class ActionBubble extends StatelessWidget {
   final String label;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   const ActionBubble({super.key, required this.label, required this.onTap});
 

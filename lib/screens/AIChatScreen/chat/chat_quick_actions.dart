@@ -10,7 +10,8 @@ class ChatQuickActions extends StatelessWidget {
   final FirebaseExpenseRepo expenseRepo;
   final FirebaseIncomeRepo incomeRepo;
   final Map<String, Category> categoryMap;
-  final GeminiService geminiService; // agora obrigatório
+  final GeminiService geminiService;
+  final ValueNotifier<bool> isTypingNotifier;
 
   ChatQuickActions({
     super.key,
@@ -19,7 +20,8 @@ class ChatQuickActions extends StatelessWidget {
     required this.expenseRepo,
     required this.incomeRepo,
     required this.categoryMap,
-    required this.geminiService, // recebe do pai
+    required this.geminiService,
+    required this.isTypingNotifier, // 🔹 Passar notifier do AI typing
   });
 
   @override
@@ -45,20 +47,36 @@ class ChatQuickActions extends StatelessWidget {
               child: ActionBubble(
                 label: "Gastos em ${cat.name}",
                 onTap: () async {
-                  final expenses = await _getExpensesByCategory(cat.categoryId.toString());
+                  print("🖱️ Clique detectado em ${cat.name}");
 
-                  // Gera prompt detalhado com gastos
-                  final enrichedPrompt = ChatPrompts.gastosDetalhadosPorCategoria(cat.name, expenses);
-                  debugPrint("Prompt enviado para Gemini: $enrichedPrompt");
-
-                  // Mostra no chat a mensagem do usuário (opcional)
+                  // 1️⃣ Mostra no chat como mensagem do usuário
                   onMessageGenerated("Gastos em ${cat.name}", sender: "user");
 
+                  // 2️⃣ Ativa "digitando..."
+                  isTypingNotifier.value = true;
+
+                  // 3️⃣ Pega os lançamentos da categoria
+                  final expenses =
+                      await _getExpensesByCategory(cat.categoryId.toString());
+
+                  // 4️⃣ Gera o prompt detalhado para Gemini
+                  final prompt =
+                      ChatPrompts.gastosDetalhadosPorCategoria(cat.name, expenses);
+                  print("Prompt enviado ao Gemini:\n$prompt");
+
                   try {
-                    final geminiResponse = await geminiService.sendMessage(enrichedPrompt);
+                    // 5️⃣ Envia somente o prompt
+                    final geminiResponse =
+                        await geminiService.sendMessage(prompt);
+
+                    // 6️⃣ Mostra a resposta do AI
                     onMessageGenerated(geminiResponse, sender: "ai");
                   } catch (e) {
-                    onMessageGenerated("Erro ao conectar com o Gemini.", sender: "ai");
+                    onMessageGenerated(
+                        "Erro ao conectar com o Gemini.", sender: "ai");
+                  } finally {
+                    // 7️⃣ Desativa "digitando..."
+                    isTypingNotifier.value = false;
                   }
                 },
               ),
@@ -68,16 +86,27 @@ class ChatQuickActions extends StatelessWidget {
           ActionBubble(
             label: "Receita Total",
             onTap: () async {
+              print("🖱️ Clique detectado em Receita Total");
+
+              // Mostra no chat como usuário
               onMessageGenerated("Receita Total", sender: "user");
 
+              // Ativa "digitando..."
+              isTypingNotifier.value = true;
+
               final total = await _getTotalReceita();
-              final enrichedPrompt = ChatPrompts.receitaTotal(total);
+              final promptExterno = ChatPrompts.receitaTotal(total);
+              print("Prompt enviado ao Gemini:\n$promptExterno");
 
               try {
-                final geminiResponse = await geminiService.sendMessage(enrichedPrompt);
+                final geminiResponse =
+                    await geminiService.sendMessage(promptExterno);
+
                 onMessageGenerated(geminiResponse, sender: "ai");
               } catch (e) {
                 onMessageGenerated("Erro ao conectar com o Gemini.", sender: "ai");
+              } finally {
+                isTypingNotifier.value = false;
               }
             },
           ),
@@ -86,11 +115,9 @@ class ChatQuickActions extends StatelessWidget {
     );
   }
 
-  // Pega todos os lançamentos de uma categoria
   Future<List<Expense>> _getExpensesByCategory(String categoryId) async {
     try {
       final expenseEntities = await expenseRepo.getExpenses(userId);
-
       return expenseEntities
           .where((e) => e.categoryId.toString() == categoryId)
           .map((e) => Expense(
@@ -108,7 +135,6 @@ class ChatQuickActions extends StatelessWidget {
     }
   }
 
-  // Pega o total de receita
   Future<double> _getTotalReceita() async {
     try {
       final incomes = await incomeRepo.getIncomes(userId);

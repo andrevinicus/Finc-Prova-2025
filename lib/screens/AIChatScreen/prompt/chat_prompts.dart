@@ -1,81 +1,58 @@
 import 'package:expense_repository/expense_repository.dart';
 
 class ChatPrompts {
-  /// Detalha o gasto total de uma categoria
-  static String gastosPorCategoria(String categoria, double total) {
-    return """
-O usuário pediu detalhes sobre seus gastos.
-Categoria: $categoria
-Total gasto: R\$${total.toStringAsFixed(2)}.
-
-Explique esse gasto de forma clara e amigável e resumida,
-dê dicas financeiras e sugestões de como equilibrar as finanças.
+  /// 🔹 Gasto total por categoria
+  static String gastosPorCategoria(String categoria, double total) => """
+Analise brevemente:
+Categoria: $categoria | Total: R\$${total.toStringAsFixed(2)}
+Diga o que representa e dê 2–3 dicas rápidas para equilibrar. Resposta curta.
 """;
-  }
 
-  /// Mostra a receita total do usuário
-  static String receitaTotal(double total) {
-    return """
-O usuário pediu detalhes sobre sua receita total.
+  /// 🔹 Receita total
+  static String receitaTotal(double total) => """
 Receita total: R\$${total.toStringAsFixed(2)}.
-
-Responda como um consultor financeiro amigável e resumido,
-dê insights sobre o equilíbrio entre receitas e despesas
-e sugira boas práticas de finanças pessoais.
+Explique o que indica e dê 2–3 dicas breves para manter equilíbrio. Resposta curta.
 """;
-  }
 
-  /// Detalha todos os lançamentos de uma categoria (mais detalhado)
+  /// 🔹 Detalhamento de gastos por categoria
   static String gastosDetalhadosPorCategoria(String categoria, List<Expense> despesas) {
     if (despesas.isEmpty) {
-      return "Não há gastos registrados na categoria $categoria.";
+      return "Sem gastos em $categoria. Dê 2 dicas rápidas de controle financeiro.";
     }
 
     final detalhes = despesas.map((e) {
-      final descricao = e.description;
-      final valor = e.amount.toStringAsFixed(2);
-      final data = "[${e.date.toString().split(' ')[0]}]";
-      return "- $data $descricao: R\$ $valor";
-    }).join("\n");
-
-    return """
-O usuário pediu detalhes sobre seus gastos.
-Categoria: $categoria
-Total de lançamentos: ${despesas.length}
-Detalhes dos lançamentos:
-$detalhes
-
-Explique esses gastos de forma clara e amigável,
-resuma os principais pontos e dê dicas financeiras práticas
-para equilibrar as finanças.
-""";
-  }
-
-  /// Versão resumida: envia menos linhas, apenas os principais lançamentos
-  static String gastosResumoPorCategoria(String categoria, List<Expense> despesas) {
-    if (despesas.isEmpty) {
-      return "Não há gastos registrados na categoria $categoria.";
-    }
-
-    // Ordena por valor decrescente e pega até 3 lançamentos
-    final topDespesas = List<Expense>.from(despesas)
-      ..sort((a, b) => b.amount.compareTo(a.amount));
-    final principais = topDespesas.take(3).map((e) {
-      final data = "[${e.date.toString().split(' ')[0]}]";
-      final valor = e.amount.toStringAsFixed(2);
-      return "- $data ${e.description}: R\$ $valor";
+      final data = e.date.toString().split(' ')[0];
+      return "- [$data] ${e.description}: R\$${e.amount.toStringAsFixed(2)}";
     }).join("\n");
 
     final total = despesas.fold<double>(0, (sum, e) => sum + e.amount);
 
     return """
-Categoria: $categoria
-Total gasto: R\$${total.toStringAsFixed(2)}
-Principais lançamentos:
-$principais
+$categoria | Total: R\$${total.toStringAsFixed(2)} | Itens: ${despesas.length}
+$detalhes
+Resuma padrões e dê 2–3 dicas curtas para otimizar. Resposta curta.
+""";
+  }
 
-Resuma em poucas linhas, explique de forma clara e amigável,
-e sugira 2-3 dicas práticas para melhorar as finanças.
+  /// 🔹 Resumo por categoria
+  static String gastosResumoPorCategoria(String categoria, List<Expense> despesas) {
+    if (despesas.isEmpty) return "Sem gastos em $categoria.";
+
+    final top = List<Expense>.from(despesas)
+      ..sort((a, b) => b.amount.compareTo(a.amount));
+    final principais = top.take(3).map((e) {
+      final data = e.date.toString().split(' ')[0];
+      return "- [$data] ${e.description}: R\$${e.amount.toStringAsFixed(2)}";
+    }).join("\n");
+
+    final total = despesas.fold<double>(0, (sum, e) => sum + e.amount);
+
+    return """
+Resumo $categoria:
+Total: R\$${total.toStringAsFixed(2)}
+Top gastos:
+$principais
+Resuma hábitos e dê até 3 dicas breves. Resposta curta.
 """;
   }
 }
