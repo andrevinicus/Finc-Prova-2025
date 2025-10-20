@@ -40,6 +40,7 @@ void main() {
   final categoryRepository = FirebaseCategoryRepository();
   final goalRepository = FirebaseGoalRepository();
   final analiseLancamentoRepository = FirebaseAnaliseLancamentoRepository();
+  
 
   runApp(
     MultiRepositoryProvider(

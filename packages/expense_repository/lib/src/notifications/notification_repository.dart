@@ -3,7 +3,7 @@ import 'package:expense_repository/expense_repository.dart';
 
 class NotificationRepository implements INotificationRepository {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
-  final String collectionName = 'notificacoes';
+  final String collectionName = 'notificacao';
 
   @override
   Future<List<NotificationModel>> fetchNotifications(String idApp) async {

@@ -101,17 +101,31 @@ class _AppDrawerState extends State<AppDrawer> {
                             ? Icon(
                               Icons.person,
                               size: 40,
-                              color: theme.colorScheme.onSurface.withOpacity(0.6),
+                              color: theme.colorScheme.onSurface.withOpacity(
+                                0.6,
+                              ),
                             )
                             : null,
                   ),
                 ),
-        
+
                 // Menu rolável
                 Expanded(
                   child: SingleChildScrollView(
                     child: Column(
                       children: [
+                        ListTile(
+                          leading: const Icon(Icons.person),
+                          title: const Text('Perfil'),
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const PerfilScreen(),
+                              ),
+                            );
+                          },
+                        ),
                         ListTile(
                           leading: const Icon(Icons.list_alt),
                           title: const Text('Transações'),
@@ -126,14 +140,16 @@ class _AppDrawerState extends State<AppDrawer> {
                                   builder:
                                       (_) => BlocProvider.value(
                                         value: financialBloc,
-                                        child: TransactionScreen(userId: userId),
+                                        child: TransactionScreen(
+                                          userId: userId,
+                                        ),
                                       ),
                                 ),
                               );
                             }
                           },
                         ),
-        
+
                         // Pendências Financeiras com sinal
                         ListTile(
                           leading: const Icon(Icons.pending_actions),
@@ -167,7 +183,7 @@ class _AppDrawerState extends State<AppDrawer> {
                                   context.read<AnaliseLancamentoBloc>();
                               final categoriesBloc =
                                   context.read<GetCategoriesBloc>();
-        
+
                               // Passa ambos os blocos via MultiBlocProvider
                               Navigator.of(context).push(
                                 MaterialPageRoute(
@@ -188,32 +204,22 @@ class _AppDrawerState extends State<AppDrawer> {
                             }
                           },
                         ),
-        
-                        ListTile(
-                          leading: const Icon(Icons.person),
-                          title: const Text('Perfil'),
-                          onTap: () {
-                            Navigator.of(context).pop();
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => const PerfilScreen(),
-                              ),
-                            );
-                          },
-                        ),
                       ],
                     ),
                   ),
                 ),
-        
+
                 const Divider(height: 1),
-        
+
                 // Rodapé fixo
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     ListTile(
-                      leading: const Icon(Icons.logout, color: Colors.redAccent),
+                      leading: const Icon(
+                        Icons.logout,
+                        color: Colors.redAccent,
+                      ),
                       title: const Text(
                         'Logout',
                         style: TextStyle(color: Colors.redAccent),
@@ -229,7 +235,9 @@ class _AppDrawerState extends State<AppDrawer> {
                         if (!mounted) return;
                         Navigator.of(context).pop();
                         Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(builder: (_) => const LoginScreen()),
+                          MaterialPageRoute(
+                            builder: (_) => const LoginScreen(),
+                          ),
                           (route) => false,
                         );
                       },
