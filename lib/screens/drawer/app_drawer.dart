@@ -1,6 +1,9 @@
 import 'package:expense_repository/expense_repository.dart';
 import 'package:finc/perfils/perfil_screen.dart';
 import 'package:finc/screens/category/blocs/get_categories_bloc/get_categories_bloc.dart';
+
+import 'package:finc/screens/comuniti/comunidadeScreen/fin_community_feed_screen.dart';
+
 import 'package:finc/screens/home/blocs/get_block_expense_income.dart';
 import 'package:finc/screens/login/register/login_screen.dart';
 import 'package:finc/screens/transactions/transaction_screen.dart';
@@ -126,6 +129,19 @@ class _AppDrawerState extends State<AppDrawer> {
                             );
                           },
                         ),
+                        ListTile(
+                          leading: const Icon(Icons.groups_2),
+                          title: const Text('Comunidades'),
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const FinCommunityFeedScreen(),
+                              ),
+                            );
+                          },
+                        ),
+
                         ListTile(
                           leading: const Icon(Icons.list_alt),
                           title: const Text('Transações'),
