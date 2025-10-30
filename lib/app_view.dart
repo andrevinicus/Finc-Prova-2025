@@ -1,5 +1,5 @@
-import 'package:finc/Notification/bloc_notifica/notification_bloc.dart' show NotificationBloc;
-import 'package:finc/Notification/bloc_notifica/notification_event.dart';
+import 'package:finc/Notification/bloc_notifica_local/notification_bloc.dart' show NotificationBloc;
+import 'package:finc/Notification/bloc_notifica_local/notification_event.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

@@ -2,9 +2,9 @@ import 'package:expense_repository/expense_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'bloc_notifica/notification_bloc.dart';
-import 'bloc_notifica/notification_event.dart';
-import 'bloc_notifica/notification_state.dart';
+import 'bloc_notifica_local/notification_bloc.dart';
+import 'bloc_notifica_local/notification_event.dart';
+import 'bloc_notifica_local/notification_state.dart';
 
 class NotificationBell extends StatefulWidget {
   final NotificationBloc bloc;

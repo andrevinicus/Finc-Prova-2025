@@ -1,16 +1,21 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:finc/Notification/bloc_notifica_token/user_token_bloc.dart';
 import 'package:finc/Notification/fcm_service.dart';
+import 'package:finc/auth/auth_bloc.dart';
+import 'package:finc/auth/auth_event.dart';
+import 'package:finc/auth/auth_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:finc/Notification/service_notifica.dart';
-import 'package:finc/Notification/bloc_notifica/notification_bloc.dart';
-import 'package:finc/Notification/bloc_notifica/notification_event.dart';
+import 'package:finc/Notification/bloc_notifica_local/notification_bloc.dart';
+import 'package:finc/Notification/bloc_notifica_local/notification_event.dart';
 import 'package:finc/simple_bloc_observer.dart';
 import 'package:finc/app.dart';
 import 'package:expense_repository/expense_repository.dart';
-
 
 // =========================
 // BACKGROUND HANDLER FCM
@@ -28,87 +33,116 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print('📨 Mensagem FCM em background: ${message.notification?.title}');
 }
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
   await Firebase.initializeApp();
 
-  // Inicializa notificações locais (cria canal)
   await LocalNotificationService.init();
-
-  // Inicializa FCM e registra handler de background
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-  // Inicializa o FCMService (gera token e listeners)
-  await FCMService.init();
-
-  // Inicializa bloc e repositório
-  final notificationRepository = NotificationRepository();
   Bloc.observer = SimpleBlocObserver();
 
-  runApp(
-    MultiRepositoryProvider(
+  runApp(MyAppRoot());
+}
+
+// =========================
+// APP ROOT COM BLOCs
+// =========================
+class MyAppRoot extends StatelessWidget {
+  const MyAppRoot({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiBlocProvider(
       providers: [
-        RepositoryProvider<NotificationRepository>.value(
-          value: notificationRepository,
+        BlocProvider<AuthBloc>(
+          create: (_) => AuthBloc(FirebaseAuth.instance)..add(AuthCheckRequested()),
+        ),
+        BlocProvider<UserTokenBloc>(
+          create: (_) => UserTokenBloc(FirebaseFirestore.instance),
         ),
       ],
-      child: BlocProvider(
-        create: (context) => NotificationBloc(
-          repository: notificationRepository,
-          localNotifications: LocalNotificationService.instance,
-          idApp: 'global_app', // ou userId do usuário
-        ),
-        child: const MyAppWrapper(),
+      child: BlocBuilder<AuthBloc, AuthState>(
+        builder: (context, state) {
+          if (state is Authenticated) {
+            final userId = state.user.uid;
+
+            return BlocProvider(
+              create: (_) => NotificationBloc(
+                repository: NotificationRepository(),
+                localNotifications: LocalNotificationService.instance,
+                idApp: userId, // ✅ usa o ID real do usuário logado
+              ),
+              child: MyAppWrapper(userId: userId),
+            );
+          }
+
+          // Se não logado, apenas carrega app base
+          return const MyAppWrapper();
+        },
       ),
-    ),
-  );
+    );
+  }
 }
 
 // =========================
 // WIDGET WRAPPER PRINCIPAL
 // =========================
 class MyAppWrapper extends StatefulWidget {
-  const MyAppWrapper({super.key});
+  final String? userId;
+  const MyAppWrapper({super.key, this.userId});
 
   @override
   State<MyAppWrapper> createState() => _MyAppWrapperState();
 }
 
 class _MyAppWrapperState extends State<MyAppWrapper> {
-  late final NotificationBloc _notificationBloc;
+  NotificationBloc? _notificationBloc;
+  bool _initialized = false;
 
   @override
-  void initState() {
-    super.initState();
-    _notificationBloc = BlocProvider.of<NotificationBloc>(context);
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
-    // Listener FCM em foreground
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
-      final documentId = message.data['documentId'] ?? '';
+    // Garante que roda apenas uma vez
+    if (!_initialized && widget.userId != null) {
+      _initialized = true;
 
-      await LocalNotificationService.showNotification(
-        id: documentId.hashCode,
-        title: message.notification?.title ?? 'Nova notificação',
-        body: message.notification?.body ?? '',
-        payload: documentId,
-      );
+      // Agora o context já tem o Bloc
+      _notificationBloc = BlocProvider.of<NotificationBloc>(context);
 
-      _notificationBloc.add(TriggerLocalNotification(
-        id: documentId.hashCode,
-        title: message.notification?.title ?? 'Nova notificação',
-        body: message.notification?.body ?? '',
-      ));
+      // Inicializa FCM depois que o frame está pronto
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        FCMService.init(userId: widget.userId!, context: context);
+      });
 
-      print('📩 Notificação FCM em foreground: ${message.notification?.title}');
-    });
+      // Escuta mensagens FCM
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+        final documentId = message.data['documentId'] ?? '';
 
-    // Listener quando app é aberto via notificação
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      final documentId = message.data['documentId'] ?? '';
-      print('[FCM OpenedApp] Notificação clicada: $documentId');
-      // Aqui você pode navegar para tela específica
-    });
+        await LocalNotificationService.showNotification(
+          id: documentId.hashCode,
+          title: message.notification?.title ?? 'Nova notificação',
+          body: message.notification?.body ?? '',
+          payload: documentId,
+        );
+
+        _notificationBloc?.add(TriggerLocalNotification(
+          id: documentId.hashCode,
+          title: message.notification?.title ?? 'Nova notificação',
+          body: message.notification?.body ?? '',
+        ));
+
+        print('📩 Notificação FCM em foreground: ${message.notification?.title}');
+      });
+
+      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+        final documentId = message.data['documentId'] ?? '';
+        print('[FCM OpenedApp] Notificação clicada: $documentId');
+        // Aqui você pode navegar para a tela específica
+      });
+    }
   }
 
   @override

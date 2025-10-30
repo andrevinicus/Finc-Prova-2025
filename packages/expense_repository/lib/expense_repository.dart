@@ -20,6 +20,7 @@ export 'src/n8n-analise-lancamento/n8n-analise-lancamento_repo.dart';
 export 'src/notifications/notification_repository.dart';
 export 'src/notifications/notification_model.dart';
 export 'src/notifications/inotification_repository.dart';
+export 'src/user/user_repository_notifi.dart';
 
 
 
